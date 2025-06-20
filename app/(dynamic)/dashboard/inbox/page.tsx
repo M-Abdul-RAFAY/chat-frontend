@@ -3,7 +3,7 @@ import React from "react";
 
 const InboxPage = () => {
   return (
-    <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full mt-15">
+    <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full">
       <Inbox />
     </div>
   );

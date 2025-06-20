@@ -1,13 +1,9 @@
 "use client";
 
 import {
-  Home,
   Inbox,
-  Users,
   TrendingUp,
-  CreditCard,
   BarChart3,
-  Lightbulb,
   Zap,
   MessageSquare,
   UserCheck,
@@ -22,7 +18,6 @@ import {
   BadgeDollarSign,
   ThumbsUp,
   Ban,
-  CheckCircle,
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

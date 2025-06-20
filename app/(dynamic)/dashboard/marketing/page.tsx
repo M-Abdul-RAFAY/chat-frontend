@@ -6,7 +6,9 @@ import React from "react";
 const Marketing = () => {
   return (
     <>
-      <BulkMessagingDashboard />
+      <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full">
+        <BulkMessagingDashboard />
+      </div>
     </>
   );
 };
