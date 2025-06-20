@@ -1,12 +1,12 @@
 import Inbox from "@/components/Inbox";
 import React from "react";
 
-const inbox = () => {
+const InboxPage = () => {
   return (
-    <div className="h-full flex-1 min-h-0 overflow-hidden">
+    <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full mt-15">
       <Inbox />
     </div>
   );
 };
 
-export default inbox;
+export default InboxPage;

@@ -13,20 +13,20 @@ export default function Inbox() {
   const [profileVisible, setProfileVisible] = useState(false);
 
   return (
-    <div className="flex flex-1 min-h-0 overflow-hidden">
+    <div className="flex flex-1 h-full min-h-0 overflow-hidden">
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 h-full min-h-0 overflow-hidden">
         <ConversationList
           selectedConversation={selectedConversation}
           onSelectConversation={setSelectedConversation}
           collapsed={sidebarCollapsed}
         />
 
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-1 h-full min-h-0 overflow-hidden">
           <ChatInterface
             conversationId={selectedConversation}
             onToggleProfile={() => setProfileVisible(!profileVisible)}
