@@ -1,0 +1,412 @@
+{
+  "conversations": [
+    {
+      "id": 1,
+      "name": "Frankie Villa",
+      "avatar": "FV",
+      "time": "5 min ago",
+      "lastMessage": "You: Sounds good! We definitely have what...",
+      "status": "NEW LEAD",
+      "statusColor": "bg-orange-500",
+      "unread": true,
+      "location": "Venture Auto - Miami",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 2:30 PM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "Hi! I'm interested in the 2023 BMW convertible I saw on your website. Is it still available?",
+          "time": "2:30 PM",
+          "avatar": "FV"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Hello Frankie! Yes, that BMW is still available. It's a beautiful car with low mileage. Would you like to schedule a test drive?",
+          "time": "2:32 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "That sounds perfect! What's the best time for a test drive this week?",
+          "time": "2:35 PM",
+          "avatar": "FV"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "Sounds good! We definitely have what you're looking for. How about tomorrow at 3 PM?",
+          "time": "2:36 PM",
+          "avatar": "B"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Lisa Bartram",
+      "avatar": "LB",
+      "time": "18 min ago",
+      "lastMessage": "Amazing! I love so idea. I'd love to stop in...",
+      "status": "NEW LEAD",
+      "statusColor": "bg-orange-500",
+      "unread": false,
+      "location": "Venture Auto - Dallas",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 2:15 PM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "Hello! I saw your ad about custom car modifications. Do you do custom paint jobs?",
+          "time": "2:15 PM",
+          "avatar": "LB"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Hi Lisa! Absolutely, we specialize in custom paint jobs. What kind of design are you thinking about?",
+          "time": "2:16 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "I want something unique - maybe a galaxy theme with metallic finish. Is that possible?",
+          "time": "2:18 PM",
+          "avatar": "LB"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "That sounds incredible! We've done similar work before. I can show you some examples when you visit.",
+          "time": "2:20 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 6,
+          "sender": "customer",
+          "content": "Amazing! I love so idea. I'd love to stop in and see what you can do!",
+          "time": "2:22 PM",
+          "avatar": "LB"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Cam Yahwey",
+      "avatar": "CY",
+      "time": "23 min ago",
+      "lastMessage": "You: $99 Payment Request",
+      "status": "NEW LEAD",
+      "statusColor": "bg-orange-500",
+      "unread": false,
+      "location": "Venture Auto - Salt Lake City",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 10:40 AM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "I saw your ad on Facebook! Do you still have those convertibles on the lot?",
+          "time": "10:40 AM",
+          "avatar": "CY"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Yes we do, Cam! We have 3 still on the lot, but they're going to go fast. Did you want to come in for a test drive?",
+          "time": "10:41 AM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "Yes, please! And while I'm at it, I'd love to schedule a customization consult.",
+          "time": "10:50 AM",
+          "avatar": "CY"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "Sure thing! The price for consultations is $99. I can send the payment link here, and then we'll get you scheduled.",
+          "time": "10:51 AM",
+          "avatar": "B"
+        },
+        {
+          "id": 6,
+          "sender": "payment",
+          "content": "$99.00 Payment Request",
+          "subtitle": "Customization - Consultation",
+          "time": "10:51 AM",
+          "isPayment": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Will Patiente",
+      "avatar": "WP",
+      "time": "29 min ago",
+      "lastMessage": "You: Of course! Those are the best for car...",
+      "status": "NEW LEAD",
+      "statusColor": "bg-orange-500",
+      "unread": false,
+      "location": "Venture Auto - Phoenix",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 2:00 PM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "Hey! I'm looking for performance upgrades for my Mustang. Do you guys do turbo installations?",
+          "time": "2:00 PM",
+          "avatar": "WP"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Hi Will! Absolutely, we're experts in performance modifications. What year Mustang are you working with?",
+          "time": "2:02 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "It's a 2020 GT. I want to add some serious power but keep it reliable for daily driving.",
+          "time": "2:05 PM",
+          "avatar": "WP"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "Of course! Those are the best for performance mods. We can do a conservative tune that adds 100+ HP safely.",
+          "time": "2:07 PM",
+          "avatar": "B"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Samantha Price",
+      "avatar": "SP",
+      "time": "1 hr ago",
+      "lastMessage": "You: Hey there, Samantha! Sorry we missed...",
+      "status": "PAYMENT SENT",
+      "statusColor": "bg-green-500",
+      "unread": false,
+      "location": "Venture Auto - Austin",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 1:30 PM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "Hi! I missed your call earlier. I'm interested in the financing options for the Tesla Model 3.",
+          "time": "1:30 PM",
+          "avatar": "SP"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Hey there, Samantha! Sorry we missed each other. I have great news about the Tesla financing!",
+          "time": "1:32 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "That's wonderful! What are the rates looking like?",
+          "time": "1:35 PM",
+          "avatar": "SP"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "We can get you 2.9% APR with your credit score. Would you like me to send over the pre-approval paperwork?",
+          "time": "1:37 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 6,
+          "sender": "payment",
+          "content": "$500.00 Payment Received",
+          "subtitle": "Tesla Model 3 - Down Payment",
+          "time": "1:40 PM",
+          "isPayment": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Jack Pottere",
+      "avatar": "JP",
+      "time": "1 hr ago",
+      "lastMessage": "Call Completed",
+      "status": "WON",
+      "statusColor": "bg-green-600",
+      "unread": false,
+      "location": "Venture Auto - Denver",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 12:00 PM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "Thanks for the great service! The car is running perfectly after the tune-up.",
+          "time": "12:00 PM",
+          "avatar": "JP"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "That's fantastic to hear, Jack! We're always happy to help keep your car in top shape.",
+          "time": "12:02 PM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "system",
+          "content": "Call completed - 15 minutes",
+          "time": "12:15 PM",
+          "isSystem": true
+        },
+        {
+          "id": 5,
+          "sender": "customer",
+          "content": "I'll definitely be back for my next service. You guys are the best!",
+          "time": "12:20 PM",
+          "avatar": "JP"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Jenny Wilson",
+      "avatar": "JW",
+      "time": "1 hr ago",
+      "lastMessage": "You: Thanks for your payment, Jenny! Would...",
+      "status": "WON",
+      "statusColor": "bg-green-600",
+      "unread": false,
+      "location": "Venture Auto - Seattle",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 11:30 AM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "payment",
+          "content": "$2,500.00 Payment Received",
+          "subtitle": "Honda Civic - Final Payment",
+          "time": "11:30 AM",
+          "isPayment": true
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Thanks for your payment, Jenny! Would you like to schedule the pickup for your new Honda Civic?",
+          "time": "11:32 AM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "Yes! I'm so excited. Can I pick it up tomorrow morning?",
+          "time": "11:35 AM",
+          "avatar": "JW"
+        },
+        {
+          "id": 5,
+          "sender": "agent",
+          "content": "Absolutely! We'll have it detailed and ready for you at 10 AM. Congratulations on your new car!",
+          "time": "11:37 AM",
+          "avatar": "B"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Monica Cooper",
+      "avatar": "MC",
+      "time": "1 hr ago",
+      "lastMessage": "Left a review: I really loved the entire test drive...",
+      "status": null,
+      "statusColor": null,
+      "unread": false,
+      "location": "Venture Auto - Portland",
+      "messages": [
+        {
+          "id": 1,
+          "sender": "system",
+          "content": "This is the beginning of your conversation.",
+          "time": "Today at 11:00 AM",
+          "isSystem": true
+        },
+        {
+          "id": 2,
+          "sender": "customer",
+          "content": "I really loved the entire test drive experience! The car handles beautifully.",
+          "time": "11:00 AM",
+          "avatar": "MC"
+        },
+        {
+          "id": 3,
+          "sender": "agent",
+          "content": "Thank you so much, Monica! We're thrilled you enjoyed the test drive. Are you ready to move forward?",
+          "time": "11:02 AM",
+          "avatar": "B"
+        },
+        {
+          "id": 4,
+          "sender": "customer",
+          "content": "I need to think about it over the weekend, but I'm very interested!",
+          "time": "11:05 AM",
+          "avatar": "MC"
+        },
+        {
+          "id": 5,
+          "sender": "system",
+          "content": "Customer left a 5-star review",
+          "time": "11:30 AM",
+          "isSystem": true
+        }
+      ]
+    }
+  ]
+}

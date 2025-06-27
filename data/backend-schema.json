@@ -1,0 +1,153 @@
+
+{
+  "business_info": [
+    {
+      "id": "1",
+      "name": "Acme Corporation",
+      "website": "https://acme.com",
+      "description": "Leading provider of innovative solutions",
+      "phone": "+1 (555) 123-4567",
+      "email": "contact@acme.com",
+      "address": "123 Business St, City, State 12345",
+      "industry": "technology",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "1",
+      "name": "Welcome New Customers",
+      "scheduleDate": "2024-02-01T09:00:00Z",
+      "status": "scheduled",
+      "segmentCriteria": "new_customers",
+      "type": "sms",
+      "message": "Welcome to our service! We're excited to have you on board.",
+      "targetAudience": "New customers",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "1",
+      "name": "Welcome Message",
+      "content": "Hi {name}, welcome to {company}! How can we help you today?",
+      "type": "whatsapp",
+      "status": "active",
+      "category": "welcome",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Follow-up SMS",
+      "content": "Hi {name}, just following up on your inquiry about {product}. Are you ready to move forward?",
+      "type": "sms",
+      "status": "active",
+      "category": "follow-up",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "rules": [
+    {
+      "id": "1",
+      "name": "Auto Welcome Response",
+      "trigger": "new_conversation",
+      "condition": "Customer starts new conversation AND business hours",
+      "action": "Send welcome template AND assign to available agent",
+      "status": "active",
+      "priority": 5,
+      "description": "Automatically welcome new customers during business hours",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Pricing Inquiry Handler",
+      "trigger": "keyword_detected",
+      "condition": "Message contains 'price' OR 'cost' OR 'pricing'",
+      "action": "Send pricing template AND tag conversation as 'pricing_inquiry'",
+      "status": "active",
+      "priority": 7,
+      "description": "Handle pricing inquiries automatically",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "integrations": [
+    {
+      "id": "1",
+      "name": "WhatsApp Business API",
+      "type": "whatsapp",
+      "status": "connected",
+      "configuration": {
+        "phone_number": "+1234567890",
+        "api_token": "***hidden***"
+      },
+      "description": "Primary WhatsApp integration for customer communication",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "SMS Gateway",
+      "type": "sms",
+      "status": "connected",
+      "configuration": {
+        "api_key": "***hidden***",
+        "sender_id": "ACME"
+      },
+      "description": "SMS service for customer notifications",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "name": "CRM Integration",
+      "type": "crm",
+      "status": "error",
+      "configuration": {
+        "api_url": "https://crm.example.com/api",
+        "api_key": "***hidden***",
+        "sync_enabled": true
+      },
+      "description": "Sync customer data with CRM system",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "api_endpoints": {
+    "business_info": {
+      "GET": "/api/v1/business-info",
+      "POST": "/api/v1/business-info",
+      "PATCH": "/api/v1/business-info/:id",
+      "DELETE": "/api/v1/business-info/:id"
+    },
+    "campaigns": {
+      "GET": "/api/v1/campaigns",
+      "POST": "/api/v1/campaigns",
+      "PATCH": "/api/v1/campaigns/:id",
+      "DELETE": "/api/v1/campaigns/:id"
+    },
+    "templates": {
+      "GET": "/api/v1/templates",
+      "POST": "/api/v1/templates",
+      "PATCH": "/api/v1/templates/:id",
+      "DELETE": "/api/v1/templates/:id"
+    },
+    "rules": {
+      "GET": "/api/v1/rules",
+      "POST": "/api/v1/rules",
+      "PATCH": "/api/v1/rules/:id",
+      "DELETE": "/api/v1/rules/:id"
+    },
+    "integrations": {
+      "GET": "/api/v1/integrations",
+      "POST": "/api/v1/integrations",
+      "PATCH": "/api/v1/integrations/:id",
+      "DELETE": "/api/v1/integrations/:id"
+    }
+  }
+}
