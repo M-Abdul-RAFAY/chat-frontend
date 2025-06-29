@@ -235,6 +235,7 @@ export const widgetAPI = {
   }> => {
     try {
       const headers = await getAuthHeaders();
+      console.log(headers);
       const response = await fetch(`${API_BASE_URL}/widget/generate`, {
         method: "POST",
         headers,

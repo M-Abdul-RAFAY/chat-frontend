@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, MessageCircle, Send, CheckCircle } from "lucide-react";
+import { X, MessageCircle, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import { widgetAPI } from "@/lib/api";
 
