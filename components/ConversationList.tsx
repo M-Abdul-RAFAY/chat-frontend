@@ -196,7 +196,7 @@ export default function ConversationList({
                   </p>
 
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px]  bg-blue-100 text-zinc-700 font-semibold">
                       {conversation.status}
                     </span>
                     {conversation.unread && (
