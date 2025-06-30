@@ -5,6 +5,7 @@ import { Copy, Settings, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { widgetAPI } from "@/lib/api";
+import { useUser } from "@clerk/nextjs";
 
 interface WidgetConfig {
   companyName: string;
@@ -14,6 +15,7 @@ interface WidgetConfig {
 }
 
 export default function WidgetManager() {
+  const { user } = useUser();
   const [widgetId, setWidgetId] = useState<string>("");
   const [embedCode, setEmbedCode] = useState<string>("");
   const [config, setConfig] = useState<WidgetConfig>({
@@ -34,7 +36,7 @@ export default function WidgetManager() {
   const fetchWidgetConfig = async () => {
     try {
       setLoading(true);
-      const data = await widgetAPI.getWidgetConfig();
+      const data = await widgetAPI.getWidgetConfig(user?.id);
       setWidgetId(data.widgetId);
       setConfig(data.config);
       generateEmbedCode(data.widgetId);
@@ -54,7 +56,7 @@ export default function WidgetManager() {
   const generateWidget = async () => {
     try {
       setGenerating(true);
-      const data = await widgetAPI.generateWidget();
+      const data = await widgetAPI.generateWidget(user?.id);
       setWidgetId(data.widgetId);
       setEmbedCode(data.embedCode);
     } catch (error) {
@@ -73,7 +75,7 @@ export default function WidgetManager() {
   const updateConfig = async () => {
     try {
       setSaving(true);
-      await widgetAPI.updateWidgetConfig(config);
+      await widgetAPI.updateWidgetConfig(config, user?.id);
       setShowSettings(false);
     } catch (error) {
       console.error("Error updating widget config:", error);

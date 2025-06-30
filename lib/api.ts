@@ -1,11 +1,12 @@
+import { use } from "react";
+
 // API configuration
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 // Helper function to get auth headers (client-side)
-const getAuthHeaders = async () => {
+export const getAuthHeaders = async () => {
   try {
-    // For client-side, we need to use window.Clerk
     if (typeof window !== "undefined" && (window as any).Clerk) {
       const session = (window as any).Clerk.session;
       if (session) {
@@ -30,6 +31,59 @@ const getAuthHeaders = async () => {
       "Content-Type": "application/json",
     };
   }
+};
+
+// User management API functions
+export const userAPI = {
+  // Sync current user with backend
+  syncUser: async (userData: {
+    clerkId: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    imageUrl?: string;
+    userId?: string;
+  }) => {
+    try {
+      const response = await fetch("/api/auth/sync-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userData }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to sync user: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error syncing user:", error);
+      throw error;
+    }
+  },
+
+  // Get user from backend
+  getUser: async () => {
+    try {
+      const response = await fetch("/api/auth/get-user", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get user: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting user:", error);
+      throw error;
+    }
+  },
 };
 
 // Types for API responses
@@ -207,12 +261,15 @@ export const chatAPI = {
 // Widget API functions
 export const widgetAPI = {
   // Get user's widget configuration
-  getWidgetConfig: async (): Promise<{ widgetId: string; config: any }> => {
+  getWidgetConfig: async (
+    userId?: string
+  ): Promise<{ widgetId: string; config: any }> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/widget/config`, {
         method: "GET",
         headers,
+        body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {
@@ -229,16 +286,18 @@ export const widgetAPI = {
   },
 
   // Generate/regenerate widget for user
-  generateWidget: async (): Promise<{
+  generateWidget: async (
+    userId?: string
+  ): Promise<{
     widgetId: string;
     embedCode: string;
   }> => {
     try {
       const headers = await getAuthHeaders();
-      console.log(headers);
       const response = await fetch(`${API_BASE_URL}/widget/generate`, {
         method: "POST",
         headers,
+        body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {
@@ -253,13 +312,14 @@ export const widgetAPI = {
   },
 
   // Update widget configuration
-  updateWidgetConfig: async (config: any): Promise<void> => {
+  updateWidgetConfig: async (config: any, userId?: string): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
+      const body = userId ? { ...config, userId } : config;
       const response = await fetch(`${API_BASE_URL}/widget/config`, {
         method: "PUT",
         headers,
-        body: JSON.stringify(config),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
