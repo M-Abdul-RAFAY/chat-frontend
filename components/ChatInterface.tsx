@@ -174,7 +174,7 @@ export default function ChatInterface({
       try {
         setLoading(true);
         setError(null);
-        const data = await chatAPI.getConversation(parseInt(conversationId));
+        const data = await chatAPI.getConversation(conversationId);
         setConversation(data);
         setMessages(data.messages);
       } catch (err) {

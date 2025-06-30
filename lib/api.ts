@@ -140,7 +140,7 @@ export const chatAPI = {
   },
 
   // Get a specific conversation with all messages
-  getConversation: async (conversationId: number): Promise<Conversation> => {
+  getConversation: async (conversationId: string): Promise<Conversation> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(

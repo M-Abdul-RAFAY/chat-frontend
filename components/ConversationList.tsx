@@ -178,7 +178,13 @@ export default function ConversationList({
             .map((conversation) => (
               <div
                 key={conversation.id}
-                onClick={() => onSelectConversation(conversation.id.toString())}
+                onClick={() => {
+                  console.log(
+                    "Clicked conversation id:",
+                    conversation.id.toString()
+                  );
+                  onSelectConversation(conversation.id.toString());
+                }}
                 className={cn(
                   "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",
                   selectedConversation === conversation.id.toString() &&
