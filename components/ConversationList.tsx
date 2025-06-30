@@ -28,7 +28,12 @@ export default function ConversationList({
       setLoading(true);
       setError(null);
       const data = await chatAPI.getConversations();
-      setConversations(data);
+      // Normalize _id to id
+      const normalized = data.map((conv) => ({
+        ...conv,
+        id: conv._id || conv.id,
+      }));
+      setConversations(normalized);
     } catch (err) {
       console.error("Error fetching conversations:", err);
       setError(
@@ -43,6 +48,8 @@ export default function ConversationList({
     fetchConversations();
   }, []);
 
+  console.log("Conversations:", conversations);
+
   const filteredConversations = conversations.filter((conv) => {
     const matchesSearch = conv.name
       .toLowerCase()
@@ -51,6 +58,8 @@ export default function ConversationList({
     const conversationStatus = conv.status === "CLOSED" ? "closed" : "open";
     return conversationStatus === activeTab && matchesSearch;
   });
+
+  console.log("Filtered conversations:", filteredConversations);
 
   return (
     <div
@@ -161,52 +170,57 @@ export default function ConversationList({
             )}
           </div>
         ) : (
-          filteredConversations.map((conversation) => (
-            <div
-              key={conversation.id}
-              onClick={() => onSelectConversation(conversation.id.toString())}
-              className={cn(
-                "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",
-                selectedConversation === conversation.id.toString() &&
-                  "bg-blue-50 border-blue-200"
-              )}
-            >
-              <div className="flex items-start space-x-2">
-                <div
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
-                    conversation.statusColor || "bg-gray-500"
-                  )}
-                >
-                  {conversation.avatar}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <h3 className="text-xs font-medium text-gray-900 truncate">
-                      {conversation.name}
-                    </h3>
-                    <span className="text-[10px] text-gray-500 flex-shrink-0">
-                      {conversation.time}
-                    </span>
+          filteredConversations
+            .filter(
+              (conversation) =>
+                conversation.id !== undefined && conversation.id !== null
+            )
+            .map((conversation) => (
+              <div
+                key={conversation.id}
+                onClick={() => onSelectConversation(conversation.id.toString())}
+                className={cn(
+                  "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",
+                  selectedConversation === conversation.id.toString() &&
+                    "bg-blue-50 border-blue-200"
+                )}
+              >
+                <div className="flex items-start space-x-2">
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
+                      conversation.statusColor || "bg-red-500"
+                    )}
+                  >
+                    {conversation.avatar}
                   </div>
 
-                  <p className="text-xs text-gray-600 truncate mb-1">
-                    {conversation.lastMessage}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <h3 className="text-xs font-medium text-gray-900 truncate">
+                        {conversation.name}
+                      </h3>
+                      <span className="text-[10px] text-gray-500 flex-shrink-0">
+                        {conversation.time}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px]  bg-blue-100 text-zinc-700 font-semibold">
-                      {conversation.status}
-                    </span>
-                    {conversation.unread && (
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
-                    )}
+                    <p className="text-xs text-gray-600 truncate mb-1">
+                      {conversation.lastMessage}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px]  bg-blue-100 text-zinc-700 font-semibold">
+                        {conversation.status}
+                      </span>
+                      {conversation.unread && (
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
         )}
       </div>
     </div>
