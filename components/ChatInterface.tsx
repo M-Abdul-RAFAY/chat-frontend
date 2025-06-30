@@ -99,6 +99,13 @@ export default function ChatInterface({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [autoAIResponse, setAutoAIResponse] = useState(false);
+  const [showExternalModal, setShowExternalModal] = useState(false);
+  const [externalPlatform, setExternalPlatform] = useState<"whatsapp" | "sms">(
+    "whatsapp"
+  );
+  const [externalPhone, setExternalPhone] = useState("");
+  const [externalMessage, setExternalMessage] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -341,6 +348,17 @@ export default function ChatInterface({
 
       // Mark conversation as read
       await chatAPI.markAsRead(parseInt(conversationId));
+
+      // Auto AI response if enabled
+      if (autoAIResponse && messageContent.trim()) {
+        setTimeout(async () => {
+          try {
+            await handleAIGenerate();
+          } catch (error) {
+            console.error("Error generating auto AI response:", error);
+          }
+        }, 1000); // Delay for better UX
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -584,6 +602,28 @@ export default function ChatInterface({
     }, 0);
   };
 
+  const handleExternalMessage = async () => {
+    if (!externalPhone.trim() || !externalMessage.trim()) {
+      alert("Please enter both phone number and message");
+      return;
+    }
+
+    try {
+      await chatAPI.sendExternalMessage(
+        externalPlatform,
+        externalPhone,
+        externalMessage
+      );
+      setShowExternalModal(false);
+      setExternalPhone("");
+      setExternalMessage("");
+      alert(`${externalPlatform.toUpperCase()} message sent successfully!`);
+    } catch (error) {
+      console.error(`Error sending ${externalPlatform} message:`, error);
+      alert(`Failed to send ${externalPlatform.toUpperCase()} message`);
+    }
+  };
+
   const getFileIcon = (type: "image" | "document" | "other") => {
     switch (type) {
       case "image":
@@ -671,7 +711,50 @@ export default function ChatInterface({
             </button>
 
             {showMoreMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+              <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                {/* Auto AI Toggle */}
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoAIResponse}
+                      onChange={(e) => setAutoAIResponse(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      Auto AI Response
+                    </span>
+                  </label>
+                </div>
+
+                {/* External Messaging Options */}
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Send via Platform:
+                  </p>
+                  <button
+                    onClick={() => {
+                      setExternalPlatform("whatsapp");
+                      setShowExternalModal(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded mb-1"
+                  >
+                    📱 WhatsApp
+                  </button>
+                  <button
+                    onClick={() => {
+                      setExternalPlatform("sms");
+                      setShowExternalModal(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded"
+                  >
+                    💬 SMS
+                  </button>
+                </div>
+
+                {/* Existing Options */}
                 <button
                   onClick={() => {
                     setShowClearConfirm(true);
@@ -755,6 +838,68 @@ export default function ChatInterface({
                 className="flex-1 px-4 py-2 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* External Messaging Modal */}
+      {showExternalModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4 w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Send {externalPlatform.toUpperCase()} Message
+              </h3>
+              <button
+                onClick={() => setShowExternalModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={externalPhone}
+                  onChange={(e) => setExternalPhone(e.target.value)}
+                  placeholder="+1234567890"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message
+                </label>
+                <textarea
+                  value={externalMessage}
+                  onChange={(e) => setExternalMessage(e.target.value)}
+                  placeholder="Enter your message..."
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => setShowExternalModal(false)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExternalMessage}
+                className="flex-1 px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Send {externalPlatform.toUpperCase()}
               </button>
             </div>
           </div>
