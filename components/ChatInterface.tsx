@@ -647,17 +647,35 @@ export default function ChatInterface({
       if (!user?.id) return;
 
       try {
-        const response = await fetch("/api/user-settings", {
-          headers: {
-            Authorization: `Bearer ${await getToken()}`,
-          },
-        });
-        //localhost:5000/api/user-settings
-        http: if (response.ok) {
+        const response = await fetch(
+          `http://localhost:5000/api/user-settings?userId=${user.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
           const settings = await response.json();
           setAutoAIResponse(settings.aiGeneratedResponse || false);
-          setWhatsappEnabled(settings.whatsapp || false);
-          setSmsEnabled(settings.sms || true);
+
+          // Ensure only one platform is enabled at a time
+          if (settings.whatsapp && settings.sms) {
+            setWhatsappEnabled(true);
+            setSmsEnabled(false);
+          } else if (settings.whatsapp) {
+            setWhatsappEnabled(true);
+            setSmsEnabled(false);
+          } else if (settings.sms) {
+            setWhatsappEnabled(false);
+            setSmsEnabled(true);
+          } else {
+            // If both are false, default to SMS
+            setWhatsappEnabled(false);
+            setSmsEnabled(true);
+          }
         }
       } catch (error) {
         console.error("Error fetching user settings:", error);
@@ -693,9 +711,8 @@ export default function ChatInterface({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${await getToken()}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ userId: user.id, ...body }),
       });
     } catch (error) {
       console.error("Error saving user settings:", error);
