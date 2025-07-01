@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
+import { useUser } from "@clerk/nextjs";
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -100,6 +101,9 @@ export default function ChatInterface({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [autoAIResponse, setAutoAIResponse] = useState(false);
+  // Add WhatsApp/SMS platform toggles
+  const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+  const [smsEnabled, setSmsEnabled] = useState(true); // Default to true as requested
   const [showExternalModal, setShowExternalModal] = useState(false);
   const [externalPlatform, setExternalPlatform] = useState<"whatsapp" | "sms">(
     "whatsapp"
@@ -114,6 +118,8 @@ export default function ChatInterface({
   const editInputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  const { user, getToken } = useUser();
 
   const customerName = "Will Pantente";
   const customerLocation = "Venture Auto ...";
@@ -635,6 +641,52 @@ export default function ChatInterface({
     }
   };
 
+  // Fetch user settings on mount or user change
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch("/api/user-settings", {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        });
+        //localhost:5000/api/user-settings
+        http: if (response.ok) {
+          const settings = await response.json();
+          setAutoAIResponse(settings.aiGeneratedResponse || false);
+          setWhatsappEnabled(settings.whatsapp || false);
+          setSmsEnabled(settings.sms || true);
+        }
+      } catch (error) {
+        console.error("Error fetching user settings:", error);
+      }
+    };
+
+    fetchUserSettings();
+  }, [user?.id]);
+
+  // Save user settings helper
+  const saveUserSettings = async (settingKey: string, value: boolean) => {
+    if (!user?.id) return;
+
+    try {
+      await fetch("http://localhost:5000/api/user-settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await getToken()}`,
+        },
+        body: JSON.stringify({
+          [settingKey]: value,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving user settings:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
@@ -710,6 +762,7 @@ export default function ChatInterface({
               <MoreHorizontal size={18} />
             </button>
 
+            {/* --- REPLACED SECTION START --- */}
             {showMoreMenu && (
               <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                 {/* Auto AI Toggle */}
@@ -718,7 +771,13 @@ export default function ChatInterface({
                     <input
                       type="checkbox"
                       checked={autoAIResponse}
-                      onChange={(e) => setAutoAIResponse(e.target.checked)}
+                      onChange={(e) => {
+                        setAutoAIResponse(e.target.checked);
+                        saveUserSettings(
+                          "aiGeneratedResponse",
+                          e.target.checked
+                        );
+                      }}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700">
@@ -727,30 +786,38 @@ export default function ChatInterface({
                   </label>
                 </div>
 
-                {/* External Messaging Options */}
+                {/* Platform Options */}
                 <div className="px-4 py-2 border-b border-gray-100">
                   <p className="text-xs text-gray-500 mb-2">
                     Send via Platform:
                   </p>
                   <button
                     onClick={() => {
-                      setExternalPlatform("whatsapp");
-                      setShowExternalModal(true);
-                      setShowMoreMenu(false);
+                      setWhatsappEnabled(!whatsappEnabled);
+                      saveUserSettings("whatsapp", !whatsappEnabled);
                     }}
-                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded mb-1"
+                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded mb-1 flex items-center justify-between"
                   >
-                    📱 WhatsApp
+                    <span className="flex items-center space-x-2">
+                      <span>📱</span>
+                      <span>WhatsApp</span>
+                    </span>
+                    {whatsappEnabled && (
+                      <Check className="w-4 h-4 text-green-600" />
+                    )}
                   </button>
                   <button
                     onClick={() => {
-                      setExternalPlatform("sms");
-                      setShowExternalModal(true);
-                      setShowMoreMenu(false);
+                      setSmsEnabled(!smsEnabled);
+                      saveUserSettings("sms", !smsEnabled);
                     }}
-                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded"
+                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded flex items-center justify-between"
                   >
-                    💬 SMS
+                    <span className="flex items-center space-x-2">
+                      <span>💬</span>
+                      <span>SMS</span>
+                    </span>
+                    {smsEnabled && <Check className="w-4 h-4 text-green-600" />}
                   </button>
                 </div>
 
@@ -777,6 +844,7 @@ export default function ChatInterface({
                 </button>
               </div>
             )}
+            {/* --- REPLACED SECTION END --- */}
           </div>
         </div>
       </div>

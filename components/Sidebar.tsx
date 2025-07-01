@@ -35,12 +35,14 @@ interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   pathname: string;
+  onReviewClick?: () => void; // Add this prop
 }
 
 export default function Sidebar({
   collapsed,
   onToggle,
   pathname,
+  onReviewClick, // Add this prop
 }: SidebarProps) {
   const [conversationFilter, setConversationFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("new-lead");
@@ -235,15 +237,32 @@ export default function Sidebar({
                 </div>
                 {showActivity && (
                   <div className="space-y-1">
-                    {activityItems.map((item) => (
-                      <button
-                        key={item.id}
-                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
-                      >
-                        <item.icon size={16} className="flex-shrink-0" />
-                        <span className="truncate">{item.label}</span>
-                      </button>
-                    ))}
+                    {activityItems.map((item) =>
+                      item.id === "reviews" ? (
+                        <button
+                          key={item.id}
+                          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
+                          onClick={
+                            onReviewClick
+                              ? onReviewClick
+                              : () => {
+                                  window.location.href = "/dashboard/review";
+                                }
+                          }
+                        >
+                          <item.icon size={16} className="flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      ) : (
+                        <button
+                          key={item.id}
+                          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
+                        >
+                          <item.icon size={16} className="flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      )
+                    )}
                   </div>
                 )}
               </div>
