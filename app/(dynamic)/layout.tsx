@@ -7,7 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="h-screen flex flex-col overflow-hidden">
+      <body className="antialiased h-screen flex flex-col overflow-hidden">
         <div className="flex-shrink-0 fixed top-0 left-0 right-0 z-50">
           <TopNavigation />
         </div>

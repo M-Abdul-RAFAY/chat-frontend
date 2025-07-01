@@ -256,6 +256,112 @@ export const chatAPI = {
     // Return cleanup function
     return () => clearInterval(pollInterval);
   },
+
+  // Add this method to chatAPI
+  sendExternalMessage: async (
+    platform: "whatsapp" | "sms",
+    phone: string,
+    message: string
+  ) => {
+    const url =
+      platform === "whatsapp"
+        ? "http://localhost:5000/api/v1/chat/whatsapp/send"
+        : "http://localhost:5000/api/v1/chat/sms/send";
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, message }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to send ${platform} message`);
+    }
+
+    return await res.json();
+  },
+
+  // Add missing methods for ChatInterface
+  editMessage: async (messageId: number, newContent: string): Promise<void> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/messages/${messageId}`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ content: newContent }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to edit message: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error editing message:", error);
+      throw error;
+    }
+  },
+
+  deleteMessage: async (messageId: number): Promise<void> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/messages/${messageId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete message: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      throw error;
+    }
+  },
+
+  clearChat: async (conversationId: string): Promise<void> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/conversations/${conversationId}/clear`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to clear chat: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      throw error;
+    }
+  },
+
+  deleteConversation: async (conversationId: string): Promise<void> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/conversations/${conversationId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete conversation: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      throw error;
+    }
+  },
 };
 
 // Widget API functions
@@ -436,30 +542,6 @@ export const widgetAPI = {
     }
   },
 };
-
-// Send message via external platforms (WhatsApp/SMS)
-export async function sendExternalMessage(
-  platform: "whatsapp" | "sms",
-  phone: string,
-  message: string
-) {
-  const url =
-    platform === "whatsapp"
-      ? "http://localhost:5000/api/v1/chat/whatsapp/send"
-      : "http://localhost:5000/api/v1/chat/sms/send";
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone, message }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to send ${platform} message`);
-  }
-
-  return await res.json();
-}
 
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:

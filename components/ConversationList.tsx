@@ -21,6 +21,12 @@ export default function ConversationList({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component only renders on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch conversations from API
   const fetchConversations = async () => {
@@ -45,13 +51,31 @@ export default function ConversationList({
   };
 
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    if (mounted) {
+      fetchConversations();
+    }
+  }, [mounted]);
+
+  // Show loading state during SSR and initial client load
+  if (!mounted) {
+    return (
+      <div
+        className={cn(
+          "bg-white border-r border-gray-200 flex flex-col transition-all duration-300",
+          collapsed ? "w-0 overflow-hidden md:w-64" : "w-full md:w-64"
+        )}
+      >
+        <div className="flex items-center justify-center p-8">
+          <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      </div>
+    );
+  }
 
   console.log("Conversations:", conversations);
 
   const filteredConversations = conversations.filter((conv) => {
-    const matchesSearch = conv.name
+    const matchesSearch = (conv.name || "")
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     // Map API status to tab status - you might need to adjust this based on your API
