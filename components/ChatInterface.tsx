@@ -668,8 +668,25 @@ export default function ChatInterface({
   }, [user?.id]);
 
   // Save user settings helper
-  const saveUserSettings = async (settingKey: string, value: boolean) => {
+  const saveUserSettings = async (
+    settingKey: string,
+    value: boolean,
+    extra?: { whatsapp?: boolean; sms?: boolean }
+  ) => {
     if (!user?.id) return;
+
+    // Always send the current state of all toggles for consistency
+    const body: any = {
+      aiGeneratedResponse:
+        settingKey === "aiGeneratedResponse" ? value : autoAIResponse,
+      whatsapp:
+        typeof extra?.whatsapp === "boolean" ? extra.whatsapp : whatsappEnabled,
+      sms: typeof extra?.sms === "boolean" ? extra.sms : smsEnabled,
+    };
+
+    // If the change is for whatsapp or sms, update the value accordingly
+    if (settingKey === "whatsapp") body.whatsapp = value;
+    if (settingKey === "sms") body.sms = value;
 
     try {
       await fetch("http://localhost:5000/api/user-settings", {
@@ -678,9 +695,7 @@ export default function ChatInterface({
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`,
         },
-        body: JSON.stringify({
-          [settingKey]: value,
-        }),
+        body: JSON.stringify(body),
       });
     } catch (error) {
       console.error("Error saving user settings:", error);
@@ -771,9 +786,9 @@ export default function ChatInterface({
                     <input
                       type="checkbox"
                       checked={autoAIResponse}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         setAutoAIResponse(e.target.checked);
-                        saveUserSettings(
+                        await saveUserSettings(
                           "aiGeneratedResponse",
                           e.target.checked
                         );
@@ -792,9 +807,13 @@ export default function ChatInterface({
                     Send via Platform:
                   </p>
                   <button
-                    onClick={() => {
-                      setWhatsappEnabled(!whatsappEnabled);
-                      saveUserSettings("whatsapp", !whatsappEnabled);
+                    onClick={async () => {
+                      setWhatsappEnabled(true);
+                      setSmsEnabled(false);
+                      await saveUserSettings("whatsapp", true, {
+                        whatsapp: true,
+                        sms: false,
+                      });
                     }}
                     className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded mb-1 flex items-center justify-between"
                   >
@@ -807,9 +826,13 @@ export default function ChatInterface({
                     )}
                   </button>
                   <button
-                    onClick={() => {
-                      setSmsEnabled(!smsEnabled);
-                      saveUserSettings("sms", !smsEnabled);
+                    onClick={async () => {
+                      setWhatsappEnabled(false);
+                      setSmsEnabled(true);
+                      await saveUserSettings("sms", true, {
+                        whatsapp: false,
+                        sms: true,
+                      });
                     }}
                     className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded flex items-center justify-between"
                   >
@@ -823,9 +846,13 @@ export default function ChatInterface({
 
                 {/* Existing Options */}
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowClearConfirm(true);
                     setShowMoreMenu(false);
+                    await saveUserSettings(
+                      "aiGeneratedResponse",
+                      autoAIResponse
+                    );
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                 >
@@ -833,9 +860,13 @@ export default function ChatInterface({
                   <span>Clear Chat</span>
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowDeleteConfirm(true);
                     setShowMoreMenu(false);
+                    await saveUserSettings(
+                      "aiGeneratedResponse",
+                      autoAIResponse
+                    );
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                 >
