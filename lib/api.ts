@@ -437,6 +437,30 @@ export const widgetAPI = {
   },
 };
 
+// Send message via external platforms (WhatsApp/SMS)
+export async function sendExternalMessage(
+  platform: "whatsapp" | "sms",
+  phone: string,
+  message: string
+) {
+  const url =
+    platform === "whatsapp"
+      ? "http://localhost:5000/api/v1/chat/whatsapp/send"
+      : "http://localhost:5000/api/v1/chat/sms/send";
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, message }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to send ${platform} message`);
+  }
+
+  return await res.json();
+}
+
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:
 

@@ -318,7 +318,7 @@ export default function ChatInterface({
 
       // Send message via API
       const sentMessage = await chatAPI.sendMessage({
-        conversationId: parseInt(conversationId),
+        conversationId: conversationId,
         content: messageContent,
         sender: "agent",
       });
@@ -394,7 +394,7 @@ export default function ChatInterface({
 
   const handleClearChat = async () => {
     try {
-      await chatAPI.clearChat(parseInt(conversationId));
+      await chatAPI.clearChat(conversationId);
       setMessages([]);
       setShowClearConfirm(false);
       setShowMoreMenu(false);
@@ -405,7 +405,7 @@ export default function ChatInterface({
 
   const handleDeleteConversation = async () => {
     try {
-      await chatAPI.deleteConversation(parseInt(conversationId));
+      await chatAPI.deleteConversation(conversationId);
       setShowDeleteConfirm(false);
       setShowMoreMenu(false);
       // In a real app, you'd navigate away or refresh the conversation list
