@@ -866,36 +866,6 @@ export default function ChatInterface({
                     {smsEnabled && <Check className="w-4 h-4 text-green-600" />}
                   </button>
                 </div>
-
-                {/* Existing Options */}
-                <button
-                  onClick={async () => {
-                    setShowClearConfirm(true);
-                    setShowMoreMenu(false);
-                    await saveUserSettings(
-                      "aiGeneratedResponse",
-                      autoAIResponse
-                    );
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Clear Chat</span>
-                </button>
-                <button
-                  onClick={async () => {
-                    setShowDeleteConfirm(true);
-                    setShowMoreMenu(false);
-                    await saveUserSettings(
-                      "aiGeneratedResponse",
-                      autoAIResponse
-                    );
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete Conversation</span>
-                </button>
               </div>
             )}
             {/* --- REPLACED SECTION END --- */}
@@ -1035,7 +1005,7 @@ export default function ChatInterface({
       >
         <div className="text-center">
           <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block">
-            This is the beginning of your email conversation.
+            This is the beginning of your conversation.
           </p>
           <p className="text-[10px] text-gray-400 mt-0.5">Today at 10:42 AM</p>
         </div>
@@ -1263,8 +1233,9 @@ export default function ChatInterface({
                           <div
                             className="bg-blue-500 h-1 rounded-full transition-all duration-300"
                             style={{
-                              width: `${uploadProgress[attachedFile.file.name]
-                                }%`,
+                              width: `${
+                                uploadProgress[attachedFile.file.name]
+                              }%`,
                             }}
                           />
                         </div>
