@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getAuth } from "@clerk/nextjs/server";
 
 const API_BASE_URL =
-  process.env.BACKEND_API_URL || "http://localhost:5000/api/v1";
+  process.env.BACKEND_API_URL || "http://localhost:4000/api/v1";
 
 export default async function handler(
   req: NextApiRequest,
@@ -36,8 +36,7 @@ export default async function handler(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        `Backend request failed: ${response.status} ${response.statusText} - ${
-          errorData.error || "Unknown error"
+        `Backend request failed: ${response.status} ${response.statusText} - ${errorData.error || "Unknown error"
         }`
       );
     }
