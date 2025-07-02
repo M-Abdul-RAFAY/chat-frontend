@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Filter, ChevronDown, Clock, RefreshCw } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { chatAPI, Conversation } from "@/lib/api";
@@ -16,14 +16,12 @@ export default function ConversationList({
   onSelectConversation,
   collapsed,
 }: ConversationListProps) {
-  const [activeTab, setActiveTab] = useState<"open" | "closed">("open");
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Ensure component only renders on client
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -50,11 +48,13 @@ export default function ConversationList({
     }
   };
 
+  // Initial fetch and refetch when selectedConversation changes
   useEffect(() => {
     if (mounted) {
       fetchConversations();
     }
-  }, [mounted]);
+    // Refetch when selectedConversation changes to update unread status
+  }, [mounted, selectedConversation]);
 
   // Show loading state during SSR and initial client load
   if (!mounted) {
@@ -72,18 +72,12 @@ export default function ConversationList({
     );
   }
 
-  console.log("Conversations:", conversations);
-
   const filteredConversations = conversations.filter((conv) => {
     const matchesSearch = (conv.name || "")
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    // Map API status to tab status - you might need to adjust this based on your API
-    const conversationStatus = conv.status === "CLOSED" ? "closed" : "open";
-    return conversationStatus === activeTab && matchesSearch;
+    return matchesSearch;
   });
-
-  console.log("Filtered conversations:", filteredConversations);
 
   return (
     <div
@@ -112,46 +106,6 @@ export default function ConversationList({
             className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"
           />
         </div>
-
-        {/* Filters and Sort */}
-        <div className="flex items-center justify-between">
-          <button className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <Filter size={12} />
-            <span>Filters</span>
-            <ChevronDown size={12} />
-          </button>
-          <button className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <Clock size={12} />
-            <span>Newest</span>
-            <ChevronDown size={12} />
-          </button>
-        </div>
-      </div>
-
-      {/* Tabs - Fixed */}
-      <div className="flex border-b border-gray-200 bg-white sticky top-[90px] z-10">
-        <button
-          onClick={() => setActiveTab("open")}
-          className={cn(
-            "flex-1 px-2 py-2 text-xs font-medium transition-colors",
-            activeTab === "open"
-              ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-              : "text-gray-500 hover:text-gray-700"
-          )}
-        >
-          OPEN
-        </button>
-        <button
-          onClick={() => setActiveTab("closed")}
-          className={cn(
-            "flex-1 px-2 py-2 text-xs font-medium transition-colors",
-            activeTab === "closed"
-              ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-              : "text-gray-500 hover:text-gray-700"
-          )}
-        >
-          CLOSED
-        </button>
       </div>
 
       {/* Conversation List - Scrollable */}
@@ -182,7 +136,7 @@ export default function ConversationList({
             <p className="text-sm text-gray-400 mb-4">
               {searchQuery
                 ? "Try adjusting your search terms"
-                : `No ${activeTab} conversations available`}
+                : "No conversations available"}
             </p>
             {searchQuery && (
               <button
@@ -203,10 +157,6 @@ export default function ConversationList({
               <div
                 key={conversation.id}
                 onClick={() => {
-                  console.log(
-                    "Clicked conversation id:",
-                    conversation.id.toString()
-                  );
                   onSelectConversation(conversation.id.toString());
                 }}
                 className={cn(
@@ -218,7 +168,7 @@ export default function ConversationList({
                 <div className="flex items-start space-x-2">
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
+                      "w-8 h-8 rounded-full flex items-center mt-3 justify-center text-xs font-medium text-white flex-shrink-0",
                       conversation.statusColor || "bg-red-500"
                     )}
                   >
@@ -227,8 +177,14 @@ export default function ConversationList({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <h3 className="text-xs font-medium text-gray-900 truncate">
-                        {conversation.name}
+                      <h3 className="text-xs font-bold text-gray-900 truncate">
+                        {conversation.name
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")}
                       </h3>
                       <span className="text-[10px] text-gray-500 flex-shrink-0">
                         {conversation.time}

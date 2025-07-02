@@ -10,17 +10,13 @@ import {
   Sparkles,
   RefreshCw,
   X,
-  ThumbsUp,
   Smile,
   FileText,
   Image,
   File,
-  Download,
   Edit3,
   Trash2,
   Check,
-  MessageSquare,
-  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
@@ -119,7 +115,7 @@ export default function ChatInterface({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
-  const { user, getToken } = useUser();
+  const { user } = useUser();
 
   const customerName = "Will Pantente";
   const customerLocation = "Venture Auto ...";
@@ -873,132 +869,7 @@ export default function ChatInterface({
         </div>
       </div>
 
-      {/* Confirmation Modals */}
-      {showClearConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-orange-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Clear Chat
-              </h3>
-            </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to clear all messages in this chat? This
-              action cannot be undone.
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowClearConfirm(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleClearChat}
-                className="flex-1 px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
-              >
-                Clear Chat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Delete Conversation
-              </h3>
-            </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this entire conversation? This
-              action cannot be undone.
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConversation}
-                className="flex-1 px-4 py-2 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* External Messaging Modal */}
-      {showExternalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4 w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Send {externalPlatform.toUpperCase()} Message
-              </h3>
-              <button
-                onClick={() => setShowExternalModal(false)}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={externalPhone}
-                  onChange={(e) => setExternalPhone(e.target.value)}
-                  placeholder="+1234567890"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
-                </label>
-                <textarea
-                  value={externalMessage}
-                  onChange={(e) => setExternalMessage(e.target.value)}
-                  placeholder="Enter your message..."
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={() => setShowExternalModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExternalMessage}
-                className="flex-1 px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Send {externalPlatform.toUpperCase()}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Messages - Scrollable */}
+      {/* Messages - Scrollable placeholder*/}
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-2 py-2 space-y-3"
@@ -1054,22 +925,6 @@ export default function ChatInterface({
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[2.5rem]"
                       rows={1}
                     />
-                    <div className="flex space-x-2">
-                      <button
-                        type="submit"
-                        className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors flex items-center space-x-1"
-                      >
-                        <Check className="w-3 h-3" />
-                        <span>Save</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelEditing}
-                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
                   </form>
                 ) : (
                   // Normal Message Display
