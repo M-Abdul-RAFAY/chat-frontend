@@ -1,6 +1,6 @@
 # API Routes for Postman
 
-Replace `http://localhost:5000/api/v1` with your actual API base URL if different.
+Replace `http://localhost:4000/api/v1` with your actual API base URL if different.
 
 ---
 
