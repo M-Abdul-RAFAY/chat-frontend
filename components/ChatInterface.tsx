@@ -439,13 +439,19 @@ export default function ChatInterface({
   };
 
   const canEditMessage = (message: Message, index: number) => {
-    // Only allow editing the last agent message
-    return message.sender === "agent" && index === messages.length - 1;
+    // Only allow editing the last message from agent/ai/system
+    return (
+      ["agent", "ai", "system"].includes(message.sender) &&
+      index === messages.length - 1
+    );
   };
 
   const canDeleteMessage = (message: Message, index: number) => {
-    // Only allow deleting the last agent message
-    return message.sender === "agent" && index === messages.length - 1;
+    // Only allow deleting the last message from agent/ai/system
+    return (
+      ["agent", "ai", "system"].includes(message.sender) &&
+      index === messages.length - 1
+    );
   };
 
   const handleAIGenerate = async () => {
@@ -1034,130 +1040,134 @@ export default function ChatInterface({
           <p className="text-[10px] text-gray-400 mt-0.5">Today at 10:42 AM</p>
         </div>
 
-        {messages.map((message, index) => (
-          <div
-            key={message.id}
-            className={cn(
-              "flex items-start group",
-              message.sender === "agent" ? "flex-row-reverse" : ""
-            )}
-          >
-            <div
-              className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
-                message.sender === "customer" ? "bg-pink-500" : "bg-blue-500"
-              )}
-            >
-              {message.avatar}
-            </div>
+        {messages.map((message, index) => {
+          // Determine if message is from customer (left side) or agent/ai/system (right side)
+          const isCustomer = message.sender === "customer";
+          const isAgent = ["agent", "ai", "system"].includes(message.sender);
 
+          return (
             <div
+              key={`${message.id}-${index}`} // Add index to ensure uniqueness
               className={cn(
-                "flex items-start min-w-0",
-                message.sender === "agent" ? "mr-2" : "ml-2"
+                "flex items-start group",
+                isAgent ? "flex-row-reverse" : "" // Right side for agent/ai/system
               )}
             >
-              {editingMessageId === message.id ? (
-                // Edit Mode
-                <form
-                  onSubmit={handleEditSubmit}
-                  className="space-y-2 max-w-xs lg:max-w-md"
-                >
-                  <textarea
-                    ref={editInputRef}
-                    value={editingText}
-                    onChange={(e) => {
-                      setEditingText(e.target.value);
-                      adjustTextareaHeight(e.target);
-                    }}
-                    className="w-full px-3 py-2 border border-blue-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[2.5rem]"
-                    rows={1}
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      type="submit"
-                      className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors flex items-center space-x-1"
-                    >
-                      <Check className="w-3 h-3" />
-                      <span>Save</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEditing}
-                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                // Normal Message Display
-                <div
-                  className={cn(
-                    "flex items-start",
-                    message.sender === "agent"
-                      ? "flex-row-reverse space-x-reverse space-x-2"
-                      : "space-x-2"
-                  )}
-                >
+              <div
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
+                  isCustomer ? "bg-pink-500" : "bg-blue-500"
+                )}
+              >
+                {message.avatar}
+              </div>
+
+              <div
+                className={cn(
+                  "flex items-start min-w-0",
+                  isAgent ? "mr-2" : "ml-2"
+                )}
+              >
+                {editingMessageId === message.id ? (
+                  // Edit Mode
+                  <form
+                    onSubmit={handleEditSubmit}
+                    className="space-y-2 max-w-xs lg:max-w-md"
+                  >
+                    <textarea
+                      ref={editInputRef}
+                      value={editingText}
+                      onChange={(e) => {
+                        setEditingText(e.target.value);
+                        adjustTextareaHeight(e.target);
+                      }}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[2.5rem]"
+                      rows={1}
+                    />
+                    <div className="flex space-x-2">
+                      <button
+                        type="submit"
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors flex items-center space-x-1"
+                      >
+                        <Check className="w-3 h-3" />
+                        <span>Save</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditing}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  // Normal Message Display
                   <div
                     className={cn(
-                      "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
-                      message.sender === "customer"
-                        ? "bg-gray-100 text-gray-900"
-                        : "bg-blue-500 text-white"
+                      "flex items-start",
+                      isAgent
+                        ? "flex-row-reverse space-x-reverse space-x-2"
+                        : "space-x-2"
                     )}
                   >
-                    <p className="text-xs whitespace-pre-wrap break-words">
-                      {message.content}
-                    </p>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p
-                        className={cn(
-                          "text-[10px]",
-                          message.sender === "customer"
-                            ? "text-gray-500"
-                            : "text-blue-100"
-                        )}
-                      >
-                        {message.timestamp}
-                        {message.edited && (
-                          <span className="ml-1 italic">(edited)</span>
-                        )}
+                    <div
+                      className={cn(
+                        "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
+                        isCustomer
+                          ? "bg-gray-100 text-gray-900"
+                          : "bg-blue-500 text-white"
+                      )}
+                    >
+                      <p className="text-xs whitespace-pre-wrap break-words">
+                        {message.content}
                       </p>
-                    </div>
-                  </div>
-
-                  {/* Message Actions - Only for the last agent message */}
-                  {message.sender === "agent" &&
-                    (canEditMessage(message, index) ||
-                      canDeleteMessage(message, index)) && (
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {canEditMessage(message, index) && (
-                          <button
-                            onClick={() => startEditingMessage(message)}
-                            className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition-colors"
-                            title="Edit message"
-                          >
-                            <Edit3 className="w-3 h-3 text-gray-600" />
-                          </button>
-                        )}
-                        {canDeleteMessage(message, index) && (
-                          <button
-                            onClick={() => handleDeleteMessage(message.id)}
-                            className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-red-50 transition-colors"
-                            title="Delete message"
-                          >
-                            <Trash2 className="w-3 h-3 text-red-600" />
-                          </button>
-                        )}
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p
+                          className={cn(
+                            "text-[10px]",
+                            isCustomer ? "text-gray-500" : "text-blue-100"
+                          )}
+                        >
+                          {message.timestamp}
+                          {message.edited && (
+                            <span className="ml-1 italic">(edited)</span>
+                          )}
+                        </p>
                       </div>
-                    )}
-                </div>
-              )}
+                    </div>
+
+                    {/* Message Actions - Only for agent/ai/system messages */}
+                    {isAgent &&
+                      (canEditMessage(message, index) ||
+                        canDeleteMessage(message, index)) && (
+                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {canEditMessage(message, index) && (
+                            <button
+                              onClick={() => startEditingMessage(message)}
+                              className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition-colors"
+                              title="Edit message"
+                            >
+                              <Edit3 className="w-3 h-3 text-gray-600" />
+                            </button>
+                          )}
+                          {canDeleteMessage(message, index) && (
+                            <button
+                              onClick={() => handleDeleteMessage(message.id)}
+                              className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-red-50 transition-colors"
+                              title="Delete message"
+                            >
+                              <Trash2 className="w-3 h-3 text-red-600" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 
@@ -1232,7 +1242,7 @@ export default function ChatInterface({
                   </div>
 
                   {attachedFile.preview && (
-                    <img
+                    <Image
                       src={attachedFile.preview}
                       alt="Preview"
                       className="w-8 h-8 object-cover rounded"
