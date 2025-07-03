@@ -394,38 +394,38 @@ export default function ChatInterface({
     }
   };
 
-  const handleClearChat = async () => {
-    try {
-      await chatAPI.clearChat(conversationId);
-      setMessages([]);
-      setShowClearConfirm(false);
-      setShowMoreMenu(false);
-    } catch (error) {
-      console.error("Error clearing chat:", error);
-    }
-  };
+  // const handleClearChat = async () => {
+  //   try {
+  //     await chatAPI.clearChat(conversationId);
+  //     setMessages([]);
+  //     setShowClearConfirm(false);
+  //     setShowMoreMenu(false);
+  //   } catch (error) {
+  //     console.error("Error clearing chat:", error);
+  //   }
+  // };
 
-  const handleDeleteConversation = async () => {
-    try {
-      await chatAPI.deleteConversation(conversationId);
-      setShowDeleteConfirm(false);
-      setShowMoreMenu(false);
-      // In a real app, you'd navigate away or refresh the conversation list
-      window.location.reload();
-    } catch (error) {
-      console.error("Error deleting conversation:", error);
-    }
-  };
+  // const handleDeleteConversation = async () => {
+  //   try {
+  //     await chatAPI.deleteConversation(conversationId);
+  //     setShowDeleteConfirm(false);
+  //     setShowMoreMenu(false);
+  //     // In a real app, you'd navigate away or refresh the conversation list
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("Error deleting conversation:", error);
+  //   }
+  // };
 
   const startEditingMessage = (message: Message) => {
     setEditingMessageId(message.id);
     setEditingText(message.content);
   };
 
-  const cancelEditing = () => {
-    setEditingMessageId(null);
-    setEditingText("");
-  };
+  // const cancelEditing = () => {
+  //   setEditingMessageId(null);
+  //   setEditingText("");
+  // };
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -884,7 +884,7 @@ export default function ChatInterface({
         {messages.map((message, index) => {
           // Determine if message is from customer (left side) or agent/ai/system (right side)
           const isCustomer = message.sender === "customer";
-          const isAgent = ["agent", "ai", "system"].includes(message.sender);
+          const isAgent = ["agent", "AI", "system"].includes(message.sender);
 
           return (
             <div
