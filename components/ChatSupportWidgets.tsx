@@ -171,7 +171,7 @@ export default function ChatSupportWidget({
     <>
       {/* Chat Widget Popup */}
       {isOpen && (
-        <div className="fixed mb-16 bottom-6 right-6 z-50 w-80 max-w-full h-auto max-h-[70vh] bg-white rounded-lg shadow-2xl overflow-hidden border border-gray-200 flex flex-col">
+        <div className="fixed mb-16 bottom-6 right-6 z-50 w-80 max-w-full h-auto max-h-[81vh] bg-white rounded-lg shadow-2xl overflow-hidden border border-gray-200 flex flex-col">
           {/* Form Step */}
           {step === "form" && (
             <>
@@ -451,7 +451,7 @@ export default function ChatSupportWidget({
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => (isOpen ? handleClose() : setIsOpen(true))}
-          className={`text-white rounded-full py-3 px-4 shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2
+          className={`text-white rounded-full py-3 px-3 shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2
             ${
               isOpen
                 ? "bg-blue-700 hover:bg-blue-900"
