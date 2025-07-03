@@ -21,7 +21,7 @@ interface BackendUserResponse {
 }
 
 const API_BASE_URL =
-  process.env.BACKEND_API_URL || "http://localhost:4000/api/v1";
+  process.env.BACKEND_API_URL || "https://hivechat-2de5.onrender.com/api/v1";
 
 export default async function handler(
   req: NextApiRequest,

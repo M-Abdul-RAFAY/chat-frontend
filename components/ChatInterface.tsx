@@ -650,7 +650,7 @@ export default function ChatInterface({
 
       try {
         const response = await fetch(
-          `http://localhost:4000/api/user-settings?userId=${user.id}`,
+          `https://hivechat-2de5.onrender.com/api/user-settings?userId=${user.id}`,
           {
             method: "GET",
             headers: {
@@ -709,7 +709,7 @@ export default function ChatInterface({
     if (settingKey === "sms") body.sms = value;
 
     try {
-      await fetch("http://localhost:4000/api/user-settings", {
+      await fetch("https://hivechat-2de5.onrender.com/api/user-settings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1088,9 +1088,8 @@ export default function ChatInterface({
                           <div
                             className="bg-blue-500 h-1 rounded-full transition-all duration-300"
                             style={{
-                              width: `${
-                                uploadProgress[attachedFile.file.name]
-                              }%`,
+                              width: `${uploadProgress[attachedFile.file.name]
+                                }%`,
                             }}
                           />
                         </div>

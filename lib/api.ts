@@ -2,7 +2,7 @@ import { use } from "react";
 
 // API configuration
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "https://hivechat-2de5.onrender.com/api/v1";
 
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async () => {
@@ -265,8 +265,8 @@ export const chatAPI = {
   ) => {
     const url =
       platform === "whatsapp"
-        ? "http://localhost:4000/api/v1/chat/whatsapp/send"
-        : "http://localhost:4000/api/v1/chat/sms/send";
+        ? "https://hivechat-2de5.onrender.com/api/v1/chat/whatsapp/send"
+        : "https://hivechat-2de5.onrender.com/api/v1/chat/sms/send";
 
     const res = await fetch(url, {
       method: "POST",

@@ -1,6 +1,6 @@
 # API Routes for Postman
 
-Replace `http://localhost:4000/api/v1` with your actual API base URL if different.
+Replace `https://hivechat-2de5.onrender.com/api/v1` with your actual API base URL if different.
 
 ---
 
