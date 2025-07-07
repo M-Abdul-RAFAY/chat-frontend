@@ -44,23 +44,23 @@ export function useChatData(): ChatDataContext {
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     };
   };
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'NEW LEAD':
-        return 'bg-orange-500';
-      case 'WON':
-        return 'bg-green-600';
-      case 'PAYMENT SENT':
-        return 'bg-green-500';
-      case 'LOST':
-        return 'bg-red-500';
+      case "NEW LEAD":
+        return "bg-orange-500";
+      case "WON":
+        return "bg-green-600";
+      case "PAYMENT SENT":
+        return "bg-green-500";
+      case "LOST":
+        return "bg-red-500";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
@@ -68,10 +68,13 @@ export function useChatData(): ChatDataContext {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch("http://localhost:3001/api/v1/conversations", {
-        headers: getAuthHeaders(),
-      });
+
+      const response = await fetch(
+        "https://hivechat-2de5.onrender.com/api/v1/conversations",
+        {
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -79,35 +82,41 @@ export function useChatData(): ChatDataContext {
           window.location.href = "/login";
           return;
         }
-        throw new Error(`Failed to fetch conversations: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch conversations: ${response.statusText}`
+        );
       }
 
       const data = await response.json();
-      
+
       const mapped = data.map((conv: any) => ({
-        id: conv._id || conv.id || '',
-        name: conv.customerId?.name || conv.customerName || 'Unknown Customer',
-        avatar: (conv.customerId?.name || conv.customerName || 'U')
-          .split(' ')
+        id: conv._id || conv.id || "",
+        name: conv.customerId?.name || conv.customerName || "Unknown Customer",
+        avatar: (conv.customerId?.name || conv.customerName || "U")
+          .split(" ")
           .map((n: string) => n[0])
-          .join('')
+          .join("")
           .toUpperCase(),
-        time: conv.updatedAt ? new Date(conv.updatedAt).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }) : '',
-        lastMessage: conv.lastMessage || 'No messages yet',
+        time: conv.updatedAt
+          ? new Date(conv.updatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
+        lastMessage: conv.lastMessage || "No messages yet",
         status: conv.status || null,
         statusColor: getStatusColor(conv.status),
         unread: conv.unread || false,
-        location: conv.customerId?.location || conv.location || '',
+        location: conv.customerId?.location || conv.location || "",
         messages: [], // Messages will be loaded separately when conversation is selected
       }));
 
       setConversations(mapped);
     } catch (err) {
-      console.error('Error fetching conversations:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load conversations');
+      console.error("Error fetching conversations:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load conversations"
+      );
     } finally {
       setLoading(false);
     }
@@ -115,79 +124,90 @@ export function useChatData(): ChatDataContext {
 
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/conversations/${conversationId}/messages`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `https://hivechat-2de5.onrender.com/api/v1/conversations/${conversationId}/messages`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch messages: ${response.statusText}`);
       }
 
       const messages = await response.json();
-      
+
       const mappedMessages = messages.map((msg: any) => ({
         id: msg._id || msg.id || Math.random().toString(),
-        sender: msg.sender || 'customer',
-        content: msg.content || msg.text || '',
-        time: msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }) : '',
-        avatar: msg.avatar || (msg.sender === 'agent' ? 'A' : 'C'),
+        sender: msg.sender || "customer",
+        content: msg.content || msg.text || "",
+        time: msg.createdAt
+          ? new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
+        avatar: msg.avatar || (msg.sender === "agent" ? "A" : "C"),
         isSystem: msg.isSystem || false,
         isPayment: msg.isPayment || false,
-        subtitle: msg.subtitle || '',
+        subtitle: msg.subtitle || "",
       }));
 
-      setConversations(prev =>
-        prev.map(conv =>
+      setConversations((prev) =>
+        prev.map((conv) =>
           conv.id === conversationId
             ? { ...conv, messages: mappedMessages }
             : conv
         )
       );
     } catch (err) {
-      console.error('Error fetching messages:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      console.error("Error fetching messages:", err);
+      setError(err instanceof Error ? err.message : "Failed to load messages");
     }
   }, []);
 
-  const sendMessage = useCallback(async (conversationId: string, content: string) => {
-    try {
-      const response = await fetch("http://localhost:3001/api/v1/messages", {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          conversationId,
-          content,
-          type: 'text'
-        }),
-      });
+  const sendMessage = useCallback(
+    async (conversationId: string, content: string) => {
+      try {
+        const response = await fetch(
+          "https://hivechat-2de5.onrender.com/api/v1/messages",
+          {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              conversationId,
+              content,
+              type: "text",
+            }),
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error(`Failed to send message: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Failed to send message: ${response.statusText}`);
+        }
+
+        const newMessage = await response.json();
+
+        const mappedMessage: Message = {
+          id: newMessage._id || newMessage.id || Math.random().toString(),
+          sender: "agent",
+          content: content,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar: "A",
+        };
+
+        addMessage(conversationId, mappedMessage);
+      } catch (err) {
+        console.error("Error sending message:", err);
+        setError(err instanceof Error ? err.message : "Failed to send message");
+        throw err;
       }
-
-      const newMessage = await response.json();
-      
-      const mappedMessage: Message = {
-        id: newMessage._id || newMessage.id || Math.random().toString(),
-        sender: 'agent',
-        content: content,
-        time: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        avatar: 'A',
-      };
-
-      addMessage(conversationId, mappedMessage);
-    } catch (err) {
-      console.error('Error sending message:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send message');
-      throw err;
-    }
-  }, []);
+    },
+    []
+  );
 
   const addMessage = useCallback((conversationId: string, message: Message) => {
     setConversations((prev) =>
@@ -223,18 +243,18 @@ export function useChatData(): ChatDataContext {
       window.location.href = "/login";
       return;
     }
-    
+
     fetchConversations();
   }, [fetchConversations]);
 
-  return { 
-    conversations, 
-    loading, 
+  return {
+    conversations,
+    loading,
     error,
-    addMessage, 
-    markAsRead, 
+    addMessage,
+    markAsRead,
     sendMessage,
     fetchMessages,
-    refreshConversations
+    refreshConversations,
   };
 }
