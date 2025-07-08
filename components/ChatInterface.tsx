@@ -17,6 +17,7 @@ import {
   Edit3,
   Trash2,
   Check,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
@@ -777,7 +778,7 @@ export default function ChatInterface({
               {customerName}
             </h2>
             <p className="text-xs text-gray-500 flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-1 flex-shrink-0"></span>
+              <MapPin size={12} />
               <span className="truncate">{customerLocation}</span>
             </p>
           </div>

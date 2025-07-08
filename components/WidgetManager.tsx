@@ -80,10 +80,11 @@ export default function WidgetManager() {
   };
 
   const generateEmbedCode = (id: string) => {
-    const currentDomain =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://your-domain.com";
+    console.log("Generating embed code for widget ID:", id);
+    const currentDomain = process.env.NEXT_PUBLIC_API_URL?.replace(
+      "/api/v1",
+      ""
+    );
     const code = `<iframe
   src="${currentDomain}/widget?id=${id}"
   style="
@@ -103,8 +104,80 @@ export default function WidgetManager() {
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // You could add a toast notification here
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        // Create toast element
+        const toast = document.createElement("div");
+        toast.textContent = "Copied to clipboard!";
+        toast.style.cssText = `
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    `;
+
+        // Add to DOM
+        document.body.appendChild(toast);
+
+        // Fade in
+        setTimeout(() => {
+          toast.style.opacity = "1";
+        }, 10);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => {
+            document.body.removeChild(toast);
+          }, 300);
+        }, 3000);
+      })
+      .catch((err) => {
+        // Handle clipboard write failure
+        console.error("Failed to copy text: ", err);
+
+        // Show error toast
+        const errorToast = document.createElement("div");
+        errorToast.textContent = "Failed to copy to clipboard";
+        errorToast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #f44336;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    `;
+
+        document.body.appendChild(errorToast);
+
+        setTimeout(() => {
+          errorToast.style.opacity = "1";
+        }, 10);
+
+        setTimeout(() => {
+          errorToast.style.opacity = "0";
+          setTimeout(() => {
+            document.body.removeChild(errorToast);
+          }, 300);
+        }, 3000);
+      });
   };
 
   if (loading) {
