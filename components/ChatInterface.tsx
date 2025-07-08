@@ -66,7 +66,8 @@ const COMMON_EMOJIS = [
 ];
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://hivechat-2de5.onrender.com";
+  process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+  "https://hivechat-2de5.onrender.com";
 
 export default function ChatInterface({
   conversationId,

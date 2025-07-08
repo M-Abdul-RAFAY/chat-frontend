@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Copy, Settings, Eye, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Copy, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { widgetAPI } from "@/lib/api";
@@ -25,63 +25,58 @@ export default function WidgetManager() {
     isActive: true,
   });
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  useEffect(() => {
-    fetchWidgetConfig();
-  }, []);
-
-  const fetchWidgetConfig = async () => {
+  const initializeWidget = useCallback(async () => {
     try {
       setLoading(true);
+      setError("");
+      // First try to get existing widget config
       const data = await widgetAPI.getWidgetConfig(user?.id);
       setWidgetId(data.widgetId);
       setConfig(data.config);
       generateEmbedCode(data.widgetId);
     } catch (error) {
-      console.error("Error fetching widget config:", error);
-      // Generate a fallback widget ID if API fails
-      const fallbackWidgetId = `widget_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-      setWidgetId(fallbackWidgetId);
-      generateEmbedCode(fallbackWidgetId);
+      console.error("No existing widget found, generating new one:", error);
+      // If no existing widget, try to generate a new one
+      try {
+        const data = await widgetAPI.generateWidget(user?.id);
+        setWidgetId(data.widgetId);
+        setEmbedCode(data.embedCode);
+      } catch (generateError) {
+        console.error("Error generating widget:", generateError);
+        setError("Failed to initialize widget. Please try again.");
+        // Generate fallback widget when both API calls fail
+        const fallbackWidgetId = `widget_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+        setWidgetId(fallbackWidgetId);
+        generateEmbedCode(fallbackWidgetId);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const generateWidget = async () => {
-    try {
-      setGenerating(true);
-      const data = await widgetAPI.generateWidget(user?.id);
-      setWidgetId(data.widgetId);
-      setEmbedCode(data.embedCode);
-    } catch (error) {
-      console.error("Error generating widget:", error);
-      // Generate fallback widget when API fails
-      const newWidgetId = `widget_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-      setWidgetId(newWidgetId);
-      generateEmbedCode(newWidgetId);
-    } finally {
-      setGenerating(false);
-    }
-  };
+  useEffect(() => {
+    initializeWidget();
+  }, [initializeWidget]);
 
   const updateConfig = async () => {
     try {
       setSaving(true);
       await widgetAPI.updateWidgetConfig(config, user?.id);
-      setShowSettings(false);
     } catch (error) {
       console.error("Error updating widget config:", error);
+      setError("Failed to save configuration. Please try again.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const retryGeneration = async () => {
+    await initializeWidget();
   };
 
   const generateEmbedCode = (id: string) => {
@@ -127,93 +122,82 @@ export default function WidgetManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Widget Manager</h2>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => setShowSettings(!showSettings)}
-            variant="outline"
-            size="sm"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
+        {error && (
+          <Button onClick={retryGeneration} disabled={loading} size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
           </Button>
-          <Button onClick={generateWidget} disabled={generating} size="sm">
-            {generating ? (
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
-            )}
-            {widgetId ? "Regenerate" : "Generate"} Widget
-          </Button>
-        </div>
+        )}
       </div>
 
-      {showSettings && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Widget Configuration</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={config.companyName}
-                onChange={(e) =>
-                  setConfig({ ...config, companyName: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Welcome Message
-              </label>
-              <textarea
-                value={config.welcomeMessage}
-                onChange={(e) =>
-                  setConfig({ ...config, welcomeMessage: e.target.value })
-                }
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Primary Color
-              </label>
-              <input
-                type="color"
-                value={config.primaryColor}
-                onChange={(e) =>
-                  setConfig({ ...config, primaryColor: e.target.value })
-                }
-                className="w-20 h-10 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={config.isActive}
-                onChange={(e) =>
-                  setConfig({ ...config, isActive: e.target.checked })
-                }
-                className="mr-2"
-              />
-              <label className="text-sm font-medium text-gray-700">
-                Widget Active
-              </label>
-            </div>
-            <div className="flex space-x-2">
-              <Button onClick={updateConfig} disabled={saving}>
-                {saving ? "Saving..." : "Save Configuration"}
-              </Button>
-              <Button onClick={() => setShowSettings(false)} variant="outline">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Card>
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
       )}
+
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Widget Configuration</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company Name
+            </label>
+            <input
+              type="text"
+              value={config.companyName}
+              onChange={(e) =>
+                setConfig({ ...config, companyName: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Welcome Message
+            </label>
+            <textarea
+              value={config.welcomeMessage}
+              onChange={(e) =>
+                setConfig({ ...config, welcomeMessage: e.target.value })
+              }
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Primary Color
+            </label>
+            <input
+              type="color"
+              value={config.primaryColor}
+              onChange={(e) =>
+                setConfig({ ...config, primaryColor: e.target.value })
+              }
+              className="w-20 h-10 border border-gray-300 rounded-lg"
+            />
+          </div>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={config.isActive}
+              onChange={(e) =>
+                setConfig({ ...config, isActive: e.target.checked })
+              }
+              className="mr-2"
+            />
+            <label className="text-sm font-medium text-gray-700">
+              Widget Active
+            </label>
+          </div>
+          <div>
+            <Button onClick={updateConfig} disabled={saving}>
+              {saving ? "Saving..." : "Save Configuration"}
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {widgetId && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
