@@ -2,7 +2,8 @@ import { use } from "react";
 
 // API configuration
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://hivechat-2de5.onrender.com/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://hivechat-2de5.onrender.com/api/v1";
 
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async () => {
@@ -265,8 +266,8 @@ export const chatAPI = {
   ) => {
     const url =
       platform === "whatsapp"
-        ? "https://hivechat-2de5.onrender.com/api/v1/chat/whatsapp/send"
-        : "https://hivechat-2de5.onrender.com/api/v1/chat/sms/send";
+        ? `${API_BASE_URL}/chat/whatsapp/send`
+        : `${API_BASE_URL}/chat/sms/send`;
 
     const res = await fetch(url, {
       method: "POST",
@@ -285,14 +286,11 @@ export const chatAPI = {
   editMessage: async (messageId: number, newContent: string): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/messages/${messageId}`,
-        {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ content: newContent }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ content: newContent }),
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to edit message: ${response.statusText}`);
@@ -306,13 +304,10 @@ export const chatAPI = {
   deleteMessage: async (messageId: number): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/messages/${messageId}`,
-        {
-          method: "DELETE",
-          headers,
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {
+        method: "DELETE",
+        headers,
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to delete message: ${response.statusText}`);
@@ -355,7 +350,9 @@ export const chatAPI = {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to delete conversation: ${response.statusText}`);
+        throw new Error(
+          `Failed to delete conversation: ${response.statusText}`
+        );
       }
     } catch (error) {
       console.error("Error deleting conversation:", error);

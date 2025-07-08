@@ -65,6 +65,9 @@ const COMMON_EMOJIS = [
   "📞",
 ];
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://hivechat-2de5.onrender.com";
+
 export default function ChatInterface({
   conversationId,
   onToggleProfile,
@@ -650,7 +653,7 @@ export default function ChatInterface({
 
       try {
         const response = await fetch(
-          `https://hivechat-2de5.onrender.com/api/user-settings?userId=${user.id}`,
+          `${API_BASE}/api/user-settings?userId=${user.id}`,
           {
             method: "GET",
             headers: {
@@ -709,7 +712,7 @@ export default function ChatInterface({
     if (settingKey === "sms") body.sms = value;
 
     try {
-      await fetch("https://hivechat-2de5.onrender.com/api/user-settings", {
+      await fetch(`${API_BASE}/api/user-settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1088,8 +1091,9 @@ export default function ChatInterface({
                           <div
                             className="bg-blue-500 h-1 rounded-full transition-all duration-300"
                             style={{
-                              width: `${uploadProgress[attachedFile.file.name]
-                                }%`,
+                              width: `${
+                                uploadProgress[attachedFile.file.name]
+                              }%`,
                             }}
                           />
                         </div>

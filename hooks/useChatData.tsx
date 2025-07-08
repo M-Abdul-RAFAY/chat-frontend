@@ -70,7 +70,8 @@ export function useChatData(): ChatDataContext {
       setError(null);
 
       const response = await fetch(
-        "https://hivechat-2de5.onrender.com/api/v1/conversations",
+        (process.env.NEXT_PUBLIC_API_URL ||
+          "https://hivechat-2de5.onrender.com/api/v1") + "/conversations",
         {
           headers: getAuthHeaders(),
         }
@@ -125,7 +126,10 @@ export function useChatData(): ChatDataContext {
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       const response = await fetch(
-        `https://hivechat-2de5.onrender.com/api/v1/conversations/${conversationId}/messages`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://hivechat-2de5.onrender.com/api/v1"
+        }/conversations/${conversationId}/messages`,
         {
           headers: getAuthHeaders(),
         }
@@ -170,7 +174,10 @@ export function useChatData(): ChatDataContext {
     async (conversationId: string, content: string) => {
       try {
         const response = await fetch(
-          "https://hivechat-2de5.onrender.com/api/v1/messages",
+          `${
+            process.env.NEXT_PUBLIC_API_URL ||
+            "https://hivechat-2de5.onrender.com/api/v1"
+          }/messages`,
           {
             method: "POST",
             headers: getAuthHeaders(),
