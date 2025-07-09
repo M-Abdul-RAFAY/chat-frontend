@@ -8,26 +8,27 @@ const API_BASE_URL =
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async () => {
   try {
-    if (typeof window !== "undefined" && (window as any).Clerk) {
-      const session = (window as any).Clerk.session;
-      if (session) {
-        const token = await session.getToken();
-        if (token) {
-          return {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          };
-        }
+    // Only attempt Clerk token if Clerk and session are available
+    if (
+      typeof window !== "undefined" &&
+      (window as any).Clerk &&
+      (window as any).Clerk.session &&
+      typeof (window as any).Clerk.session.getToken === "function"
+    ) {
+      const token = await (window as any).Clerk.session.getToken();
+      if (token) {
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
       }
     }
-
-    // If no token available, still return headers but without auth
-    console.warn("No Clerk token available - user may not be authenticated");
+    // If Clerk/session/token not available, just return Content-Type
     return {
       "Content-Type": "application/json",
     };
   } catch (error) {
-    console.error("Error getting auth token:", error);
+    // Never throw, just return Content-Type for public routes
     return {
       "Content-Type": "application/json",
     };

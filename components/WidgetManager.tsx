@@ -81,12 +81,10 @@ export default function WidgetManager() {
 
   const generateEmbedCode = (id: string) => {
     console.log("Generating embed code for widget ID:", id);
-    const currentDomain = process.env.NEXT_PUBLIC_API_URL?.replace(
-      "/api/v1",
-      ""
-    );
+    const frontendUrl =
+      process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3001";
     const code = `<iframe
-  src="${currentDomain}/widget?id=${id}"
+  src="${frontendUrl}/widget?id=${id}"
   style="
     position: fixed;
     bottom: 20px;
