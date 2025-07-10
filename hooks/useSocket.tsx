@@ -111,7 +111,14 @@ export const useSocket = ({
     if (onNewMessage) {
       console.log("📝 Setting up onNewMessage handler");
       socketEventHandlers.onNewMessage((message) => {
-        console.log("🎯 Socket event: newMessage received", message);
+        console.log("🎯 Socket event: newMessage received", {
+          messageId: message._id || message.id,
+          conversationId: message.conversationId,
+          content: message.content?.substring(0, 50) + "...",
+          sender: message.sender,
+          timestamp: new Date().toISOString()
+        });
+        console.log("📞 Calling onNewMessage callback with message:", message);
         onNewMessage(message);
       });
     }
@@ -123,7 +130,16 @@ export const useSocket = ({
 
     if (onConversationUpdated) {
       console.log("🔄 Setting up onConversationUpdated handler");
-      socketEventHandlers.onConversationUpdated(onConversationUpdated);
+      socketEventHandlers.onConversationUpdated((data) => {
+        console.log("🎯 Socket event: conversationUpdated received", {
+          conversationId: data.conversationId,
+          lastMessage: data.lastMessage?.substring(0, 50) + "...",
+          unread: data.unread,
+          timestamp: new Date().toISOString()
+        });
+        console.log("📞 Calling onConversationUpdated callback with data:", data);
+        onConversationUpdated(data);
+      });
     }
 
     // Typing events
