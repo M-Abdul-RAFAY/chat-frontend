@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Phone,
   Video,
@@ -132,51 +132,85 @@ export default function ChatInterface({
     stopTyping,
   } = useSocket({
     onNewMessage: (message: any) => {
-      console.log("Socket: New message received", message);
-      // Only add message if it's for the current conversation
-      if (message.conversationId === conversationId) {
+      console.log("🔔 Socket: New message received", message);
+      console.log("Current conversation ID:", conversationId);
+      console.log("Message conversation ID:", message.conversationId);
+      
+      // Only handle message if it's for the current conversation
+      if (message.conversationId === conversationId || message.conversationId?.toString() === conversationId) {
         setMessages((prev) => {
-          // Check if message already exists by both id and _id to avoid duplicates
-          const existingMessage = prev.find(msg => 
-            msg.id === message.id || 
-            msg.id === message._id ||
-            (msg.content === message.content && Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000)
-          );
+          console.log("📝 Current messages count:", prev.length);
+          
+          // Check if message already exists by multiple criteria to avoid duplicates
+          const existingMessage = prev.find(msg => {
+            const idMatch = msg.id === message.id || msg.id === message._id;
+            const contentMatch = msg.content === message.content && 
+                                msg.sender === message.sender &&
+                                Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 10000; // 10 second window
+            return idMatch || contentMatch;
+          });
           
           if (existingMessage) {
-            console.log("Message already exists, skipping duplicate:", message.id || message._id);
+            console.log("⚠️ Message already exists, skipping duplicate:", message.id || message._id);
             return prev;
           }
           
           // Normalize sender field - map "AI" to "agent" to avoid confusion
           let normalizedSender = message.sender;
-          if (message.sender === "AI") {
+          if (message.sender === "AI" || message.sender === "ai") {
             normalizedSender = "agent";
           }
           
           const newMessage: Message = {
-            id: message._id || message.id || Math.random().toString(),
+            id: message._id || message.id || `socket-${Date.now()}`,
             sender: normalizedSender as "customer" | "agent" | "system",
             content: message.content,
             time: new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            timestamp: message.createdAt || new Date().toISOString(),
-            avatar: normalizedSender === "agent" ? "AG" : "CU",
+            timestamp: message.createdAt || message.timestamp || new Date().toISOString(),
+            avatar: message.avatar || (normalizedSender === "agent" ? "AG" : "CU"),
           };
           
-          console.log("Adding new message to state:", newMessage);
-          return [...prev, newMessage];
+          console.log("✅ Adding new message from socket:", newMessage);
+          const updatedMessages = [...prev, newMessage];
+          
+          // Sort messages by timestamp to maintain correct order
+          return updatedMessages.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+              return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+            }
+            return 0;
+          });
+        });
+      } else {
+        console.log("🚫 Message ignored - different conversation", {
+          messageConv: message.conversationId,
+          currentConv: conversationId
         });
       }
     },
     onConversationUpdated: (data: any) => {
-      console.log("Socket: Conversation updated", data);
-      // Handle conversation updates (for unread status, etc.)
-      if (data.conversationId === conversationId && data.unread) {
-        // You could show a notification or update UI here
-        console.log("New message received in conversation:", data.conversationId);
+      console.log("🔄 Socket: Conversation updated", data);
+      
+      // If this conversation was updated and it has new messages, re-fetch to stay in sync
+      if ((data.conversationId === conversationId || data.conversationId?.toString() === conversationId)) {
+        console.log("📢 Current conversation updated, refreshing messages to ensure sync");
+        
+        // Small delay to ensure the database update is complete
+        setTimeout(() => {
+          fetchConversation();
+          
+          // Auto-mark as read if this is the current conversation
+          if (conversationId) {
+            try {
+              chatAPI.markAsRead(conversationId.toString());
+            } catch (error) {
+              console.warn("Failed to mark conversation as read:", error);
+            }
+          }
+        }, 500);
       }
     },
   });
@@ -187,13 +221,19 @@ export default function ChatInterface({
   // Join conversation when component mounts or conversationId changes
   useEffect(() => {
     if (conversationId && isConnected) {
+      console.log("🔌 Joining conversation room:", conversationId);
+      console.log("Socket connected status:", isConnected);
       joinConversation(conversationId);
-      console.log(`Joined conversation: ${conversationId}`);
       
       return () => {
+        console.log("🔌 Leaving conversation room:", conversationId);
         leaveConversation(conversationId);
-        console.log(`Left conversation: ${conversationId}`);
       };
+    } else {
+      console.log("❌ Cannot join conversation:", {
+        conversationId: !!conversationId,
+        isConnected
+      });
     }
   }, [conversationId, isConnected, joinConversation, leaveConversation]);
 
@@ -283,18 +323,26 @@ export default function ChatInterface({
     }
   }, [newMessage]);
 
-  useEffect(() => {
-    const fetchConversation = async () => {
-      if (!conversationId) return;
+  // Fetch conversation and messages with retry logic (similar to ConversationList)
+  const fetchConversation = useCallback(async (retryCount = 0) => {
+    if (!conversationId) return;
 
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await chatAPI.getConversation(conversationId);
-        setConversation(data);
-        
-        // Transform messages to match the expected format
-        const transformedMessages = data.messages.map((msg: any) => ({
+    try {
+      setLoading(true);
+      setError(null);
+      console.log("🔄 Fetching conversation:", conversationId, retryCount > 0 ? `(retry ${retryCount})` : '');
+      
+      const data = await chatAPI.getConversation(conversationId);
+      
+      if (!data) {
+        throw new Error("No conversation data received");
+      }
+      
+      setConversation(data);
+      
+      // Transform messages to match the expected format and sort by timestamp
+      const transformedMessages = (data.messages || [])
+        .map((msg: any) => ({
           id: msg._id || msg.id || Math.random().toString(),
           sender: msg.sender,
           content: msg.content,
@@ -310,21 +358,78 @@ export default function ChatInterface({
           avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
           timestamp: msg.createdAt,
           edited: msg.edited || false,
-        }));
-        
-        setMessages(transformedMessages);
-      } catch (err) {
-        console.error("Error fetching conversation:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load conversation"
+        }))
+        .sort((a, b) => {
+          // Sort by timestamp, oldest first (chat order)
+          if (a.timestamp && b.timestamp) {
+            return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+          }
+          return 0;
+        });
+      
+      setMessages(transformedMessages);
+      console.log("✅ Conversation loaded successfully:", transformedMessages.length, "messages");
+    } catch (err) {
+      console.error("❌ Error fetching conversation:", err);
+      
+      // Auto-retry for authentication/network errors (up to 3 times)
+      if (retryCount < 3) {
+        const isNetworkError = err instanceof Error && (
+          err.message.includes("Unauthorized") || 
+          err.message.includes("Failed to fetch") ||
+          err.message.includes("is not valid JSON") ||
+          err.message.includes("NetworkError") ||
+          err.message.includes("Load failed")
         );
-      } finally {
-        setLoading(false);
+        
+        if (isNetworkError) {
+          console.log(`🔄 Auto-retrying conversation fetch (attempt ${retryCount + 1}/3)...`);
+          setTimeout(() => fetchConversation(retryCount + 1), 1000 * (retryCount + 1));
+          return;
+        }
+      }
+      
+      setError(
+        err instanceof Error ? err.message : "Failed to load conversation"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [conversationId]);
+
+  // Initial fetch when conversationId changes
+  useEffect(() => {
+    fetchConversation();
+  }, [fetchConversation]);
+
+  // Periodic refresh to ensure messages stay in sync (fallback for missed socket events)
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const refreshInterval = setInterval(() => {
+      console.log("🔄 Periodic message refresh to ensure sync");
+      fetchConversation();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [conversationId, fetchConversation]);
+
+  // Refresh when page becomes visible (user returns to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && conversationId) {
+        console.log("🔄 Page visible again, refreshing messages");
+        fetchConversation();
       }
     };
 
-    fetchConversation();
-  }, [conversationId]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [conversationId, fetchConversation]);
 
   // Handle keyboard navigation for suggestions
   useEffect(() => {
@@ -458,7 +563,7 @@ export default function ChatInterface({
       }
 
       // Send message via API
-      console.log("Sending message to conversation:", conversationId, "content:", messageContent);
+      console.log("📤 Sending message to conversation:", conversationId, "content:", messageContent);
       console.log("chatAPI.sendMessage function:", typeof chatAPI.sendMessage);
       
       const sentMessage = await chatAPI.sendMessage({
@@ -467,11 +572,11 @@ export default function ChatInterface({
         sender: "agent",
       });
 
-      console.log("Message sent successfully:", sentMessage);
+      console.log("✅ Message sent successfully:", sentMessage);
 
-      // Immediately add the message to UI (don't wait for socket)
+      // Immediately add the message to UI (optimistic update)
       const immediateMessage: Message = {
-        id: sentMessage._id || sentMessage.id || Math.random().toString(),
+        id: sentMessage._id || sentMessage.id || `temp-${Date.now()}`,
         sender: "agent",
         content: messageContent,
         time: new Date().toLocaleTimeString([], {
@@ -482,20 +587,33 @@ export default function ChatInterface({
         avatar: "AG",
       };
 
+      console.log("🎯 Adding message optimistically to UI:", immediateMessage);
+
       setMessages((prev) => {
         // Check if this message already exists to avoid duplicates
-        const exists = prev.some(msg => 
-          msg.content === messageContent && 
-          msg.sender === "agent" &&
-          Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000
-        );
+        const exists = prev.some(msg => {
+          const idMatch = msg.id === immediateMessage.id;
+          const contentMatch = msg.content === messageContent && 
+                              msg.sender === "agent" &&
+                              Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 10000;
+          return idMatch || contentMatch;
+        });
         
         if (exists) {
-          console.log("Message already exists in state, not adding duplicate");
+          console.log("⚠️ Message already exists in state, not adding duplicate");
           return prev;
         }
         
-        return [...prev, immediateMessage];
+        console.log("✅ Adding message to state immediately");
+        const updatedMessages = [...prev, immediateMessage];
+        
+        // Sort messages by timestamp to maintain correct order
+        return updatedMessages.sort((a, b) => {
+          if (a.timestamp && b.timestamp) {
+            return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+          }
+          return 0;
+        });
       });
 
       // Clear the form
@@ -663,12 +781,12 @@ export default function ChatInterface({
       }
     } catch (err) {
       console.error("Error generating AI suggestions:", err);
-      const fallbackSuggestions = [
-        { id: "1", text: "Thank you for reaching out!", type: "quick" },
+      const fallbackSuggestions: AISuggestion[] = [
+        { id: "1", text: "Thank you for reaching out!", type: "quick" as const },
         {
           id: "2",
           text: "I'd be happy to help you with that.",
-          type: "detailed",
+          type: "detailed" as const,
         },
       ].slice(0, maxSuggestions);
 
@@ -683,8 +801,8 @@ export default function ChatInterface({
 
   const createFallbackSuggestions = (aiResponse: string) => {
     const suggestions: AISuggestion[] = [
-      { id: "1", text: "Thank you!", type: "quick" },
-      { id: "2", text: aiResponse, type: "detailed" },
+      { id: "1", text: "Thank you!", type: "quick" as const },
+      { id: "2", text: aiResponse, type: "detailed" as const },
     ].slice(0, maxSuggestions);
 
     setAiSuggestions(suggestions);
@@ -957,6 +1075,16 @@ export default function ChatInterface({
         </div>
 
         <div className="flex items-center space-x-1 flex-shrink-0">
+          <button 
+            onClick={() => {
+              console.log("🔄 Manual refresh triggered");
+              fetchConversation();
+            }}
+            className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Refresh messages"
+          >
+            <RefreshCw size={18} />
+          </button>
           <button className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
             <Phone size={18} />
           </button>
