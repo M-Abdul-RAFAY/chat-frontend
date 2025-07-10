@@ -136,22 +136,34 @@ export default function ChatInterface({
       // Only add message if it's for the current conversation
       if (message.conversationId === conversationId) {
         setMessages((prev) => {
-          // Check if message already exists to avoid duplicates
-          const existingMessage = prev.find(msg => msg.id === message.id || msg.id === message._id);
+          // Check if message already exists by both id and _id to avoid duplicates
+          const existingMessage = prev.find(msg => 
+            msg.id === message.id || 
+            msg.id === message._id ||
+            (msg.content === message.content && Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000)
+          );
+          
           if (existingMessage) {
-            console.log("Message already exists, skipping");
+            console.log("Message already exists, skipping duplicate:", message.id || message._id);
             return prev;
+          }
+          
+          // Normalize sender field - map "AI" to "agent" to avoid confusion
+          let normalizedSender = message.sender;
+          if (message.sender === "AI") {
+            normalizedSender = "agent";
           }
           
           const newMessage: Message = {
             id: message._id || message.id || Math.random().toString(),
-            sender: message.sender as "customer" | "agent" | "system",
+            sender: normalizedSender as "customer" | "agent" | "system",
             content: message.content,
             time: new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            avatar: message.sender === "agent" ? "AG" : "CU",
+            timestamp: message.createdAt || new Date().toISOString(),
+            avatar: normalizedSender === "agent" ? "AG" : "CU",
           };
           
           console.log("Adding new message to state:", newMessage);
@@ -456,6 +468,35 @@ export default function ChatInterface({
       });
 
       console.log("Message sent successfully:", sentMessage);
+
+      // Immediately add the message to UI (don't wait for socket)
+      const immediateMessage: Message = {
+        id: sentMessage._id || sentMessage.id || Math.random().toString(),
+        sender: "agent",
+        content: messageContent,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        timestamp: new Date().toISOString(),
+        avatar: "AG",
+      };
+
+      setMessages((prev) => {
+        // Check if this message already exists to avoid duplicates
+        const exists = prev.some(msg => 
+          msg.content === messageContent && 
+          msg.sender === "agent" &&
+          Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000
+        );
+        
+        if (exists) {
+          console.log("Message already exists in state, not adding duplicate");
+          return prev;
+        }
+        
+        return [...prev, immediateMessage];
+      });
 
       // Clear the form
       setNewMessage("");
@@ -779,7 +820,7 @@ export default function ChatInterface({
       try {
         console.log("Fetching user settings for user:", user.id);
         const response = await fetch(
-          `${API_BASE}/api/v1/user-settings?userId=${user.id}`,
+          `/api/user-settings?userId=${user.id}`,
           {
             method: "GET",
             headers: {
@@ -793,20 +834,12 @@ export default function ChatInterface({
           console.log("User settings fetched:", settings);
           
           // Set the AI response toggle
-          setAutoAIResponse(settings.aiGeneratedResponse !== false); // Default to true if undefined
-          
-          // Set platform toggles - ensure only one is enabled at a time
-          if (settings.whatsapp) {
-            setWhatsappEnabled(true);
-            setSmsEnabled(false);
-          } else {
-            // Default to SMS if WhatsApp is not enabled
-            setWhatsappEnabled(false);
-            setSmsEnabled(true);
-          }
+          setAutoAIResponse(settings.aiGeneratedResponse || true);
+          setWhatsappEnabled(settings.whatsapp || false);
+          setSmsEnabled(settings.sms || true);
         } else {
           console.warn("Failed to fetch user settings, using defaults");
-          // Use default values if settings don't exist
+          // Use default values on error
           setAutoAIResponse(true);
           setWhatsappEnabled(false);
           setSmsEnabled(true);
@@ -847,7 +880,7 @@ export default function ChatInterface({
 
     try {
       console.log("Saving user settings:", body);
-      const response = await fetch(`${API_BASE}/api/v1/user-settings`, {
+      const response = await fetch(`/api/user-settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
