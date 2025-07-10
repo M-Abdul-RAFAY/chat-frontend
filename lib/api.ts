@@ -3,31 +3,33 @@ import { use } from "react";
 // API configuration
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://hivechat-2de5.onrender.com/api/v1";
+  "http://localhost:8000/api/v1";
 
 // Helper function to get auth headers (client-side)
-export const getAuthHeaders = async () => {
+export const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
-    // Only attempt Clerk token if Clerk and session are available
-    if (
-      typeof window !== "undefined" &&
-      (window as any).Clerk &&
-      (window as any).Clerk.session &&
-      typeof (window as any).Clerk.session.getToken === "function"
-    ) {
-      const token = await (window as any).Clerk.session.getToken();
-      if (token) {
-        return {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        };
+    // Check if we're on the client side
+    if (typeof window !== "undefined") {
+      // Try to get token from Clerk
+      if ((window as any).Clerk && (window as any).Clerk.session) {
+        const token = await (window as any).Clerk.session.getToken();
+        console.log("Got Clerk token:", token ? "YES" : "NO");
+        if (token) {
+          return {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          };
+        }
       }
     }
-    // If Clerk/session/token not available, just return Content-Type
+    
+    console.log("No Clerk token available - using fallback");
+    // If no token, return headers without Authorization
     return {
       "Content-Type": "application/json",
     };
   } catch (error) {
+    console.error("Error getting auth headers:", error);
     // Never throw, just return Content-Type for public routes
     return {
       "Content-Type": "application/json",
@@ -90,7 +92,7 @@ export const userAPI = {
 
 // Types for API responses
 export interface Conversation {
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   avatar: string;
   time: string;
@@ -103,16 +105,19 @@ export interface Conversation {
 }
 
 export interface Message {
-  id: number;
+  id: string;
   sender: "customer" | "agent" | "system";
   content: string;
   time: string;
+  timestamp?: string;
+  edited?: boolean;
   isSystem?: boolean;
   avatar?: string;
+  _id?: string; // MongoDB ID
 }
 
 export interface SendMessageRequest {
-  conversationId: number;
+  conversationId: string; // Changed from number to string
   content: string;
   sender: "agent";
 }
@@ -193,7 +198,7 @@ export const chatAPI = {
   },
 
   // Mark conversation as read
-  markAsRead: async (conversationId: number): Promise<void> => {
+  markAsRead: async (conversationId: string): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(
@@ -215,7 +220,7 @@ export const chatAPI = {
 
   // Update conversation status (e.g., NEW LEAD, QUALIFIED, etc.)
   updateConversationStatus: async (
-    conversationId: number,
+    conversationId: string,
     status: string
   ): Promise<void> => {
     try {
@@ -284,7 +289,7 @@ export const chatAPI = {
   },
 
   // Add missing methods for ChatInterface
-  editMessage: async (messageId: number, newContent: string): Promise<void> => {
+  editMessage: async (messageId: string, newContent: string): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {
@@ -302,7 +307,7 @@ export const chatAPI = {
     }
   },
 
-  deleteMessage: async (messageId: number): Promise<void> => {
+  deleteMessage: async (messageId: string): Promise<void> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {

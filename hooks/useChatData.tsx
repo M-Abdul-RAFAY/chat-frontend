@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useSocket } from "./useSocket";
+import { initializeSocket, socketEventHandlers, socketEmit, connectSocket, disconnectSocket } from "@/lib/socket";
+import { useAuth } from "@clerk/nextjs";
 
 export interface Message {
   id: string;
@@ -10,6 +13,123 @@ export interface Message {
   isSystem?: boolean;
   isPayment?: boolean;
   subtitle?: string;
+}
+
+export interface Conversation {
+  id: string;
+  name: string;
+  avatar: string;
+  time: string;
+  lastMessage: string;
+  status: string | null;
+  statusColor: string | null;
+  unread: boolean;
+  location: string;
+  messages: Message[];
+}
+
+interface ChatDataContext {
+  conversations: Conversation[];
+  loading: boolean;
+  error: string | null;
+  addMessage: (conversationId: string, message: Message) => void;
+  markAsRead: (conversationId: string) => void;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  fetchMessages: (conversationId: string) => Promise<void>;
+  refreshConversations: () => Promise<void>;
+}
+
+export function useChatData(): ChatDataContext {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
+  // Initialize socket connection
+  useEffect(() => {
+    const initSocket = async () => {
+      try {
+        const token = await getToken();
+        if (token) {
+          const socket = initializeSocket(token);
+          connectSocket();
+
+          // Set up socket event listeners
+          socketEventHandlers.onNewMessage((message: any) => {
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === message.conversationId
+                  ? { ...conv, messages: [...conv.messages, {
+                      id: message._id || message.id || Math.random().toString(),
+                      sender: message.sender || 'customer',
+                      content: message.content || message.text || '',
+                      time: message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : new Date().toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }),
+                      avatar: message.avatar || (message.sender === 'agent' ? 'A' : 'C'),
+                      isSystem: message.isSystem || false,
+                      isPayment: message.isPayment || false,
+                      subtitle: message.subtitle || '',
+                    }] }
+                  : conv
+              )
+            );
+          });
+
+          socketEventHandlers.onNewConversation((conversation: any) => {
+            const mappedConversation = {
+              id: conversation._id || conversation.id || '',
+              name: conversation.customerId?.name || conversation.customerName || 'Unknown Customer',
+              avatar: (conversation.customerId?.name || conversation.customerName || 'U')
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase(),
+              time: conversation.updatedAt ? new Date(conversation.updatedAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : '',
+              lastMessage: conversation.lastMessage || 'No messages yet',
+              status: conversation.status || null,
+              statusColor: getStatusColor(conversation.status),
+              unread: conversation.unread || false,
+              location: conversation.customerId?.location || conversation.location || '',
+              messages: [],
+            };
+            setConversations(prev => [mappedConversation, ...prev]);
+          });
+
+          socketEventHandlers.onConnect(() => {
+            console.log("Socket connected");
+          });
+
+          socketEventHandlers.onDisconnect(() => {
+            console.log("Socket disconnected");
+          });
+        }
+      } catch (error) {
+        console.error("Error initializing socket:", error);
+      }
+    };
+
+    initSocket();
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [getToken]);
 }
 
 export interface Conversation {
@@ -67,15 +187,13 @@ export function useChatData(): ChatDataContext {
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      const response = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL ||
-          "https://hivechat-2de5.onrender.com/api/v1") + "/conversations",
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+      setError(null);        const response = await fetch(
+          (process.env.NEXT_PUBLIC_API_URL ||
+          "http://localhost:8000/api/v1") + "/conversations",
+          {
+            headers: getAuthHeaders(),
+          }
+        );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -124,16 +242,15 @@ export function useChatData(): ChatDataContext {
   }, []);
 
   const fetchMessages = useCallback(async (conversationId: string) => {
-    try {
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL ||
-          "https://hivechat-2de5.onrender.com/api/v1"
-        }/conversations/${conversationId}/messages`,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+    try {        const response = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL ||
+            "http://localhost:8000/api/v1"
+          }/conversations/${conversationId}/messages`,
+          {
+            headers: getAuthHeaders(),
+          }
+        );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch messages: ${response.statusText}`);
@@ -176,7 +293,7 @@ export function useChatData(): ChatDataContext {
         const response = await fetch(
           `${
             process.env.NEXT_PUBLIC_API_URL ||
-            "https://hivechat-2de5.onrender.com/api/v1"
+            "http://localhost:8000/api/v1"
           }/messages`,
           {
             method: "POST",

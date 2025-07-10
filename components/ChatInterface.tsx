@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
 import { useUser } from "@clerk/nextjs";
+import { useSocket } from "@/hooks/useSocket";
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -96,7 +97,7 @@ export default function ChatInterface({
   }>({});
 
   // Message editing and management states
-  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -122,8 +123,97 @@ export default function ChatInterface({
 
   const { user } = useUser();
 
+  // Socket integration for real-time updates
+  const {
+    isConnected,
+    joinConversation,
+    leaveConversation,
+    startTyping,
+    stopTyping,
+  } = useSocket({
+    onNewMessage: (message: any) => {
+      console.log("Socket: New message received", message);
+      // Only add message if it's for the current conversation
+      if (message.conversationId === conversationId) {
+        setMessages((prev) => {
+          // Check if message already exists to avoid duplicates
+          const existingMessage = prev.find(msg => msg.id === message.id || msg.id === message._id);
+          if (existingMessage) {
+            console.log("Message already exists, skipping");
+            return prev;
+          }
+          
+          const newMessage: Message = {
+            id: message._id || message.id || Math.random().toString(),
+            sender: message.sender as "customer" | "agent" | "system",
+            content: message.content,
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            avatar: message.sender === "agent" ? "AG" : "CU",
+          };
+          
+          console.log("Adding new message to state:", newMessage);
+          return [...prev, newMessage];
+        });
+      }
+    },
+    onConversationUpdated: (data: any) => {
+      console.log("Socket: Conversation updated", data);
+      // Handle conversation updates (for unread status, etc.)
+      if (data.conversationId === conversationId && data.unread) {
+        // You could show a notification or update UI here
+        console.log("New message received in conversation:", data.conversationId);
+      }
+    },
+  });
+
   const customerName = "Will Pantente";
   const customerLocation = "Venture Auto ...";
+
+  // Join conversation when component mounts or conversationId changes
+  useEffect(() => {
+    if (conversationId && isConnected) {
+      joinConversation(conversationId);
+      console.log(`Joined conversation: ${conversationId}`);
+      
+      return () => {
+        leaveConversation(conversationId);
+        console.log(`Left conversation: ${conversationId}`);
+      };
+    }
+  }, [conversationId, isConnected, joinConversation, leaveConversation]);
+
+  // Handle typing indicators
+  useEffect(() => {
+    let typingTimer: NodeJS.Timeout | undefined;
+    
+    const handleTypingStart = () => {
+      if (conversationId && isConnected) {
+        startTyping(conversationId);
+      }
+    };
+    
+    const handleTypingStop = () => {
+      if (conversationId && isConnected) {
+        stopTyping(conversationId);
+      }
+    };
+
+    if (newMessage.trim()) {
+      handleTypingStart();
+      if (typingTimer) clearTimeout(typingTimer);
+      typingTimer = setTimeout(handleTypingStop, 1000); // Stop typing after 1 second of inactivity
+    } else {
+      handleTypingStop();
+    }
+
+    return () => {
+      if (typingTimer) clearTimeout(typingTimer);
+      handleTypingStop();
+    };
+  }, [newMessage, conversationId, isConnected, startTyping, stopTyping]);
 
   // Auto-scroll to bottom when messages change or suggestions are shown
   useEffect(() => {
@@ -190,7 +280,27 @@ export default function ChatInterface({
         setError(null);
         const data = await chatAPI.getConversation(conversationId);
         setConversation(data);
-        setMessages(data.messages);
+        
+        // Transform messages to match the expected format
+        const transformedMessages = data.messages.map((msg: any) => ({
+          id: msg._id || msg.id || Math.random().toString(),
+          sender: msg.sender,
+          content: msg.content,
+          time: msg.createdAt 
+            ? new Date(msg.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : msg.time || new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+          avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
+          timestamp: msg.createdAt,
+          edited: msg.edited || false,
+        }));
+        
+        setMessages(transformedMessages);
       } catch (err) {
         console.error("Error fetching conversation:", err);
         setError(
@@ -262,15 +372,26 @@ export default function ChatInterface({
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId)
+    
+    console.log("handleSendMessage called", { 
+      newMessage: newMessage.trim(), 
+      attachedFiles: attachedFiles.length, 
+      conversationId 
+    });
+    
+    if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId) {
+      console.log("Message send blocked: empty message or no conversation");
       return;
+    }
 
     try {
       setSending(true);
+      console.log("Starting message send process...");
 
       // Handle file uploads if present
       let fileInfos: any[] = [];
       if (attachedFiles.length > 0) {
+        console.log("Processing file attachments...");
         for (const attachedFile of attachedFiles) {
           const formData = new FormData();
           formData.append("file", attachedFile.file);
@@ -299,6 +420,7 @@ export default function ChatInterface({
               [attachedFile.file.name]: 100,
             }));
           } catch (err) {
+            console.error("File upload failed:", err);
             fileInfos.push({
               name: attachedFile.file.name,
               error: "Upload failed",
@@ -324,24 +446,18 @@ export default function ChatInterface({
       }
 
       // Send message via API
+      console.log("Sending message to conversation:", conversationId, "content:", messageContent);
+      console.log("chatAPI.sendMessage function:", typeof chatAPI.sendMessage);
+      
       const sentMessage = await chatAPI.sendMessage({
-        conversationId: conversationId,
+        conversationId: conversationId.toString(),
         content: messageContent,
         sender: "agent",
       });
 
-      // Update local state
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: sentMessage.id,
-          sender: "agent",
-          content: sentMessage.content,
-          time: sentMessage.time,
-          avatar: "AG",
-        },
-      ]);
+      console.log("Message sent successfully:", sentMessage);
 
+      // Clear the form
       setNewMessage("");
       setAttachedFiles([]);
       setUploadProgress({});
@@ -354,10 +470,15 @@ export default function ChatInterface({
       }
 
       // Mark conversation as read
-      await chatAPI.markAsRead(parseInt(conversationId));
+      try {
+        await chatAPI.markAsRead(conversationId.toString());
+      } catch (markReadError) {
+        console.warn("Failed to mark conversation as read:", markReadError);
+      }
 
       // Auto AI response if enabled
       if (autoAIResponse && messageContent.trim()) {
+        console.log("Auto AI response is enabled, generating response...");
         setTimeout(async () => {
           try {
             await handleAIGenerate();
@@ -368,12 +489,14 @@ export default function ChatInterface({
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      // Show error to user
+      setError(error instanceof Error ? error.message : "Failed to send message");
     } finally {
       setSending(false);
     }
   };
 
-  const handleEditMessage = async (messageId: number, newContent: string) => {
+  const handleEditMessage = async (messageId: string, newContent: string) => {
     try {
       await chatAPI.editMessage(messageId, newContent);
       setMessages((prev) =>
@@ -390,7 +513,7 @@ export default function ChatInterface({
     }
   };
 
-  const handleDeleteMessage = async (messageId: number) => {
+  const handleDeleteMessage = async (messageId: string) => {
     try {
       await chatAPI.deleteMessage(messageId);
       setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
@@ -654,8 +777,9 @@ export default function ChatInterface({
       if (!user?.id) return;
 
       try {
+        console.log("Fetching user settings for user:", user.id);
         const response = await fetch(
-          `${API_BASE}/api/user-settings?userId=${user.id}`,
+          `${API_BASE}/api/v1/user-settings?userId=${user.id}`,
           {
             method: "GET",
             headers: {
@@ -666,26 +790,33 @@ export default function ChatInterface({
 
         if (response.ok) {
           const settings = await response.json();
-          setAutoAIResponse(settings.aiGeneratedResponse || false);
-
-          // Ensure only one platform is enabled at a time
-          if (settings.whatsapp && settings.sms) {
+          console.log("User settings fetched:", settings);
+          
+          // Set the AI response toggle
+          setAutoAIResponse(settings.aiGeneratedResponse !== false); // Default to true if undefined
+          
+          // Set platform toggles - ensure only one is enabled at a time
+          if (settings.whatsapp) {
             setWhatsappEnabled(true);
             setSmsEnabled(false);
-          } else if (settings.whatsapp) {
-            setWhatsappEnabled(true);
-            setSmsEnabled(false);
-          } else if (settings.sms) {
-            setWhatsappEnabled(false);
-            setSmsEnabled(true);
           } else {
-            // If both are false, default to SMS
+            // Default to SMS if WhatsApp is not enabled
             setWhatsappEnabled(false);
             setSmsEnabled(true);
           }
+        } else {
+          console.warn("Failed to fetch user settings, using defaults");
+          // Use default values if settings don't exist
+          setAutoAIResponse(true);
+          setWhatsappEnabled(false);
+          setSmsEnabled(true);
         }
       } catch (error) {
         console.error("Error fetching user settings:", error);
+        // Use default values on error
+        setAutoAIResponse(true);
+        setWhatsappEnabled(false);
+        setSmsEnabled(true);
       }
     };
 
@@ -701,7 +832,8 @@ export default function ChatInterface({
     if (!user?.id) return;
 
     // Always send the current state of all toggles for consistency
-    const body: any = {
+    const body = {
+      userId: user.id,
       aiGeneratedResponse:
         settingKey === "aiGeneratedResponse" ? value : autoAIResponse,
       whatsapp:
@@ -714,13 +846,20 @@ export default function ChatInterface({
     if (settingKey === "sms") body.sms = value;
 
     try {
-      await fetch(`${API_BASE}/api/user-settings`, {
+      console.log("Saving user settings:", body);
+      const response = await fetch(`${API_BASE}/api/v1/user-settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: user.id, ...body }),
+        body: JSON.stringify(body),
       });
+
+      if (response.ok) {
+        console.log("User settings saved successfully");
+      } else {
+        console.error("Failed to save user settings:", response.statusText);
+      }
     } catch (error) {
       console.error("Error saving user settings:", error);
     }
@@ -1145,7 +1284,13 @@ export default function ChatInterface({
           </div>
         )}
 
-        <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
+        <form 
+          onSubmit={(e) => {
+            console.log("Form onSubmit triggered");
+            handleSendMessage(e);
+          }} 
+          className="flex items-end space-x-2"
+        >
           <button
             type="button"
             className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
@@ -1206,12 +1351,19 @@ export default function ChatInterface({
           {/* Send Button */}
           <button
             type="submit"
+            onClick={(e) => {
+              console.log("Send button clicked");
+              // Fallback: also trigger handleSendMessage directly
+              if (e.type === 'click') {
+                handleSendMessage(e);
+              }
+            }}
             disabled={
-              (!newMessage.trim() && attachedFiles.length === 0) || sending
+              (!newMessage.trim() && attachedFiles.length === 0) || sending || !conversationId
             }
             className={cn(
               "p-2 rounded-lg transition-colors flex-shrink-0",
-              (newMessage.trim() || attachedFiles.length > 0) && !sending
+              (newMessage.trim() || attachedFiles.length > 0) && !sending && conversationId
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-200 text-gray-400"
             )}
