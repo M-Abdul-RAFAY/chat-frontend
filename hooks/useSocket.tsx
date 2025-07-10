@@ -89,29 +89,40 @@ export const useSocket = ({
 
   // Set up event listeners
   useEffect(() => {
-    if (!socketRef.current) return;
+    if (!socketRef.current) {
+      console.log("⚠️ No socket available for event listeners");
+      return;
+    }
+
+    console.log("🔧 Setting up socket event listeners");
 
     // Connection events
     socketEventHandlers.onConnect(() => {
-      console.log("Socket connected");
+      console.log("✅ Socket connected successfully");
       isConnectedRef.current = true;
     });
 
     socketEventHandlers.onDisconnect(() => {
-      console.log("Socket disconnected");
+      console.log("❌ Socket disconnected");
       isConnectedRef.current = false;
     });
 
     // Message events
     if (onNewMessage) {
-      socketEventHandlers.onNewMessage(onNewMessage);
+      console.log("📝 Setting up onNewMessage handler");
+      socketEventHandlers.onNewMessage((message) => {
+        console.log("🎯 Socket event: newMessage received", message);
+        onNewMessage(message);
+      });
     }
 
     if (onNewConversation) {
+      console.log("💬 Setting up onNewConversation handler");
       socketEventHandlers.onNewConversation(onNewConversation);
     }
 
     if (onConversationUpdated) {
+      console.log("🔄 Setting up onConversationUpdated handler");
       socketEventHandlers.onConversationUpdated(onConversationUpdated);
     }
 
@@ -138,14 +149,22 @@ export const useSocket = ({
 
   // Socket emit functions
   const joinConversation = (conversationId: string) => {
-    if (isConnectedRef.current) {
+    console.log("🏠 Attempting to join conversation:", conversationId, "Connected:", isConnectedRef.current);
+    if (isConnectedRef.current && socketRef.current?.connected) {
+      console.log("✅ Emitting joinConversation event");
       socketEmit.joinConversation(conversationId);
+    } else {
+      console.log("❌ Cannot join conversation - socket not connected");
     }
   };
 
   const leaveConversation = (conversationId: string) => {
-    if (isConnectedRef.current) {
+    console.log("🚪 Attempting to leave conversation:", conversationId, "Connected:", isConnectedRef.current);
+    if (isConnectedRef.current && socketRef.current?.connected) {
+      console.log("✅ Emitting leaveConversation event");
       socketEmit.leaveConversation(conversationId);
+    } else {
+      console.log("❌ Cannot leave conversation - socket not connected");
     }
   };
 

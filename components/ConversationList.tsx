@@ -12,6 +12,16 @@ interface ConversationListProps {
   collapsed: boolean;
 }
 
+interface SocketMessage {
+  _id?: string;
+  id?: string;
+  content: string;
+  sender: string;
+  conversationId: string;
+  createdAt?: string;
+  timestamp?: string;
+}
+
 export default function ConversationList({
   selectedConversation,
   onSelectConversation,
@@ -26,7 +36,7 @@ export default function ConversationList({
   // Socket integration for real-time updates
   useSocket({
     onNewConversation: (conversation: Partial<Conversation> & { _id?: string }) => {
-      console.log("New conversation received:", conversation);
+      console.log("📞 Socket: New conversation received:", conversation);
       // Add new conversation to the top of the list
       setConversations((prev) => {
         // Check if conversation already exists
@@ -59,8 +69,32 @@ export default function ConversationList({
         }
       });
     },
+    onNewMessage: (message: SocketMessage) => {
+      console.log("💬 Socket: New message received for conversation list:", message);
+      // Update conversation last message and move to top if it's for a different conversation
+      // than the currently selected one (since the selected one is handled by ChatInterface)
+      if (message.conversationId && message.conversationId !== selectedConversation) {
+        setConversations((prev) => {
+          const existingIndex = prev.findIndex((conv) => conv.id === message.conversationId);
+          if (existingIndex >= 0) {
+            const updated = [...prev];
+            const conversation = { ...updated[existingIndex] };
+            
+            // Update conversation data
+            conversation.lastMessage = message.content;
+            conversation.unread = true; // New message means unread
+            conversation.time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Move to top since it's the most recent
+            updated.splice(existingIndex, 1);
+            return [conversation, ...updated];
+          }
+          return prev;
+        });
+      }
+    },
     onConversationUpdated: (data: { conversationId: string; lastMessage?: string; unread?: boolean; time?: string }) => {
-      console.log("Conversation updated:", data);
+      console.log("🔄 Socket: Conversation updated:", data);
       // Update existing conversation and move to top if it received a new message
       setConversations((prev) => {
         const existingIndex = prev.findIndex((conv) => conv.id === data.conversationId);
@@ -201,15 +235,15 @@ export default function ConversationList({
     setTimeout(() => initialFetch(), 500);
   }, [mounted]);
 
-  // Add periodic refresh as fallback for missed socket events
+  // Reduce periodic refresh frequency since we rely on socket events
   useEffect(() => {
     if (!mounted) return;
     
-    // Refresh every 30 seconds as fallback
+    // Refresh every 5 minutes as fallback only (was 30 seconds)
     const interval = setInterval(() => {
-      console.log("Periodic refresh - checking for new conversations...");
+      console.log("Periodic refresh fallback - checking for missed updates...");
       fetchConversations();
-    }, 30000);
+    }, 300000); // 5 minutes
     
     return () => clearInterval(interval);
   }, [mounted, fetchConversations]);

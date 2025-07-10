@@ -4,32 +4,36 @@ let socket: Socket | null = null;
 
 export const initializeSocket = (token?: string) => {
   if (socket) {
+    console.log("🔄 Disconnecting existing socket");
     socket.disconnect();
   }
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
   const socketUrl = API_BASE_URL.replace("/api/v1", "");
 
-  console.log("Initializing socket with URL:", socketUrl);
-  console.log("Token available:", token ? "YES" : "NO");
+  console.log("🚀 Initializing socket with URL:", socketUrl);
+  console.log("🔑 Token available:", token ? "YES" : "NO");
+  console.log("🔑 Token preview:", token ? `${token.substring(0, 20)}...` : "N/A");
 
   socket = io(socketUrl, {
     auth: {
       token: token,
     },
     autoConnect: false,
+    transports: ['websocket', 'polling'], // Add fallback transport
   });
 
   socket.on("connect", () => {
-    console.log("Socket connected successfully");
+    console.log("✅ Socket connected successfully with ID:", socket?.id);
   });
 
   socket.on("disconnect", (reason) => {
-    console.log("Socket disconnected:", reason);
+    console.log("❌ Socket disconnected:", reason);
   });
 
   socket.on("connect_error", (error) => {
-    console.error("Socket connection error:", error);
+    console.error("🚨 Socket connection error:", error);
+    console.error("🚨 Error details:", error.message);
   });
 
   return socket;
@@ -63,7 +67,11 @@ export const socketEventHandlers = {
   },
   
   onNewMessage: (callback: (message: any) => void) => {
-    socket?.on("newMessage", callback);
+    console.log("🔧 Setting up newMessage event listener");
+    socket?.on("newMessage", (message) => {
+      console.log("🎯 Raw socket event: newMessage", message);
+      callback(message);
+    });
   },
   
   onNewConversation: (callback: (conversation: any) => void) => {
@@ -115,10 +123,12 @@ export const socketEventHandlers = {
 // Socket emit functions
 export const socketEmit = {
   joinConversation: (conversationId: string) => {
+    console.log("📡 Emitting joinConversation event:", conversationId);
     socket?.emit("joinConversation", conversationId);
   },
   
   leaveConversation: (conversationId: string) => {
+    console.log("📡 Emitting leaveConversation event:", conversationId);
     socket?.emit("leaveConversation", conversationId);
   },
   
