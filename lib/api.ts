@@ -546,6 +546,114 @@ export const widgetAPI = {
   },
 };
 
+// Payment API functions
+export const paymentAPI = {
+  // Create a payment link
+  createPayment: async (paymentData: {
+    conversationId: string;
+    amount: number;
+    currency?: string;
+    description: string;
+    customerEmail: string;
+    dueDate?: string;
+    lineItems?: Array<{
+      description: string;
+      quantity?: number;
+      unitPrice: number;
+    }>;
+  }): Promise<any> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/payments`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(paymentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create payment: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      throw error;
+    }
+  },
+
+  // Get all payments for user
+  getPayments: async (filters?: {
+    status?: string;
+    customerId?: string;
+    conversationId?: string;
+  }): Promise<any> => {
+    try {
+      const headers = await getAuthHeaders();
+      const queryParams = new URLSearchParams();
+      
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) queryParams.append(key, value);
+        });
+      }
+
+      const response = await fetch(`${API_BASE_URL}/payments?${queryParams}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch payments: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      throw error;
+    }
+  },
+
+  // Get specific payment
+  getPayment: async (paymentId: string): Promise<any> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch payment: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching payment:", error);
+      throw error;
+    }
+  },
+
+  // Get payments for a conversation
+  getConversationPayments: async (conversationId: string): Promise<any> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/payments/conversation/${conversationId}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch conversation payments: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching conversation payments:", error);
+      throw error;
+    }
+  },
+};
+
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:
 

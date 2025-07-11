@@ -12,17 +12,20 @@ import {
   X,
   Smile,
   FileText,
-  Image,
+  Image as ImageIcon,
   File,
   Edit3,
   Trash2,
   Check,
   MapPin,
+  CreditCard,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
 import { useUser } from "@clerk/nextjs";
 import { useSocket } from "@/hooks/useSocket";
+import { PaymentModal } from "./PaymentModal";
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -112,6 +115,9 @@ export default function ChatInterface({
   );
   const [externalPhone, setExternalPhone] = useState("");
   const [externalMessage, setExternalMessage] = useState("");
+
+  // Payment states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -804,7 +810,7 @@ export default function ChatInterface({
   const getFileIcon = (type: "image" | "document" | "other") => {
     switch (type) {
       case "image":
-        return <Image className="w-4 h-4" />;
+        return <ImageIcon className="w-4 h-4" />;
       case "document":
         return <FileText className="w-4 h-4" />;
       default:
@@ -1244,7 +1250,7 @@ export default function ChatInterface({
                   </div>
 
                   {attachedFile.preview && (
-                    <Image
+                    <img
                       src={attachedFile.preview}
                       alt="Preview"
                       className="w-8 h-8 object-cover rounded"
@@ -1340,6 +1346,15 @@ export default function ChatInterface({
             <Smile size={18} />
           </button>
 
+          <button
+            type="button"
+            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors flex-shrink-0"
+            onClick={() => setShowPaymentModal(true)}
+            title="Request Payment"
+          >
+            <DollarSign size={18} />
+          </button>
+
           <input
             type="file"
             ref={fileInputRef}
@@ -1408,6 +1423,28 @@ export default function ChatInterface({
             )}
           </button>
         </form>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          conversationId={conversationId}
+          customerEmail=""
+          onPaymentCreated={(payment) => {
+            console.log("Payment created:", payment);
+            // Add a message to the chat about the payment
+            const paymentMessage: Message = {
+              id: Date.now().toString(),
+              content: `💳 Payment invoice created: $${payment.amount} - ${payment.description}\n\nPayment Link: ${payment.paymentUrl || payment.paymentLink || 'Link not available'}`,
+              sender: "system",
+              timestamp: new Date().toISOString(),
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              avatar: "SY",
+            };
+            setMessages(prev => [...prev, paymentMessage]);
+            setShowPaymentModal(false);
+          }}
+        />
       </div>
     </div>
   );
