@@ -170,6 +170,9 @@ export default function ChatInterface({
             }),
             timestamp: message.createdAt || new Date().toISOString(),
             avatar: normalizedSender === "agent" ? "AG" : "CU",
+            type: message.type || "text",
+            paymentData: message.paymentData,
+            isPayment: message.type === "payment",
           };
           
           console.log("Adding new message to state:", newMessage);
@@ -316,6 +319,9 @@ export default function ChatInterface({
           avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
           timestamp: msg.createdAt,
           edited: msg.edited || false,
+          type: msg.type || "text",
+          paymentData: msg.paymentData,
+          isPayment: msg.type === "payment" || msg.isPayment || false,
         }));
         
         setMessages(transformedMessages);
@@ -1127,9 +1133,44 @@ export default function ChatInterface({
                           : "bg-blue-500 text-white"
                       )}
                     >
-                      <p className="text-xs whitespace-pre-wrap break-words">
-                        {message.content}
-                      </p>
+                      {message.type === "payment" && message.paymentData ? (
+                        <div className="text-xs">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>💳</span>
+                            <span className="font-semibold">Payment Invoice Created</span>
+                          </div>
+                          <div className="space-y-1">
+                            <p><span className="font-medium">Amount:</span> ${message.paymentData.amount} {message.paymentData.currency.toUpperCase()}</p>
+                            <p><span className="font-medium">Description:</span> {message.paymentData.description}</p>
+                            <p><span className="font-medium">Invoice #:</span> {message.paymentData.invoiceNumber}</p>
+                            {message.paymentData.dueDate && (
+                              <p><span className="font-medium">Due Date:</span> {new Date(message.paymentData.dueDate).toLocaleDateString()}</p>
+                            )}
+                            <p><span className="font-medium">Status:</span> <span className="capitalize">{message.paymentData.status}</span></p>
+                          </div>
+                          {message.paymentData.paymentUrl && (
+                            <div className="mt-3">
+                              <a
+                                href={message.paymentData.paymentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                  "inline-block px-3 py-1.5 rounded-lg text-xs font-medium text-center min-w-[100px] transition-colors",
+                                  isCustomer
+                                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                                    : "bg-white text-blue-500 hover:bg-gray-50"
+                                )}
+                              >
+                                Pay Invoice
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs whitespace-pre-wrap break-words">
+                          {message.content}
+                        </p>
+                      )}
                       <div className="flex items-center justify-between mt-0.5">
                         <p
                           className={cn(
@@ -1432,16 +1473,7 @@ export default function ChatInterface({
           customerEmail=""
           onPaymentCreated={(payment) => {
             console.log("Payment created:", payment);
-            // Add a message to the chat about the payment
-            const paymentMessage: Message = {
-              id: Date.now().toString(),
-              content: `💳 Payment invoice created: $${payment.amount} - ${payment.description}\n\nPayment Link: ${payment.paymentUrl || payment.paymentLink || 'Link not available'}`,
-              sender: "system",
-              timestamp: new Date().toISOString(),
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              avatar: "SY",
-            };
-            setMessages(prev => [...prev, paymentMessage]);
+            // Close the modal - the payment message will be added via socket from backend
             setShowPaymentModal(false);
           }}
         />

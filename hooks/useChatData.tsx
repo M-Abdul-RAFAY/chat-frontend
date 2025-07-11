@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useSocket } from "./useSocket";
-import { initializeSocket, socketEventHandlers, socketEmit, connectSocket, disconnectSocket } from "@/lib/socket";
+import { initializeSocket, socketEventHandlers, connectSocket, disconnectSocket } from "@/lib/socket";
 import { useAuth } from "@clerk/nextjs";
 
 export interface Message {
@@ -13,6 +12,18 @@ export interface Message {
   isSystem?: boolean;
   isPayment?: boolean;
   subtitle?: string;
+  type?: "text" | "payment" | "system";
+  paymentData?: {
+    paymentId: string;
+    amount: string;
+    currency: string;
+    description: string;
+    invoiceNumber: string;
+    paymentUrl: string;
+    status: string;
+    dueDate?: string;
+  };
+  timestamp?: string;
 }
 
 export interface Conversation {
@@ -53,6 +64,21 @@ export function useChatData(): ChatDataContext {
     };
   };
 
+  const getStatusColor = (status: string | null) => {
+    switch (status) {
+      case "NEW LEAD":
+        return "bg-orange-500";
+      case "WON":
+        return "bg-green-600";
+      case "PAYMENT SENT":
+        return "bg-green-500";
+      case "LOST":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   // Initialize socket connection
   useEffect(() => {
     const initSocket = async () => {
@@ -64,6 +90,7 @@ export function useChatData(): ChatDataContext {
 
           // Set up socket event listeners
           socketEventHandlers.onNewMessage((message: any) => {
+            console.log("Socket: Received message with payment data:", message);
             setConversations(prev => 
               prev.map(conv => 
                 conv.id === message.conversationId
@@ -80,8 +107,11 @@ export function useChatData(): ChatDataContext {
                       }),
                       avatar: message.avatar || (message.sender === 'agent' ? 'A' : 'C'),
                       isSystem: message.isSystem || false,
-                      isPayment: message.isPayment || false,
+                      isPayment: message.type === 'payment' || message.isPayment || false,
                       subtitle: message.subtitle || '',
+                      type: message.type || 'text',
+                      paymentData: message.paymentData,
+                      timestamp: message.createdAt || new Date().toISOString(),
                     }] }
                   : conv
               )
@@ -130,70 +160,18 @@ export function useChatData(): ChatDataContext {
       disconnectSocket();
     };
   }, [getToken]);
-}
-
-export interface Conversation {
-  id: string;
-  name: string;
-  avatar: string;
-  time: string;
-  lastMessage: string;
-  status: string | null;
-  statusColor: string | null;
-  unread: boolean;
-  location: string;
-  messages: Message[];
-}
-
-interface ChatDataContext {
-  conversations: Conversation[];
-  loading: boolean;
-  error: string | null;
-  addMessage: (conversationId: string, message: Message) => void;
-  markAsRead: (conversationId: string) => void;
-  sendMessage: (conversationId: string, content: string) => Promise<void>;
-  fetchMessages: (conversationId: string) => Promise<void>;
-  refreshConversations: () => Promise<void>;
-}
-
-export function useChatData(): ChatDataContext {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-  };
-
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case "NEW LEAD":
-        return "bg-orange-500";
-      case "WON":
-        return "bg-green-600";
-      case "PAYMENT SENT":
-        return "bg-green-500";
-      case "LOST":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
 
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);        const response = await fetch(
-          (process.env.NEXT_PUBLIC_API_URL ||
-          "http://localhost:8000/api/v1") + "/conversations",
-          {
-            headers: getAuthHeaders(),
-          }
-        );
+      setError(null);
+      const response = await fetch(
+        (process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:8000/api/v1") + "/conversations",
+        {
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -242,15 +220,16 @@ export function useChatData(): ChatDataContext {
   }, []);
 
   const fetchMessages = useCallback(async (conversationId: string) => {
-    try {        const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_API_URL ||
-            "http://localhost:8000/api/v1"
-          }/conversations/${conversationId}/messages`,
-          {
-            headers: getAuthHeaders(),
-          }
-        );
+    try {
+      const response = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL ||
+          "http://localhost:8000/api/v1"
+        }/conversations/${conversationId}/messages`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch messages: ${response.statusText}`);
@@ -270,8 +249,11 @@ export function useChatData(): ChatDataContext {
           : "",
         avatar: msg.avatar || (msg.sender === "agent" ? "A" : "C"),
         isSystem: msg.isSystem || false,
-        isPayment: msg.isPayment || false,
+        isPayment: msg.type === 'payment' || msg.isPayment || false,
         subtitle: msg.subtitle || "",
+        type: msg.type || 'text',
+        paymentData: msg.paymentData,
+        timestamp: msg.createdAt || new Date().toISOString(),
       }));
 
       setConversations((prev) =>
@@ -285,6 +267,22 @@ export function useChatData(): ChatDataContext {
       console.error("Error fetching messages:", err);
       setError(err instanceof Error ? err.message : "Failed to load messages");
     }
+  }, []);
+
+  const addMessage = useCallback((conversationId: string, message: Message) => {
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === conversationId
+          ? {
+              ...conv,
+              messages: [...conv.messages, message],
+              lastMessage: message.content,
+              time: message.time,
+              unread: false,
+            }
+          : conv
+      )
+    );
   }, []);
 
   const sendMessage = useCallback(
@@ -330,24 +328,8 @@ export function useChatData(): ChatDataContext {
         throw err;
       }
     },
-    []
+    [addMessage]
   );
-
-  const addMessage = useCallback((conversationId: string, message: Message) => {
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === conversationId
-          ? {
-              ...conv,
-              messages: [...conv.messages, message],
-              lastMessage: message.content,
-              time: message.time,
-              unread: false,
-            }
-          : conv
-      )
-    );
-  }, []);
 
   const markAsRead = useCallback((conversationId: string) => {
     setConversations((prev) =>

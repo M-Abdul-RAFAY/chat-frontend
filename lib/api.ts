@@ -114,6 +114,18 @@ export interface Message {
   isSystem?: boolean;
   avatar?: string;
   _id?: string; // MongoDB ID
+  type?: "text" | "payment" | "system";
+  paymentData?: {
+    paymentId: string;
+    amount: string;
+    currency: string;
+    description: string;
+    invoiceNumber: string;
+    paymentUrl: string;
+    status: string;
+    dueDate?: string;
+  };
+  isPayment?: boolean;
 }
 
 export interface SendMessageRequest {
