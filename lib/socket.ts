@@ -90,6 +90,14 @@ export const socketEventHandlers = {
     socket?.on("typing:stop", callback);
   },
   
+  onPaymentStatusUpdate: (callback: (data: { paymentId: string; status: string; message: string; paidAt?: string }) => void) => {
+    console.log("🔧 Setting up paymentStatusUpdate event listener");
+    socket?.on("paymentStatusUpdate", (data) => {
+      console.log("💳 Raw socket event: paymentStatusUpdate", data);
+      callback(data);
+    });
+  },
+  
   // Remove event listeners
   offConnect: () => {
     socket?.off("connect");
@@ -117,6 +125,10 @@ export const socketEventHandlers = {
   
   offTypingStop: () => {
     socket?.off("typing:stop");
+  },
+  
+  offPaymentStatusUpdate: () => {
+    socket?.off("paymentStatusUpdate");
   },
 };
 

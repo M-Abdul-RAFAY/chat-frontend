@@ -138,7 +138,15 @@ export default function ChatInterface({
     stopTyping,
   } = useSocket({
     onNewMessage: (message: any) => {
-      console.log("Socket: New message received", message);
+      console.log("Socket: New message received", {
+        messageId: message._id || message.id,
+        type: message.type,
+        conversationId: message.conversationId,
+        currentConversationId: conversationId,
+        hasPaymentData: !!message.paymentData,
+        paymentData: message.paymentData
+      });
+      
       // Only add message if it's for the current conversation
       if (message.conversationId === conversationId) {
         setMessages((prev) => {
@@ -186,6 +194,32 @@ export default function ChatInterface({
       if (data.conversationId === conversationId && data.unread) {
         // You could show a notification or update UI here
         console.log("New message received in conversation:", data.conversationId);
+      }
+    },
+    onPaymentStatusUpdate: (data: any) => {
+      console.log("Socket: Payment status update received", data);
+      // Update payment status in existing messages
+      if (data.paymentId) {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.paymentData && msg.paymentData.paymentId === data.paymentId) {
+              return {
+                ...msg,
+                paymentData: {
+                  ...msg.paymentData,
+                  status: data.status,
+                },
+              };
+            }
+            return msg;
+          })
+        );
+        
+        // Show notification about payment status change
+        if (data.status === 'completed') {
+          console.log(`💰 Payment completed: ${data.message}`);
+          // You could add a toast notification here
+        }
       }
     },
   });
@@ -1128,7 +1162,9 @@ export default function ChatInterface({
                     <div
                       className={cn(
                         "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
-                        isCustomer
+                        message.type === "payment" 
+                          ? "bg-green-100 text-green-900 border border-green-200" // Special styling for payment messages
+                          : isCustomer
                           ? "bg-gray-100 text-gray-900"
                           : "bg-blue-500 text-white"
                       )}
@@ -1156,7 +1192,9 @@ export default function ChatInterface({
                                 rel="noopener noreferrer"
                                 className={cn(
                                   "inline-block px-3 py-1.5 rounded-lg text-xs font-medium text-center min-w-[100px] transition-colors",
-                                  isCustomer
+                                  message.type === "payment"
+                                    ? "bg-green-600 text-white hover:bg-green-700" // Green button for payment messages
+                                    : isCustomer
                                     ? "bg-blue-500 text-white hover:bg-blue-600"
                                     : "bg-white text-blue-500 hover:bg-gray-50"
                                 )}
@@ -1471,10 +1509,45 @@ export default function ChatInterface({
           onClose={() => setShowPaymentModal(false)}
           conversationId={conversationId}
           customerEmail=""
-          onPaymentCreated={(payment) => {
+          onPaymentCreated={async (payment) => {
             console.log("Payment created:", payment);
             // Close the modal - the payment message will be added via socket from backend
             setShowPaymentModal(false);
+            
+            // Force refresh conversation data as fallback if socket doesn't work
+            setTimeout(async () => {
+              try {
+                console.log("Refreshing conversation after payment creation...");
+                const data = await chatAPI.getConversation(conversationId);
+                
+                // Transform messages to match the expected format
+                const transformedMessages = data.messages.map((msg: any) => ({
+                  id: msg._id || msg.id || Math.random().toString(),
+                  sender: msg.sender,
+                  content: msg.content,
+                  time: msg.createdAt 
+                    ? new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : msg.time || new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                  avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
+                  timestamp: msg.createdAt,
+                  edited: msg.edited || false,
+                  type: msg.type || "text",
+                  paymentData: msg.paymentData,
+                  isPayment: msg.type === "payment" || msg.isPayment || false,
+                }));
+                
+                setMessages(transformedMessages);
+                console.log("Conversation refreshed successfully");
+              } catch (error) {
+                console.error("Error refreshing conversation:", error);
+              }
+            }, 1000); // Wait 1 second for backend to process
           }}
         />
       </div>

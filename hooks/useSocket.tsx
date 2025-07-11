@@ -43,6 +43,7 @@ interface UseSocketProps {
   onConversationUpdated?: (data: { conversationId: string; lastMessage: string; unread?: boolean }) => void;
   onTypingStart?: (data: { userId: string; conversationId: string }) => void;
   onTypingStop?: (data: { userId: string; conversationId: string }) => void;
+  onPaymentStatusUpdate?: (data: { paymentId: string; status: string; message: string; paidAt?: string }) => void;
 }
 
 export const useSocket = ({
@@ -51,6 +52,7 @@ export const useSocket = ({
   onConversationUpdated,
   onTypingStart,
   onTypingStop,
+  onPaymentStatusUpdate,
 }: UseSocketProps = {}) => {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
@@ -162,6 +164,11 @@ export const useSocket = ({
       socketEventHandlers.onTypingStop(onTypingStop);
     }
 
+    if (onPaymentStatusUpdate) {
+      console.log("💳 Setting up onPaymentStatusUpdate handler");
+      socketEventHandlers.onPaymentStatusUpdate(onPaymentStatusUpdate);
+    }
+
     // Cleanup event listeners
     return () => {
       socketEventHandlers.offConnect();
@@ -171,8 +178,9 @@ export const useSocket = ({
       socketEventHandlers.offConversationUpdated();
       socketEventHandlers.offTypingStart();
       socketEventHandlers.offTypingStop();
+      socketEventHandlers.offPaymentStatusUpdate();
     };
-  }, [onNewMessage, onNewConversation, onConversationUpdated, onTypingStart, onTypingStop]);
+  }, [onNewMessage, onNewConversation, onConversationUpdated, onTypingStart, onTypingStop, onPaymentStatusUpdate]);
 
   // Socket emit functions
   const joinConversation = (conversationId: string) => {
