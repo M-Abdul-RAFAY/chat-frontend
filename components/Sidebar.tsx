@@ -156,12 +156,7 @@ export default function Sidebar({
         )}
       >
         {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-zinc-900 sticky top-0 z-10">
-          {!collapsed && (
-            <span className="font-semibold truncate border border-gray-700 rounded-xl px-4 py-1">
-              Venture Auto
-            </span>
-          )}
+        <div className="flex items-center justify-center p-4 border-b border-gray-700 bg-zinc-900 sticky top-0 z-10">
           <button
             onClick={onToggle}
             className="p-1 hover:bg-blue-700 rounded transition-colors flex-shrink-0"
