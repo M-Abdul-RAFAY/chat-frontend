@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
-import { 
-  initializeSocket, 
-  connectSocket, 
+import {
+  initializeSocket,
+  connectSocket,
   disconnectSocket,
   socketEventHandlers,
-  socketEmit
+  socketEmit,
 } from "@/lib/socket";
 
 interface Message {
@@ -40,14 +40,18 @@ interface Conversation {
 interface UseSocketProps {
   onNewMessage?: (message: Message) => void;
   onNewConversation?: (conversation: Conversation) => void;
-  onConversationUpdated?: (data: { conversationId: string; lastMessage: string; unread?: boolean }) => void;
+  onConversationUpdated?: (data: {
+    conversationId: string;
+    lastMessage: string;
+    unread?: boolean;
+  }) => void;
   onTypingStart?: (data: { userId: string; conversationId: string }) => void;
   onTypingStop?: (data: { userId: string; conversationId: string }) => void;
-  onPaymentStatusUpdate?: (data: { 
+  onPaymentStatusUpdate?: (data: {
     messageId?: string;
-    paymentId: string; 
-    status: string; 
-    message: string; 
+    paymentId: string;
+    status: string;
+    message: string;
     paidAt?: string;
     conversationId?: string;
   }) => void;
@@ -68,8 +72,13 @@ export const useSocket = ({
 
   // Initialize socket connection
   useEffect(() => {
-    console.log("useSocket effect triggered - isLoaded:", isLoaded, "user:", user ? "YES" : "NO");
-    
+    console.log(
+      "useSocket effect triggered - isLoaded:",
+      isLoaded,
+      "user:",
+      user ? "YES" : "NO"
+    );
+
     if (!isLoaded || !user) return;
 
     const initSocket = async () => {
@@ -78,14 +87,14 @@ export const useSocket = ({
         // Get auth token from Clerk session
         const token = await getToken();
         console.log("Got token:", token ? "YES" : "NO");
-        
+
         if (token) {
           console.log("Initializing socket with token...");
           socketRef.current = initializeSocket(token);
           console.log("Socket initialized, connecting...");
           connectSocket();
           isConnectedRef.current = true;
-          
+
           console.log("Socket initialized and connected with token");
         } else {
           console.log("No token available, cannot initialize socket");
@@ -136,7 +145,7 @@ export const useSocket = ({
           conversationId: message.conversationId,
           content: message.content?.substring(0, 50) + "...",
           sender: message.sender,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         console.log("📞 Calling onNewMessage callback with message:", message);
         onNewMessage(message);
@@ -155,9 +164,12 @@ export const useSocket = ({
           conversationId: data.conversationId,
           lastMessage: data.lastMessage?.substring(0, 50) + "...",
           unread: data.unread,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
-        console.log("📞 Calling onConversationUpdated callback with data:", data);
+        console.log(
+          "📞 Calling onConversationUpdated callback with data:",
+          data
+        );
         onConversationUpdated(data);
       });
     }
@@ -179,9 +191,12 @@ export const useSocket = ({
           paymentId: data.paymentId,
           status: data.status,
           conversationId: data.conversationId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
-        console.log("📞 Calling onPaymentStatusUpdate callback with data:", data);
+        console.log(
+          "📞 Calling onPaymentStatusUpdate callback with data:",
+          data
+        );
         onPaymentStatusUpdate(data);
       });
     }
@@ -197,11 +212,23 @@ export const useSocket = ({
       socketEventHandlers.offTypingStop();
       socketEventHandlers.offPaymentStatusUpdate();
     };
-  }, [onNewMessage, onNewConversation, onConversationUpdated, onTypingStart, onTypingStop, onPaymentStatusUpdate]);
+  }, [
+    onNewMessage,
+    onNewConversation,
+    onConversationUpdated,
+    onTypingStart,
+    onTypingStop,
+    onPaymentStatusUpdate,
+  ]);
 
   // Socket emit functions
   const joinConversation = (conversationId: string) => {
-    console.log("🏠 Attempting to join conversation:", conversationId, "Connected:", isConnectedRef.current);
+    console.log(
+      "🏠 Attempting to join conversation:",
+      conversationId,
+      "Connected:",
+      isConnectedRef.current
+    );
     if (isConnectedRef.current && socketRef.current?.connected) {
       console.log("✅ Emitting joinConversation event");
       socketEmit.joinConversation(conversationId);
@@ -211,7 +238,12 @@ export const useSocket = ({
   };
 
   const leaveConversation = (conversationId: string) => {
-    console.log("🚪 Attempting to leave conversation:", conversationId, "Connected:", isConnectedRef.current);
+    console.log(
+      "🚪 Attempting to leave conversation:",
+      conversationId,
+      "Connected:",
+      isConnectedRef.current
+    );
     if (isConnectedRef.current && socketRef.current?.connected) {
       console.log("✅ Emitting leaveConversation event");
       socketEmit.leaveConversation(conversationId);

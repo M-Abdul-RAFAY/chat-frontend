@@ -1,6 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { initializeSocket, socketEventHandlers, connectSocket, disconnectSocket, joinConversation } from "@/lib/socket";
+import {
+  initializeSocket,
+  socketEventHandlers,
+  connectSocket,
+  disconnectSocket,
+  joinConversation,
+} from "@/lib/socket";
 import { useAuth } from "@clerk/nextjs";
 
 export interface Message {
@@ -59,8 +65,8 @@ export function useChatData(): ChatDataContext {
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     };
   };
 
@@ -91,28 +97,48 @@ export function useChatData(): ChatDataContext {
           // Set up socket event listeners
           socketEventHandlers.onNewMessage((message: any) => {
             console.log("Socket: Received message with payment data:", message);
-            setConversations(prev => 
-              prev.map(conv => 
+            setConversations((prev) =>
+              prev.map((conv) =>
                 conv.id === message.conversationId
-                  ? { ...conv, messages: [...conv.messages, {
-                      id: message._id || message.id || Math.random().toString(),
-                      sender: message.sender || 'customer',
-                      content: message.content || message.text || '',
-                      time: message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : new Date().toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }),
-                      avatar: message.avatar || (message.sender === 'agent' ? 'A' : 'C'),
-                      isSystem: message.isSystem || false,
-                      isPayment: message.type === 'payment' || message.isPayment || false,
-                      subtitle: message.subtitle || '',
-                      type: message.type || 'text',
-                      paymentData: message.paymentData,
-                      timestamp: message.createdAt || new Date().toISOString(),
-                    }] }
+                  ? {
+                      ...conv,
+                      messages: [
+                        ...conv.messages,
+                        {
+                          id:
+                            message._id ||
+                            message.id ||
+                            Math.random().toString(),
+                          sender: message.sender || "customer",
+                          content: message.content || message.text || "",
+                          time: message.createdAt
+                            ? new Date(message.createdAt).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )
+                            : new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }),
+                          avatar:
+                            message.avatar ||
+                            (message.sender === "agent" ? "A" : "C"),
+                          isSystem: message.isSystem || false,
+                          isPayment:
+                            message.type === "payment" ||
+                            message.isPayment ||
+                            false,
+                          subtitle: message.subtitle || "",
+                          type: message.type || "text",
+                          paymentData: message.paymentData,
+                          timestamp:
+                            message.createdAt || new Date().toISOString(),
+                        },
+                      ],
+                    }
                   : conv
               )
             );
@@ -120,25 +146,37 @@ export function useChatData(): ChatDataContext {
 
           socketEventHandlers.onNewConversation((conversation: any) => {
             const mappedConversation = {
-              id: conversation._id || conversation.id || '',
-              name: conversation.customerId?.name || conversation.customerName || 'Unknown Customer',
-              avatar: (conversation.customerId?.name || conversation.customerName || 'U')
-                .split(' ')
+              id: conversation._id || conversation.id || "",
+              name:
+                conversation.customerId?.name ||
+                conversation.customerName ||
+                "Unknown Customer",
+              avatar: (
+                conversation.customerId?.name ||
+                conversation.customerName ||
+                "U"
+              )
+                .split(" ")
                 .map((n: string) => n[0])
-                .join('')
+                .join("")
                 .toUpperCase(),
-              time: conversation.updatedAt ? new Date(conversation.updatedAt).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-              }) : '',
-              lastMessage: conversation.lastMessage || 'No messages yet',
+              time: conversation.updatedAt
+                ? new Date(conversation.updatedAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "",
+              lastMessage: conversation.lastMessage || "No messages yet",
               status: conversation.status || null,
               statusColor: getStatusColor(conversation.status),
               unread: conversation.unread || false,
-              location: conversation.customerId?.location || conversation.location || '',
+              location:
+                conversation.customerId?.location ||
+                conversation.location ||
+                "",
               messages: [],
             };
-            setConversations(prev => [mappedConversation, ...prev]);
+            setConversations((prev) => [mappedConversation, ...prev]);
           });
 
           socketEventHandlers.onConnect(() => {
@@ -150,49 +188,51 @@ export function useChatData(): ChatDataContext {
           });
 
           // Payment status update handler
-          socketEventHandlers.onPaymentStatusUpdate((data: {
-            messageId?: string;
-            paymentId: string;
-            status: string;
-            message: string;
-            paidAt?: string;
-            conversationId?: string;
-          }) => {
-            console.log("💳 Payment status update received:", data);
-            setConversations(prev => 
-              prev.map(conv => 
-                conv.id === data.conversationId
-                  ? {
-                      ...conv,
-                      messages: conv.messages.map(msg => {
-                        if (msg.id === data.messageId && msg.paymentData) {
-                          console.log("💰 Updating message payment status:", {
-                            messageId: msg.id,
-                            oldStatus: msg.paymentData.status,
-                            newStatus: data.status
-                          });
-                          
-                          return {
-                            ...msg,
-                            paymentData: {
-                              ...msg.paymentData,
-                              status: data.status,
-                            }
-                          };
-                        }
-                        return msg;
-                      })
-                    }
-                  : conv
-              )
-            );
+          socketEventHandlers.onPaymentStatusUpdate(
+            (data: {
+              messageId?: string;
+              paymentId: string;
+              status: string;
+              message: string;
+              paidAt?: string;
+              conversationId?: string;
+            }) => {
+              console.log("💳 Payment status update received:", data);
+              setConversations((prev) =>
+                prev.map((conv) =>
+                  conv.id === data.conversationId
+                    ? {
+                        ...conv,
+                        messages: conv.messages.map((msg) => {
+                          if (msg.id === data.messageId && msg.paymentData) {
+                            console.log("💰 Updating message payment status:", {
+                              messageId: msg.id,
+                              oldStatus: msg.paymentData.status,
+                              newStatus: data.status,
+                            });
 
-            // Show success notification
-            if (data.status === 'completed') {
-              console.log('✅ Payment completed successfully!');
-              // You can add a toast notification here if you have one
+                            return {
+                              ...msg,
+                              paymentData: {
+                                ...msg.paymentData,
+                                status: data.status,
+                              },
+                            };
+                          }
+                          return msg;
+                        }),
+                      }
+                    : conv
+                )
+              );
+
+              // Show success notification
+              if (data.status === "completed") {
+                console.log("✅ Payment completed successfully!");
+                // You can add a toast notification here if you have one
+              }
             }
-          });
+          );
         }
       } catch (error) {
         console.error("Error initializing socket:", error);
@@ -211,8 +251,8 @@ export function useChatData(): ChatDataContext {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:4000/api/v1") + "/conversations",
+        (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1") +
+          "/conversations",
         {
           headers: getAuthHeaders(),
         }
@@ -268,11 +308,10 @@ export function useChatData(): ChatDataContext {
     try {
       // Join the conversation room for real-time updates
       joinConversation(conversationId);
-      
+
       const response = await fetch(
         `${
-          process.env.NEXT_PUBLIC_API_URL ||
-          "http://localhost:4000/api/v1"
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"
         }/conversations/${conversationId}/messages`,
         {
           headers: getAuthHeaders(),
@@ -297,9 +336,9 @@ export function useChatData(): ChatDataContext {
           : "",
         avatar: msg.avatar || (msg.sender === "agent" ? "A" : "C"),
         isSystem: msg.isSystem || false,
-        isPayment: msg.type === 'payment' || msg.isPayment || false,
+        isPayment: msg.type === "payment" || msg.isPayment || false,
         subtitle: msg.subtitle || "",
-        type: msg.type || 'text',
+        type: msg.type || "text",
         paymentData: msg.paymentData,
         timestamp: msg.createdAt || new Date().toISOString(),
       }));
@@ -338,8 +377,7 @@ export function useChatData(): ChatDataContext {
       try {
         const response = await fetch(
           `${
-            process.env.NEXT_PUBLIC_API_URL ||
-            "http://localhost:4000/api/v1"
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"
           }/messages`,
           {
             method: "POST",

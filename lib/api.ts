@@ -2,8 +2,7 @@ import { use } from "react";
 
 // API configuration
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -22,7 +21,7 @@ export const getAuthHeaders = async (): Promise<Record<string, string>> => {
         }
       }
     }
-    
+
     console.log("No Clerk token available - using fallback");
     // If no token, return headers without Authorization
     return {
@@ -602,7 +601,7 @@ export const paymentAPI = {
     try {
       const headers = await getAuthHeaders();
       const queryParams = new URLSearchParams();
-      
+
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value) queryParams.append(key, value);
@@ -649,13 +648,18 @@ export const paymentAPI = {
   getConversationPayments: async (conversationId: string): Promise<any> => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_BASE_URL}/payments/conversation/${conversationId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/payments/conversation/${conversationId}`,
+        {
+          method: "GET",
+          headers,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch conversation payments: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch conversation payments: ${response.statusText}`
+        );
       }
 
       return await response.json();

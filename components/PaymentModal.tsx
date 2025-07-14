@@ -50,11 +50,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [email, setEmail] = useState(customerEmail);
   const [dueDate, setDueDate] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { description: "", quantity: 1, unitPrice: 0 }
+    { description: "", quantity: 1, unitPrice: 0 },
   ]);
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { description: "", quantity: 1, unitPrice: 0 }]);
+    setLineItems([
+      ...lineItems,
+      { description: "", quantity: 1, unitPrice: 0 },
+    ]);
   };
 
   const removeLineItem = (index: number) => {
@@ -63,8 +66,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
-  const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
-    const updated = lineItems.map((item, i) => 
+  const updateLineItem = (
+    index: number,
+    field: keyof LineItem,
+    value: string | number
+  ) => {
+    const updated = lineItems.map((item, i) =>
       i === index ? { ...item, [field]: value } : item
     );
     setLineItems(updated);
@@ -72,7 +79,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const calculateTotal = () => {
     if (amount) return parseFloat(amount);
-    return lineItems.reduce((total, item) => total + (item.quantity * item.unitPrice), 0);
+    return lineItems.reduce(
+      (total, item) => total + item.quantity * item.unitPrice,
+      0
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,27 +105,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         conversationId,
         amount: Math.round(total * 100), // Convert dollars to cents
         currency,
-        description: description || `Invoice for conversation ${conversationId}`,
+        description:
+          description || `Invoice for conversation ${conversationId}`,
         customerEmail: email,
         ...(dueDate && { dueDate }),
-        ...(lineItems.some(item => item.description) && { lineItems }),
+        ...(lineItems.some((item) => item.description) && { lineItems }),
       };
 
       const payment = await paymentAPI.createPayment(paymentData);
-      
+
       if (onPaymentCreated) {
         onPaymentCreated(payment);
       }
-      
+
       onClose();
-      
+
       // Reset form
       setAmount("");
       setDescription("");
       setEmail("");
       setDueDate("");
       setLineItems([{ description: "", quantity: 1, unitPrice: 0 }]);
-      
     } catch (error) {
       console.error("Error creating payment:", error);
       alert("Failed to create payment. Please try again.");
@@ -138,7 +148,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Email */}
@@ -219,19 +229,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label>Line Items</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addLineItem}
+                    >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Item
                     </Button>
                   </div>
-                  
+
                   {lineItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                    <div
+                      key={index}
+                      className="grid grid-cols-12 gap-2 items-end"
+                    >
                       <div className="col-span-5">
                         <Input
                           placeholder="Item description"
                           value={item.description}
-                          onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                          onChange={(e) =>
+                            updateLineItem(index, "description", e.target.value)
+                          }
                         />
                       </div>
                       <div className="col-span-2">
@@ -240,7 +260,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                           placeholder="Qty"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateLineItem(index, "quantity", parseInt(e.target.value) || 1)}
+                          onChange={(e) =>
+                            updateLineItem(
+                              index,
+                              "quantity",
+                              parseInt(e.target.value) || 1
+                            )
+                          }
                         />
                       </div>
                       <div className="col-span-3">
@@ -249,7 +275,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                           step="0.01"
                           placeholder="Price"
                           value={item.unitPrice}
-                          onChange={(e) => updateLineItem(index, "unitPrice", parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateLineItem(
+                              index,
+                              "unitPrice",
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
                         />
                       </div>
                       <div className="col-span-1">
@@ -299,7 +331,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
             {/* Submit */}
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading} className="flex-1">

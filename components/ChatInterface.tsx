@@ -144,30 +144,37 @@ export default function ChatInterface({
         conversationId: message.conversationId,
         currentConversationId: conversationId,
         hasPaymentData: !!message.paymentData,
-        paymentData: message.paymentData
+        paymentData: message.paymentData,
       });
-      
+
       // Only add message if it's for the current conversation
       if (message.conversationId === conversationId) {
         setMessages((prev) => {
           // Check if message already exists by both id and _id to avoid duplicates
-          const existingMessage = prev.find(msg => 
-            msg.id === message.id || 
-            msg.id === message._id ||
-            (msg.content === message.content && Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000)
+          const existingMessage = prev.find(
+            (msg) =>
+              msg.id === message.id ||
+              msg.id === message._id ||
+              (msg.content === message.content &&
+                Math.abs(
+                  new Date().getTime() - new Date(msg.timestamp || 0).getTime()
+                ) < 5000)
           );
-          
+
           if (existingMessage) {
-            console.log("Message already exists, skipping duplicate:", message.id || message._id);
+            console.log(
+              "Message already exists, skipping duplicate:",
+              message.id || message._id
+            );
             return prev;
           }
-          
+
           // Normalize sender field - map "AI" to "agent" to avoid confusion
           let normalizedSender = message.sender;
           if (message.sender === "AI") {
             normalizedSender = "agent";
           }
-          
+
           const newMessage: Message = {
             id: message._id || message.id || Math.random().toString(),
             sender: normalizedSender as "customer" | "agent" | "system",
@@ -182,7 +189,7 @@ export default function ChatInterface({
             paymentData: message.paymentData,
             isPayment: message.type === "payment",
           };
-          
+
           console.log("Adding new message to state:", newMessage);
           return [...prev, newMessage];
         });
@@ -193,7 +200,10 @@ export default function ChatInterface({
       // Handle conversation updates (for unread status, etc.)
       if (data.conversationId === conversationId && data.unread) {
         // You could show a notification or update UI here
-        console.log("New message received in conversation:", data.conversationId);
+        console.log(
+          "New message received in conversation:",
+          data.conversationId
+        );
       }
     },
     onPaymentStatusUpdate: (data: any) => {
@@ -202,7 +212,10 @@ export default function ChatInterface({
       if (data.paymentId) {
         setMessages((prev) =>
           prev.map((msg) => {
-            if (msg.paymentData && msg.paymentData.paymentId === data.paymentId) {
+            if (
+              msg.paymentData &&
+              msg.paymentData.paymentId === data.paymentId
+            ) {
               return {
                 ...msg,
                 paymentData: {
@@ -214,9 +227,9 @@ export default function ChatInterface({
             return msg;
           })
         );
-        
+
         // Show notification about payment status change
-        if (data.status === 'completed') {
+        if (data.status === "completed") {
           console.log(`💰 Payment completed: ${data.message}`);
           // You could add a toast notification here
         }
@@ -232,7 +245,7 @@ export default function ChatInterface({
     if (conversationId && isConnected) {
       joinConversation(conversationId);
       console.log(`Joined conversation: ${conversationId}`);
-      
+
       return () => {
         leaveConversation(conversationId);
         console.log(`Left conversation: ${conversationId}`);
@@ -243,13 +256,13 @@ export default function ChatInterface({
   // Handle typing indicators
   useEffect(() => {
     let typingTimer: NodeJS.Timeout | undefined;
-    
+
     const handleTypingStart = () => {
       if (conversationId && isConnected) {
         startTyping(conversationId);
       }
     };
-    
+
     const handleTypingStop = () => {
       if (conversationId && isConnected) {
         stopTyping(conversationId);
@@ -335,18 +348,19 @@ export default function ChatInterface({
         setError(null);
         const data = await chatAPI.getConversation(conversationId);
         setConversation(data);
-        
+
         // Transform messages to match the expected format
         const transformedMessages = data.messages.map((msg: any) => ({
           id: msg._id || msg.id || Math.random().toString(),
           sender: msg.sender,
           content: msg.content,
-          time: msg.createdAt 
+          time: msg.createdAt
             ? new Date(msg.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
-            : msg.time || new Date().toLocaleTimeString([], {
+            : msg.time ||
+              new Date().toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               }),
@@ -357,7 +371,7 @@ export default function ChatInterface({
           paymentData: msg.paymentData,
           isPayment: msg.type === "payment" || msg.isPayment || false,
         }));
-        
+
         setMessages(transformedMessages);
       } catch (err) {
         console.error("Error fetching conversation:", err);
@@ -430,13 +444,13 @@ export default function ChatInterface({
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log("handleSendMessage called", { 
-      newMessage: newMessage.trim(), 
-      attachedFiles: attachedFiles.length, 
-      conversationId 
+
+    console.log("handleSendMessage called", {
+      newMessage: newMessage.trim(),
+      attachedFiles: attachedFiles.length,
+      conversationId,
     });
-    
+
     if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId) {
       console.log("Message send blocked: empty message or no conversation");
       return;
@@ -504,9 +518,14 @@ export default function ChatInterface({
       }
 
       // Send message via API
-      console.log("Sending message to conversation:", conversationId, "content:", messageContent);
+      console.log(
+        "Sending message to conversation:",
+        conversationId,
+        "content:",
+        messageContent
+      );
       console.log("chatAPI.sendMessage function:", typeof chatAPI.sendMessage);
-      
+
       const sentMessage = await chatAPI.sendMessage({
         conversationId: conversationId.toString(),
         content: messageContent,
@@ -530,17 +549,20 @@ export default function ChatInterface({
 
       setMessages((prev) => {
         // Check if this message already exists to avoid duplicates
-        const exists = prev.some(msg => 
-          msg.content === messageContent && 
-          msg.sender === "agent" &&
-          Math.abs(new Date().getTime() - new Date(msg.timestamp || 0).getTime()) < 5000
+        const exists = prev.some(
+          (msg) =>
+            msg.content === messageContent &&
+            msg.sender === "agent" &&
+            Math.abs(
+              new Date().getTime() - new Date(msg.timestamp || 0).getTime()
+            ) < 5000
         );
-        
+
         if (exists) {
           console.log("Message already exists in state, not adding duplicate");
           return prev;
         }
-        
+
         return [...prev, immediateMessage];
       });
 
@@ -577,7 +599,9 @@ export default function ChatInterface({
     } catch (error) {
       console.error("Error sending message:", error);
       // Show error to user
-      setError(error instanceof Error ? error.message : "Failed to send message");
+      setError(
+        error instanceof Error ? error.message : "Failed to send message"
+      );
     } finally {
       setSending(false);
     }
@@ -865,20 +889,17 @@ export default function ChatInterface({
 
       try {
         console.log("Fetching user settings for user:", user.id);
-        const response = await fetch(
-          `/api/user-settings?userId=${user.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`/api/user-settings?userId=${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         if (response.ok) {
           const settings = await response.json();
           console.log("User settings fetched:", settings);
-          
+
           // Set the AI response toggle
           setAutoAIResponse(settings.aiGeneratedResponse || true);
           setWhatsappEnabled(settings.whatsapp || false);
@@ -1162,7 +1183,7 @@ export default function ChatInterface({
                     <div
                       className={cn(
                         "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
-                        message.type === "payment" 
+                        message.type === "payment"
                           ? "bg-green-100 text-green-900 border border-green-200" // Special styling for payment messages
                           : isCustomer
                           ? "bg-gray-100 text-gray-900"
@@ -1173,16 +1194,38 @@ export default function ChatInterface({
                         <div className="text-xs">
                           <div className="flex items-center gap-2 mb-2">
                             <span>💳</span>
-                            <span className="font-semibold">Payment Invoice Created</span>
+                            <span className="font-semibold">
+                              Payment Invoice Created
+                            </span>
                           </div>
                           <div className="space-y-1">
-                            <p><span className="font-medium">Amount:</span> ${message.paymentData.amount} {message.paymentData.currency.toUpperCase()}</p>
-                            <p><span className="font-medium">Description:</span> {message.paymentData.description}</p>
-                            <p><span className="font-medium">Invoice #:</span> {message.paymentData.invoiceNumber}</p>
+                            <p>
+                              <span className="font-medium">Amount:</span> $
+                              {message.paymentData.amount}{" "}
+                              {message.paymentData.currency.toUpperCase()}
+                            </p>
+                            <p>
+                              <span className="font-medium">Description:</span>{" "}
+                              {message.paymentData.description}
+                            </p>
+                            <p>
+                              <span className="font-medium">Invoice #:</span>{" "}
+                              {message.paymentData.invoiceNumber}
+                            </p>
                             {message.paymentData.dueDate && (
-                              <p><span className="font-medium">Due Date:</span> {new Date(message.paymentData.dueDate).toLocaleDateString()}</p>
+                              <p>
+                                <span className="font-medium">Due Date:</span>{" "}
+                                {new Date(
+                                  message.paymentData.dueDate
+                                ).toLocaleDateString()}
+                              </p>
                             )}
-                            <p><span className="font-medium">Status:</span> <span className="capitalize">{message.paymentData.status}</span></p>
+                            <p>
+                              <span className="font-medium">Status:</span>{" "}
+                              <span className="capitalize">
+                                {message.paymentData.status}
+                              </span>
+                            </p>
                           </div>
                           {message.paymentData.paymentUrl && (
                             <div className="mt-3">
@@ -1402,11 +1445,11 @@ export default function ChatInterface({
           </div>
         )}
 
-        <form 
+        <form
           onSubmit={(e) => {
             console.log("Form onSubmit triggered");
             handleSendMessage(e);
-          }} 
+          }}
           className="flex items-end space-x-2"
         >
           <button
@@ -1481,16 +1524,20 @@ export default function ChatInterface({
             onClick={(e) => {
               console.log("Send button clicked");
               // Fallback: also trigger handleSendMessage directly
-              if (e.type === 'click') {
+              if (e.type === "click") {
                 handleSendMessage(e);
               }
             }}
             disabled={
-              (!newMessage.trim() && attachedFiles.length === 0) || sending || !conversationId
+              (!newMessage.trim() && attachedFiles.length === 0) ||
+              sending ||
+              !conversationId
             }
             className={cn(
               "p-2 rounded-lg transition-colors flex-shrink-0",
-              (newMessage.trim() || attachedFiles.length > 0) && !sending && conversationId
+              (newMessage.trim() || attachedFiles.length > 0) &&
+                !sending &&
+                conversationId
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-200 text-gray-400"
             )}
@@ -1513,24 +1560,27 @@ export default function ChatInterface({
             console.log("Payment created:", payment);
             // Close the modal - the payment message will be added via socket from backend
             setShowPaymentModal(false);
-            
+
             // Force refresh conversation data as fallback if socket doesn't work
             setTimeout(async () => {
               try {
-                console.log("Refreshing conversation after payment creation...");
+                console.log(
+                  "Refreshing conversation after payment creation..."
+                );
                 const data = await chatAPI.getConversation(conversationId);
-                
+
                 // Transform messages to match the expected format
                 const transformedMessages = data.messages.map((msg: any) => ({
                   id: msg._id || msg.id || Math.random().toString(),
                   sender: msg.sender,
                   content: msg.content,
-                  time: msg.createdAt 
+                  time: msg.createdAt
                     ? new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })
-                    : msg.time || new Date().toLocaleTimeString([], {
+                    : msg.time ||
+                      new Date().toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       }),
@@ -1541,7 +1591,7 @@ export default function ChatInterface({
                   paymentData: msg.paymentData,
                   isPayment: msg.type === "payment" || msg.isPayment || false,
                 }));
-                
+
                 setMessages(transformedMessages);
                 console.log("Conversation refreshed successfully");
               } catch (error) {
