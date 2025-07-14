@@ -14,11 +14,8 @@ import {
   FileText,
   Image as ImageIcon,
   File,
-  Edit3,
-  Trash2,
   Check,
   MapPin,
-  CreditCard,
   DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,10 +67,6 @@ const COMMON_EMOJIS = [
   "📞",
 ];
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
-  "https://hivechat-2de5.onrender.com";
-
 export default function ChatInterface({
   conversationId,
   onToggleProfile,
@@ -99,22 +92,12 @@ export default function ChatInterface({
     [key: string]: number;
   }>({});
 
-  // Message editing and management states
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState("");
+  // Message management states
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [autoAIResponse, setAutoAIResponse] = useState(false);
   // Add WhatsApp/SMS platform toggles
   const [whatsappEnabled, setWhatsappEnabled] = useState(false);
   const [smsEnabled, setSmsEnabled] = useState(true); // Default to true as requested
-  const [showExternalModal, setShowExternalModal] = useState(false);
-  const [externalPlatform, setExternalPlatform] = useState<"whatsapp" | "sms">(
-    "whatsapp"
-  );
-  const [externalPhone, setExternalPhone] = useState("");
-  const [externalMessage, setExternalMessage] = useState("");
 
   // Payment states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -123,7 +106,6 @@ export default function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const editInputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -319,14 +301,6 @@ export default function ChatInterface({
     }
   }, [showEmojiPicker, showMoreMenu]);
 
-  // Focus edit input when editing starts
-  useEffect(() => {
-    if (editingMessageId && editInputRef.current) {
-      editInputRef.current.focus();
-      editInputRef.current.select();
-    }
-  }, [editingMessageId]);
-
   // Auto-resize textarea
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = "auto";
@@ -366,7 +340,6 @@ export default function ChatInterface({
               }),
           avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
           timestamp: msg.createdAt,
-          edited: msg.edited || false,
           type: msg.type || "text",
           paymentData: msg.paymentData,
           isPayment: msg.type === "payment" || msg.isPayment || false,
@@ -607,88 +580,6 @@ export default function ChatInterface({
     }
   };
 
-  const handleEditMessage = async (messageId: string, newContent: string) => {
-    try {
-      await chatAPI.editMessage(messageId, newContent);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: newContent, edited: true }
-            : msg
-        )
-      );
-      setEditingMessageId(null);
-      setEditingText("");
-    } catch (error) {
-      console.error("Error editing message:", error);
-    }
-  };
-
-  const handleDeleteMessage = async (messageId: string) => {
-    try {
-      await chatAPI.deleteMessage(messageId);
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-    } catch (error) {
-      console.error("Error deleting message:", error);
-    }
-  };
-
-  // const handleClearChat = async () => {
-  //   try {
-  //     await chatAPI.clearChat(conversationId);
-  //     setMessages([]);
-  //     setShowClearConfirm(false);
-  //     setShowMoreMenu(false);
-  //   } catch (error) {
-  //     console.error("Error clearing chat:", error);
-  //   }
-  // };
-
-  // const handleDeleteConversation = async () => {
-  //   try {
-  //     await chatAPI.deleteConversation(conversationId);
-  //     setShowDeleteConfirm(false);
-  //     setShowMoreMenu(false);
-  //     // In a real app, you'd navigate away or refresh the conversation list
-  //     window.location.reload();
-  //   } catch (error) {
-  //     console.error("Error deleting conversation:", error);
-  //   }
-  // };
-
-  const startEditingMessage = (message: Message) => {
-    setEditingMessageId(message.id);
-    setEditingText(message.content);
-  };
-
-  // const cancelEditing = () => {
-  //   setEditingMessageId(null);
-  //   setEditingText("");
-  // };
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingMessageId && editingText.trim()) {
-      handleEditMessage(editingMessageId, editingText.trim());
-    }
-  };
-
-  const canEditMessage = (message: Message, index: number) => {
-    // Only allow editing the last message from agent/ai/system
-    return (
-      ["agent", "ai", "system"].includes(message.sender) &&
-      index === messages.length - 1
-    );
-  };
-
-  const canDeleteMessage = (message: Message, index: number) => {
-    // Only allow deleting the last message from agent/ai/system
-    return (
-      ["agent", "ai", "system"].includes(message.sender) &&
-      index === messages.length - 1
-    );
-  };
-
   const handleAIGenerate = async () => {
     setLoadingAI(true);
     setShowSuggestions(false);
@@ -733,12 +624,12 @@ export default function ChatInterface({
       }
     } catch (err) {
       console.error("Error generating AI suggestions:", err);
-      const fallbackSuggestions = [
-        { id: "1", text: "Thank you for reaching out!", type: "quick" },
+      const fallbackSuggestions: AISuggestion[] = [
+        { id: "1", text: "Thank you for reaching out!", type: "quick" as const },
         {
           id: "2",
           text: "I'd be happy to help you with that.",
-          type: "detailed",
+          type: "detailed" as const,
         },
       ].slice(0, maxSuggestions);
 
@@ -753,8 +644,8 @@ export default function ChatInterface({
 
   const createFallbackSuggestions = (aiResponse: string) => {
     const suggestions: AISuggestion[] = [
-      { id: "1", text: "Thank you!", type: "quick" },
-      { id: "2", text: aiResponse, type: "detailed" },
+      { id: "1", text: "Thank you!", type: "quick" as const },
+      { id: "2", text: aiResponse, type: "detailed" as const },
     ].slice(0, maxSuggestions);
 
     setAiSuggestions(suggestions);
@@ -847,28 +738,6 @@ export default function ChatInterface({
         adjustTextareaHeight(inputRef.current);
       }
     }, 0);
-  };
-
-  const handleExternalMessage = async () => {
-    if (!externalPhone.trim() || !externalMessage.trim()) {
-      alert("Please enter both phone number and message");
-      return;
-    }
-
-    try {
-      await chatAPI.sendExternalMessage(
-        externalPlatform,
-        externalPhone,
-        externalMessage
-      );
-      setShowExternalModal(false);
-      setExternalPhone("");
-      setExternalMessage("");
-      alert(`${externalPlatform.toUpperCase()} message sent successfully!`);
-    } catch (error) {
-      console.error(`Error sending ${externalPlatform} message:`, error);
-      alert(`Failed to send ${externalPlatform.toUpperCase()} message`);
-    }
   };
 
   const getFileIcon = (type: "image" | "document" | "other") => {
@@ -1132,10 +1001,10 @@ export default function ChatInterface({
 
           return (
             <div
-              key={`${message.id}-${index}`} // Add index to ensure uniqueness
+              key={`${message.id}-${index}`}
               className={cn(
                 "flex items-start group",
-                isAgent ? "flex-row-reverse" : "" // Right side for agent/ai/system
+                isAgent ? "flex-row-reverse" : ""
               )}
             >
               <div
@@ -1153,147 +1022,98 @@ export default function ChatInterface({
                   isAgent ? "mr-2" : "ml-2"
                 )}
               >
-                {editingMessageId === message.id ? (
-                  // Edit Mode
-                  <form
-                    onSubmit={handleEditSubmit}
-                    className="space-y-2 max-w-xs lg:max-w-md"
-                  >
-                    <textarea
-                      ref={editInputRef}
-                      value={editingText}
-                      onChange={(e) => {
-                        setEditingText(e.target.value);
-                        adjustTextareaHeight(e.target);
-                      }}
-                      className="w-full px-3 py-2 border border-blue-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[2.5rem]"
-                      rows={1}
-                    />
-                  </form>
-                ) : (
-                  // Normal Message Display
+                <div
+                  className={cn(
+                    "flex items-start",
+                    isAgent
+                      ? "flex-row-reverse space-x-reverse space-x-2"
+                      : "space-x-2"
+                  )}
+                >
                   <div
                     className={cn(
-                      "flex items-start",
-                      isAgent
-                        ? "flex-row-reverse space-x-reverse space-x-2"
-                        : "space-x-2"
+                      "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
+                      message.type === "payment"
+                        ? "bg-green-100 text-green-900 border border-green-200"
+                        : isCustomer
+                        ? "bg-gray-100 text-gray-900"
+                        : "bg-blue-500 text-white"
                     )}
                   >
-                    <div
-                      className={cn(
-                        "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
-                        message.type === "payment"
-                          ? "bg-green-100 text-green-900 border border-green-200" // Special styling for payment messages
-                          : isCustomer
-                          ? "bg-gray-100 text-gray-900"
-                          : "bg-blue-500 text-white"
-                      )}
-                    >
-                      {message.type === "payment" && message.paymentData ? (
-                        <div className="text-xs">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span>💳</span>
-                            <span className="font-semibold">
-                              Payment Invoice Created
+                    {message.type === "payment" && message.paymentData ? (
+                      <div className="text-xs">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span>💳</span>
+                          <span className="font-semibold">
+                            Payment Invoice Created
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <p>
+                            <span className="font-medium">Amount:</span> $
+                            {message.paymentData.amount}{" "}
+                            {message.paymentData.currency.toUpperCase()}
+                          </p>
+                          <p>
+                            <span className="font-medium">Description:</span>{" "}
+                            {message.paymentData.description}
+                          </p>
+                          <p>
+                            <span className="font-medium">Invoice #:</span>{" "}
+                            {message.paymentData.invoiceNumber}
+                          </p>
+                          {message.paymentData.dueDate && (
+                            <p>
+                              <span className="font-medium">Due Date:</span>{" "}
+                              {new Date(
+                                message.paymentData.dueDate
+                              ).toLocaleDateString()}
+                            </p>
+                          )}
+                          <p>
+                            <span className="font-medium">Status:</span>{" "}
+                            <span className="capitalize">
+                              {message.paymentData.status}
                             </span>
-                          </div>
-                          <div className="space-y-1">
-                            <p>
-                              <span className="font-medium">Amount:</span> $
-                              {message.paymentData.amount}{" "}
-                              {message.paymentData.currency.toUpperCase()}
-                            </p>
-                            <p>
-                              <span className="font-medium">Description:</span>{" "}
-                              {message.paymentData.description}
-                            </p>
-                            <p>
-                              <span className="font-medium">Invoice #:</span>{" "}
-                              {message.paymentData.invoiceNumber}
-                            </p>
-                            {message.paymentData.dueDate && (
-                              <p>
-                                <span className="font-medium">Due Date:</span>{" "}
-                                {new Date(
-                                  message.paymentData.dueDate
-                                ).toLocaleDateString()}
-                              </p>
-                            )}
-                            <p>
-                              <span className="font-medium">Status:</span>{" "}
-                              <span className="capitalize">
-                                {message.paymentData.status}
-                              </span>
-                            </p>
-                          </div>
-                          {message.paymentData.paymentUrl && (
-                            <div className="mt-3">
-                              <a
-                                href={message.paymentData.paymentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={cn(
-                                  "inline-block px-3 py-1.5 rounded-lg text-xs font-medium text-center min-w-[100px] transition-colors",
-                                  message.type === "payment"
-                                    ? "bg-green-600 text-white hover:bg-green-700" // Green button for payment messages
-                                    : isCustomer
-                                    ? "bg-blue-500 text-white hover:bg-blue-600"
-                                    : "bg-white text-blue-500 hover:bg-gray-50"
-                                )}
-                              >
-                                Pay Invoice
-                              </a>
-                            </div>
-                          )}
+                          </p>
                         </div>
-                      ) : (
-                        <p className="text-xs whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between mt-0.5">
-                        <p
-                          className={cn(
-                            "text-[10px]",
-                            isCustomer ? "text-gray-500" : "text-blue-100"
-                          )}
-                        >
-                          {message.timestamp}
-                          {message.edited && (
-                            <span className="ml-1 italic">(edited)</span>
-                          )}
-                        </p>
+                        {message.paymentData.paymentUrl && (
+                          <div className="mt-3">
+                            <a
+                              href={message.paymentData.paymentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(
+                                "inline-block px-3 py-1.5 rounded-lg text-xs font-medium text-center min-w-[100px] transition-colors",
+                                message.type === "payment"
+                                  ? "bg-green-600 text-white hover:bg-green-700"
+                                  : isCustomer
+                                  ? "bg-blue-500 text-white hover:bg-blue-600"
+                                  : "bg-white text-blue-500 hover:bg-gray-50"
+                              )}
+                            >
+                              Pay Invoice
+                            </a>
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      <p className="text-xs whitespace-pre-wrap break-words">
+                        {message.content}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p
+                        className={cn(
+                          "text-[10px]",
+                          isCustomer ? "text-gray-500" : "text-blue-100"
+                        )}
+                      >
+                        {message.timestamp}
+                      </p>
                     </div>
-
-                    {/* Message Actions - Only for agent/ai/system messages */}
-                    {isAgent &&
-                      (canEditMessage(message, index) ||
-                        canDeleteMessage(message, index)) && (
-                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {canEditMessage(message, index) && (
-                            <button
-                              onClick={() => startEditingMessage(message)}
-                              className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition-colors"
-                              title="Edit message"
-                            >
-                              <Edit3 className="w-3 h-3 text-gray-600" />
-                            </button>
-                          )}
-                          {canDeleteMessage(message, index) && (
-                            <button
-                              onClick={() => handleDeleteMessage(message.id)}
-                              className="p-1 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-red-50 transition-colors"
-                              title="Delete message"
-                            >
-                              <Trash2 className="w-3 h-3 text-red-600" />
-                            </button>
-                          )}
-                        </div>
-                      )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           );
@@ -1586,7 +1406,6 @@ export default function ChatInterface({
                       }),
                   avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
                   timestamp: msg.createdAt,
-                  edited: msg.edited || false,
                   type: msg.type || "text",
                   paymentData: msg.paymentData,
                   isPayment: msg.type === "payment" || msg.isPayment || false,
