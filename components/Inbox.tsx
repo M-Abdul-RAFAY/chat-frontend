@@ -5,9 +5,11 @@ import Sidebar from "@/components/Sidebar";
 import ConversationList from "@/components/ConversationList";
 import ChatInterface from "@/components/ChatInterface";
 import CustomerProfile from "@/components/CustomerProfile";
+import { Conversation } from "@/lib/api";
 
 export default function Inbox() {
   const [selectedConversation, setSelectedConversation] = useState("");
+  const [selectedConversationData, setSelectedConversationData] = useState<Conversation | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
@@ -34,8 +36,9 @@ export default function Inbox() {
   }, [selectedConversation]);
 
   // Handle conversation selection
-  const handleSelectConversation = (conversationId: string) => {
+  const handleSelectConversation = (conversationId: string, conversationData: Conversation) => {
     setSelectedConversation(conversationId);
+    setSelectedConversationData(conversationData);
     // On mobile, hide conversation list when a conversation is selected
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setShowConversationList(false);
@@ -62,8 +65,8 @@ export default function Inbox() {
         <div
           className={`
           ${
-            showConversationList ? "flex w-full bg-blue-50" : "hidden"
-          } md:flex md:w-64 lg:w-64 md:bg-transparent
+            showConversationList ? "flex w-full" : "hidden"
+          } md:flex md:w-64 lg:w-64
           h-full min-h-0 overflow-hidden
         `}
         >
@@ -78,13 +81,14 @@ export default function Inbox() {
         <div
           className={`
           ${
-            !showConversationList ? "flex w-full bg-green-50" : "hidden"
-          } md:flex md:flex-1 md:bg-transparent
+            !showConversationList ? "flex w-full" : "hidden"
+          } md:flex md:flex-1
           h-full min-h-0 overflow-hidden relative
         `}
         >
           <ChatInterface
             conversationId={selectedConversation}
+            conversationData={selectedConversationData}
             onToggleProfile={() => setProfileVisible(!profileVisible)}
             profileVisible={profileVisible}
             onBackToConversations={handleBackToConversations}
@@ -103,6 +107,7 @@ export default function Inbox() {
               <div className="absolute inset-y-0 right-0 w-full md:w-80 lg:w-80 z-40 transform transition-transform duration-300 ease-in-out">
                 <CustomerProfile
                   conversationId={selectedConversation}
+                  conversationData={selectedConversationData}
                   onClose={() => setProfileVisible(false)}
                 />
               </div>

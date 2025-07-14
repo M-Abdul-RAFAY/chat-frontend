@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Conversation } from "@/lib/api";
 
 interface CustomerProfileProps {
   conversationId: string;
+  conversationData?: Conversation | null;
   onClose: () => void;
 }
 
@@ -27,16 +29,21 @@ interface ActivityItem {
 
 export default function CustomerProfile({
   conversationId,
+  conversationData,
   onClose,
 }: CustomerProfileProps) {
   const [activeTab, setActiveTab] = useState<"details" | "activity">("details");
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
 
+  // Use conversation data if available, otherwise fallback to placeholder
   const customer = {
-    name: "Will Pantente",
-    phone: "(555) 555-5555",
-    email: "will@email.com",
-    status: "New",
+    name: conversationData?.name || "Will Pantente",
+    phone: conversationData?.phone || "(555) 555-5555",
+    email: conversationData?.email || "will@email.com",
+    location: conversationData?.location || "Venture Auto ...",
+    status: conversationData?.status || "NEW",
+    avatar: conversationData?.avatar || "WP",
+    statusColor: conversationData?.statusColor || "bg-pink-500",
     cardOnFile: {
       type: "Visa",
       number: "**** 1234",
@@ -115,8 +122,8 @@ export default function CustomerProfile({
 
       {/* Profile Image Section */}
       <div className="px-2 py-3 text-center border-b border-gray-200 bg-gray-50">
-        <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2">
-          WP
+        <div className={`w-12 h-12 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2`}>
+          {customer.avatar}
         </div>
         <h3 className="text-[12px] font-semibold text-gray-900 mb-1">
           {customer.name}

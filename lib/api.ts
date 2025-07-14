@@ -100,6 +100,8 @@ export interface Conversation {
   statusColor: string;
   unread: boolean;
   location: string;
+  phone?: string; // Customer phone number
+  email?: string; // Customer email
   messages: Message[];
 }
 

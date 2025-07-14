@@ -27,6 +27,7 @@ import { PaymentModal } from "./PaymentModal";
 
 interface ChatInterfaceProps {
   conversationId: string;
+  conversationData?: Conversation | null;
   onToggleProfile: () => void;
   profileVisible: boolean;
   maxSuggestions?: number;
@@ -71,6 +72,7 @@ const COMMON_EMOJIS = [
 
 export default function ChatInterface({
   conversationId,
+  conversationData,
   onToggleProfile,
   profileVisible,
   maxSuggestions = 2,
@@ -169,7 +171,7 @@ export default function ChatInterface({
               minute: "2-digit",
             }),
             timestamp: message.createdAt || new Date().toISOString(),
-            avatar: normalizedSender === "agent" ? "AG" : "CU",
+            avatar: normalizedSender === "agent" ? "AG" : customerAvatar,
             type: message.type || "text",
             paymentData: message.paymentData,
             isPayment: message.type === "payment",
@@ -222,8 +224,11 @@ export default function ChatInterface({
     },
   });
 
-  const customerName = "Will Pantente";
-  const customerLocation = "Venture Auto ...";
+  // Use conversation data if available, otherwise fallback to placeholder
+  const customerName = conversationData?.name || conversation?.name || "Will Pantente";
+  const customerLocation = conversationData?.location || conversation?.location || "Venture Auto ...";
+  const customerAvatar = conversationData?.avatar || conversation?.avatar || "WP";
+  const customerStatusColor = conversationData?.statusColor || conversation?.statusColor || "bg-pink-500";
 
   // Join conversation when component mounts or conversationId changes
   useEffect(() => {
@@ -341,7 +346,7 @@ export default function ChatInterface({
                 hour: "2-digit",
                 minute: "2-digit",
               }),
-          avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
+          avatar: msg.avatar || (msg.sender === "agent" ? "AG" : customerAvatar),
           timestamp: msg.createdAt,
           type: msg.type || "text",
           paymentData: msg.paymentData,
@@ -360,7 +365,7 @@ export default function ChatInterface({
     };
 
     fetchConversation();
-  }, [conversationId]);
+  }, [conversationId, customerAvatar]);
 
   // Handle keyboard navigation for suggestions
   useEffect(() => {
@@ -896,8 +901,8 @@ export default function ChatInterface({
             className="flex items-center space-x-2 min-w-0 cursor-pointer hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors"
             onClick={onToggleProfile}
           >
-            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs">
-              WP
+            <div className={`w-8 h-8 ${customerStatusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs`}>
+              {customerAvatar}
             </div>
             <div className="min-w-0">
               <h2 className="font-semibold text-gray-900 truncate text-sm">
@@ -1029,7 +1034,7 @@ export default function ChatInterface({
               <div
                 className={cn(
                   "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
-                  isCustomer ? "bg-pink-500" : "bg-blue-500"
+                  isCustomer ? customerStatusColor : "bg-blue-500"
                 )}
               >
                 {message.avatar}
@@ -1423,7 +1428,7 @@ export default function ChatInterface({
                         hour: "2-digit",
                         minute: "2-digit",
                       }),
-                  avatar: msg.avatar || (msg.sender === "agent" ? "AG" : "CU"),
+                  avatar: msg.avatar || (msg.sender === "agent" ? "AG" : customerAvatar),
                   timestamp: msg.createdAt,
                   type: msg.type || "text",
                   paymentData: msg.paymentData,

@@ -8,7 +8,7 @@ import { useSocket } from "@/hooks/useSocket";
 
 interface ConversationListProps {
   selectedConversation: string;
-  onSelectConversation: (id: string) => void;
+  onSelectConversation: (id: string, conversationData: Conversation) => void;
   collapsed: boolean;
 }
 
@@ -367,7 +367,7 @@ export default function ConversationList({
                   e.preventDefault();
                   e.stopPropagation();
                   console.log("Selecting conversation:", conversation.id);
-                  onSelectConversation(conversation.id.toString());
+                  onSelectConversation(conversation.id.toString(), conversation);
                 }}
                 className={cn(
                   "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",
