@@ -63,7 +63,7 @@ export default function Inbox() {
           className={`
           ${
             showConversationList ? "flex w-full bg-blue-50" : "hidden"
-          } md:flex md:w-64 lg:w-80 md:bg-transparent
+          } md:flex md:w-64 lg:w-64 md:bg-transparent
           h-full min-h-0 overflow-hidden
         `}
         >
