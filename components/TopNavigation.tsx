@@ -32,7 +32,7 @@ export default function TopNavigation({
     { id: "payments", label: "Payments" },
     { id: "reporting", label: "Reporting" },
     { id: "insights", label: "Insights" },
-    { id: "automations", label: "Automations" },
+    { id: "widget", label: "Widget" },
   ];
 
   const getInitialActiveItem = () => {

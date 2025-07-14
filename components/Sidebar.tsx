@@ -80,63 +80,6 @@ export default function Sidebar({
     { id: "lost", label: "Lost", icon: XCircle },
   ];
 
-  const menuItems = [
-    {
-      icon: Home,
-      label: "Dashboard",
-      href: "/dashboard/home",
-      active: pathname === "/dashboard/home",
-    },
-    {
-      icon: MessageSquare,
-      label: "Inbox",
-      href: "/dashboard/inbox",
-      active: pathname === "/dashboard/inbox",
-    },
-    {
-      icon: Users,
-      label: "Contacts",
-      href: "/dashboard/contacts",
-      active: pathname === "/dashboard/contacts",
-    },
-    {
-      icon: TrendingUp,
-      label: "Marketing",
-      href: "/dashboard/marketing",
-      active: pathname === "/dashboard/marketing",
-    },
-    {
-      icon: Zap,
-      label: "Automations",
-      href: "/dashboard/automations",
-      active: pathname === "/dashboard/automations",
-    },
-    {
-      icon: BarChart,
-      label: "Insights",
-      href: "/dashboard/insights",
-      active: pathname === "/dashboard/insights",
-    },
-    {
-      icon: FileText,
-      label: "Reporting",
-      href: "/dashboard/reporting",
-      active: pathname === "/dashboard/reporting",
-    },
-    {
-      icon: CreditCard,
-      label: "Payments",
-      href: "/dashboard/payments",
-      active: pathname === "/dashboard/payments",
-    },
-    {
-      icon: MessageCircle,
-      label: "Widget",
-      href: "/dashboard/widget",
-      active: pathname === "/dashboard/widget",
-    },
-  ];
-
   return (
     <>
       {/* Mobile overlay */}
@@ -302,26 +245,6 @@ export default function Sidebar({
                     ))}
                   </div>
                 )}
-              </div>
-              {/* Navigation */}
-              <div className="px-4 py-2">
-                <div className="space-y-1">
-                  {menuItems.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      className={cn(
-                        "w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm",
-                        item.active
-                          ? "bg-blue-700 text-white"
-                          : "text-gray-400 hover:bg-blue-700 hover:text-white"
-                      )}
-                    >
-                      <item.icon size={16} className="flex-shrink-0" />
-                      <span className="truncate">{item.label}</span>
-                    </a>
-                  ))}
-                </div>
               </div>
             </>
           )}
