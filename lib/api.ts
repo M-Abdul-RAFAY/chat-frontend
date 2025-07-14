@@ -577,7 +577,8 @@ export const widgetAPI = {
 
       if (!response.ok) {
         throw new Error(
-          responseData.error || `Failed to update business info: ${response.statusText}`
+          responseData.error ||
+            `Failed to update business info: ${response.statusText}`
         );
       }
 
