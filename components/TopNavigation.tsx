@@ -135,13 +135,13 @@ export default function TopNavigation({
         {/* Right side - Search, Actions, Profile */}
         <div className="flex items-center space-x-2">
           {/* Action buttons */}
-          <button className="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+          {/* <button className="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
             <Plus size={20} />
           </button>
 
           <button className="p-2 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors">
             <Unplug size={20} />
-          </button>
+          </button> */}
 
           {/* Profile */}
           <div className="flex items-center space-x-2">
