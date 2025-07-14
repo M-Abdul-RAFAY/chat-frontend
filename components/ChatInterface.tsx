@@ -913,7 +913,10 @@ export default function ChatInterface({
             </div>
             <div className="min-w-0">
               <h2 className="font-semibold text-gray-900 truncate text-sm">
-                {customerName}
+                {customerName
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
               </h2>
               <p className="text-xs text-gray-500 flex items-center">
                 <MapPin size={12} />

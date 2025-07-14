@@ -99,12 +99,17 @@ export default function CustomerProfile({
         </button>
 
         <div className="flex items-center space-x-2 flex-1 min-w-0">
-          <div className="w-7 h-7 bg-pink-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-[11px]">
-            WP
+          <div
+            className={`w-7 h-7 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-[11px]`}
+          >
+            {customer.avatar}
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold text-gray-900 truncate text-[12px]">
-              {customer.name}
+              {customer.name
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")}
             </h2>
             <p className="text-[11px] text-gray-500 truncate">
               {customer.phone}
@@ -128,7 +133,10 @@ export default function CustomerProfile({
           {customer.avatar}
         </div>
         <h3 className="text-[12px] font-semibold text-gray-900 mb-1">
-          {customer.name}
+          {customer.name
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ")}
         </h3>
         <p className="text-[11px] text-gray-500">{customer.phone}</p>
       </div>

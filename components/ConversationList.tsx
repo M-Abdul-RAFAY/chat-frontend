@@ -341,8 +341,8 @@ export default function ConversationList({
       )}
     >
       {/* Header - Fixed */}
-      <div className="px-3 py-2 border-b border-gray-200 bg-white sticky top-0 z-10">
-        <h2 className="text-base font-semibold text-gray-900 mb-2">
+      <div className="px-3 py-2 text-center border-b border-gray-200 bg-white sticky top-0 z-10">
+        <h2 className="text-base  font-semibold text-gray-900 mb-2">
           All Conversations
         </h2>
 
