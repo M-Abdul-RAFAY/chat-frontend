@@ -1021,12 +1021,44 @@ export default function ChatInterface({
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-2 py-2 space-y-3"
       >
-        <div className="text-center">
-          <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block">
-            This is the beginning of your conversation.
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">Today at 10:42 AM</p>
-        </div>
+        {messages.length > 0 && (
+          <div className="text-center">
+            <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block">
+              Conversation with {customerName}
+            </p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              Started {(() => {
+                // Use the first message's timestamp if available, otherwise fallback
+                const firstMessage = messages[0];
+                if (firstMessage?.timestamp) {
+                  try {
+                    const date = new Date(firstMessage.timestamp);
+                    const today = new Date();
+                    const isToday = date.toDateString() === today.toDateString();
+                    
+                    if (isToday) {
+                      return `today at ${date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}`;
+                    } else {
+                      return `on ${date.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })} at ${date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}`;
+                    }
+                  } catch (error) {
+                    return 'recently';
+                  }
+                }
+                return 'recently';
+              })()}
+            </p>
+          </div>
+        )}
 
         {messages.map((message, index) => {
           // Determine if message is from customer (left side) or agent/ai/system (right side)
@@ -1143,7 +1175,7 @@ export default function ChatInterface({
                           isCustomer ? "text-gray-500" : "text-blue-100"
                         )}
                       >
-                        {message.timestamp}
+                        {message.time}
                       </p>
                     </div>
                   </div>
