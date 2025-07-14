@@ -15,7 +15,6 @@ import {
   Image as ImageIcon,
   File,
   Check,
-  MapPin,
   DollarSign,
   ArrowLeft,
 } from "lucide-react";
