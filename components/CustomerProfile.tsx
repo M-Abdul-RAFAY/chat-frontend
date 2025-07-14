@@ -122,7 +122,9 @@ export default function CustomerProfile({
 
       {/* Profile Image Section */}
       <div className="px-2 py-3 text-center border-b border-gray-200 bg-gray-50">
-        <div className={`w-12 h-12 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2`}>
+        <div
+          className={`w-12 h-12 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2`}
+        >
           {customer.avatar}
         </div>
         <h3 className="text-[12px] font-semibold text-gray-900 mb-1">

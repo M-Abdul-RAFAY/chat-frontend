@@ -9,7 +9,8 @@ import { Conversation } from "@/lib/api";
 
 export default function Inbox() {
   const [selectedConversation, setSelectedConversation] = useState("");
-  const [selectedConversationData, setSelectedConversationData] = useState<Conversation | null>(null);
+  const [selectedConversationData, setSelectedConversationData] =
+    useState<Conversation | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
@@ -36,7 +37,10 @@ export default function Inbox() {
   }, [selectedConversation]);
 
   // Handle conversation selection
-  const handleSelectConversation = (conversationId: string, conversationData: Conversation) => {
+  const handleSelectConversation = (
+    conversationId: string,
+    conversationData: Conversation
+  ) => {
     setSelectedConversation(conversationId);
     setSelectedConversationData(conversationData);
     // On mobile, hide conversation list when a conversation is selected
@@ -80,9 +84,7 @@ export default function Inbox() {
         {/* Chat Interface - Show based on state */}
         <div
           className={`
-          ${
-            !showConversationList ? "flex w-full" : "hidden"
-          } md:flex md:flex-1
+          ${!showConversationList ? "flex w-full" : "hidden"} md:flex md:flex-1
           h-full min-h-0 overflow-hidden relative
         `}
         >

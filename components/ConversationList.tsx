@@ -35,23 +35,34 @@ export default function ConversationList({
 
   // Socket integration for real-time updates
   useSocket({
-    onNewConversation: (conversation: Partial<Conversation> & { _id?: string }) => {
+    onNewConversation: (
+      conversation: Partial<Conversation> & { _id?: string }
+    ) => {
       console.log("📞 Socket: New conversation received:", conversation);
       // Add new conversation to the top of the list
       setConversations((prev) => {
         // Check if conversation already exists
         const existingIndex = prev.findIndex(
-          (conv) => conv.id === (conversation._id || conversation.id || '').toString()
+          (conv) =>
+            conv.id === (conversation._id || conversation.id || "").toString()
         );
-        
+
         const normalizedConv: Conversation = {
           ...conversation,
-          id: (conversation._id || conversation.id || 'unknown').toString(),
+          id: (conversation._id || conversation.id || "unknown").toString(),
           name: conversation.name || "Unknown",
           lastMessage: conversation.lastMessage || "",
           status: conversation.status || "NEW",
-          time: conversation.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          avatar: conversation.avatar || conversation.name?.charAt(0).toUpperCase() || "C",
+          time:
+            conversation.time ||
+            new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          avatar:
+            conversation.avatar ||
+            conversation.name?.charAt(0).toUpperCase() ||
+            "C",
           unread: conversation.unread !== false,
           statusColor: conversation.statusColor || "bg-blue-500",
           location: conversation.location || "",
@@ -70,21 +81,32 @@ export default function ConversationList({
       });
     },
     onNewMessage: (message: SocketMessage) => {
-      console.log("💬 Socket: New message received for conversation list:", message);
+      console.log(
+        "💬 Socket: New message received for conversation list:",
+        message
+      );
       // Update conversation last message and move to top if it's for a different conversation
       // than the currently selected one (since the selected one is handled by ChatInterface)
-      if (message.conversationId && message.conversationId !== selectedConversation) {
+      if (
+        message.conversationId &&
+        message.conversationId !== selectedConversation
+      ) {
         setConversations((prev) => {
-          const existingIndex = prev.findIndex((conv) => conv.id === message.conversationId);
+          const existingIndex = prev.findIndex(
+            (conv) => conv.id === message.conversationId
+          );
           if (existingIndex >= 0) {
             const updated = [...prev];
             const conversation = { ...updated[existingIndex] };
-            
+
             // Update conversation data
             conversation.lastMessage = message.content;
             conversation.unread = true; // New message means unread
-            conversation.time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+            conversation.time = new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
             // Move to top since it's the most recent
             updated.splice(existingIndex, 1);
             return [conversation, ...updated];
@@ -93,20 +115,27 @@ export default function ConversationList({
         });
       }
     },
-    onConversationUpdated: (data: { conversationId: string; lastMessage?: string; unread?: boolean; time?: string }) => {
+    onConversationUpdated: (data: {
+      conversationId: string;
+      lastMessage?: string;
+      unread?: boolean;
+      time?: string;
+    }) => {
       console.log("🔄 Socket: Conversation updated:", data);
       // Update existing conversation and move to top if it received a new message
       setConversations((prev) => {
-        const existingIndex = prev.findIndex((conv) => conv.id === data.conversationId);
+        const existingIndex = prev.findIndex(
+          (conv) => conv.id === data.conversationId
+        );
         if (existingIndex >= 0) {
           const updated = [...prev];
           const conversation = { ...updated[existingIndex] };
-          
+
           // Update conversation data
           if (data.lastMessage) conversation.lastMessage = data.lastMessage;
           if (data.unread !== undefined) conversation.unread = data.unread;
           if (data.time) conversation.time = data.time;
-          
+
           // Remove from current position and add to top if it's a new message
           updated.splice(existingIndex, 1);
           return [conversation, ...updated];
@@ -127,11 +156,11 @@ export default function ConversationList({
       setError(null);
       console.log("Fetching conversations...");
       const data = await chatAPI.getConversations();
-      
+
       if (!data || !Array.isArray(data)) {
         throw new Error("Invalid conversations data received");
       }
-      
+
       // Normalize _id to id for compatibility and sort by most recent
       const normalized = data
         .map((conv: Conversation & { _id?: string }) => ({
@@ -145,19 +174,26 @@ export default function ConversationList({
           }
           return 0;
         });
-        
+
       setConversations(normalized);
       console.log("Conversations loaded successfully:", normalized.length);
     } catch (err) {
       console.error("Error fetching conversations:", err);
-      
+
       // Auto-retry for authentication errors (up to 3 times)
-      if (err instanceof Error && err.message.includes("Unauthorized") && retryCount < 3) {
+      if (
+        err instanceof Error &&
+        err.message.includes("Unauthorized") &&
+        retryCount < 3
+      ) {
         console.log(`Retrying conversation fetch (attempt ${retryCount + 1})`);
-        setTimeout(() => fetchConversations(retryCount + 1), 1000 * (retryCount + 1));
+        setTimeout(
+          () => fetchConversations(retryCount + 1),
+          1000 * (retryCount + 1)
+        );
         return;
       }
-      
+
       setError(
         err instanceof Error ? err.message : "Failed to load conversations"
       );
@@ -169,24 +205,29 @@ export default function ConversationList({
   // Initial fetch only when mounted with better error handling
   useEffect(() => {
     if (!mounted) return;
-    
+
     const initialFetch = async (retryCount = 0) => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Component mounted, fetching conversations...", retryCount > 0 ? `(retry ${retryCount})` : '');
-        
+        console.log(
+          "Component mounted, fetching conversations...",
+          retryCount > 0 ? `(retry ${retryCount})` : ""
+        );
+
         // Add delay for subsequent retries
         if (retryCount > 0) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * retryCount)
+          );
         }
-        
+
         const data = await chatAPI.getConversations();
-        
+
         if (!data || !Array.isArray(data)) {
           throw new Error("Invalid conversations data received");
         }
-        
+
         // Normalize _id to id for compatibility and sort by most recent
         const normalized = data
           .map((conv: Conversation & { _id?: string }) => ({
@@ -200,29 +241,36 @@ export default function ConversationList({
             }
             return 0;
           });
-          
+
         setConversations(normalized);
         console.log("Conversations loaded successfully:", normalized.length);
       } catch (err) {
         console.error("Error fetching conversations:", err);
-        
+
         // Auto-retry for authentication/network errors (up to 5 times with exponential backoff)
         if (retryCount < 5) {
-          const isNetworkError = err instanceof Error && (
-            err.message.includes("Unauthorized") || 
-            err.message.includes("Failed to fetch") ||
-            err.message.includes("is not valid JSON") ||
-            err.message.includes("NetworkError") ||
-            err.message.includes("Load failed")
-          );
-          
+          const isNetworkError =
+            err instanceof Error &&
+            (err.message.includes("Unauthorized") ||
+              err.message.includes("Failed to fetch") ||
+              err.message.includes("is not valid JSON") ||
+              err.message.includes("NetworkError") ||
+              err.message.includes("Load failed"));
+
           if (isNetworkError) {
-            console.log(`Auto-retrying conversation fetch (attempt ${retryCount + 1}/5)...`);
-            setTimeout(() => initialFetch(retryCount + 1), 2000 * Math.pow(2, retryCount)); // Exponential backoff
+            console.log(
+              `Auto-retrying conversation fetch (attempt ${
+                retryCount + 1
+              }/5)...`
+            );
+            setTimeout(
+              () => initialFetch(retryCount + 1),
+              2000 * Math.pow(2, retryCount)
+            ); // Exponential backoff
             return;
           }
         }
-        
+
         setError(
           err instanceof Error ? err.message : "Failed to load conversations"
         );
@@ -230,7 +278,7 @@ export default function ConversationList({
         setLoading(false);
       }
     };
-    
+
     // Initial delay to ensure authentication is ready
     setTimeout(() => initialFetch(), 500);
   }, [mounted]);
@@ -238,13 +286,13 @@ export default function ConversationList({
   // Reduce periodic refresh frequency since we rely on socket events
   useEffect(() => {
     if (!mounted) return;
-    
+
     // Refresh every 5 minutes as fallback only (was 30 seconds)
     const interval = setInterval(() => {
       console.log("Periodic refresh fallback - checking for missed updates...");
       fetchConversations();
     }, 300000); // 5 minutes
-    
+
     return () => clearInterval(interval);
   }, [mounted, fetchConversations]);
 
@@ -367,7 +415,10 @@ export default function ConversationList({
                   e.preventDefault();
                   e.stopPropagation();
                   console.log("Selecting conversation:", conversation.id);
-                  onSelectConversation(conversation.id.toString(), conversation);
+                  onSelectConversation(
+                    conversation.id.toString(),
+                    conversation
+                  );
                 }}
                 className={cn(
                   "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",

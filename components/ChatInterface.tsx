@@ -225,10 +225,14 @@ export default function ChatInterface({
   });
 
   // Use conversation data if available, otherwise fallback to placeholder
-  const customerName = conversationData?.name || conversation?.name || "Will Pantente";
-  const customerLocation = conversationData?.location || conversation?.location || "Venture Auto ...";
-  const customerAvatar = conversationData?.avatar || conversation?.avatar || "WP";
-  const customerStatusColor = conversationData?.statusColor || conversation?.statusColor || "bg-pink-500";
+  const customerName =
+    conversationData?.name || conversation?.name || "Will Pantente";
+  const customerLocation =
+    conversationData?.location || conversation?.location || "Venture Auto ...";
+  const customerAvatar =
+    conversationData?.avatar || conversation?.avatar || "WP";
+  const customerStatusColor =
+    conversationData?.statusColor || conversation?.statusColor || "bg-pink-500";
 
   // Join conversation when component mounts or conversationId changes
   useEffect(() => {
@@ -346,7 +350,8 @@ export default function ChatInterface({
                 hour: "2-digit",
                 minute: "2-digit",
               }),
-          avatar: msg.avatar || (msg.sender === "agent" ? "AG" : customerAvatar),
+          avatar:
+            msg.avatar || (msg.sender === "agent" ? "AG" : customerAvatar),
           timestamp: msg.createdAt,
           type: msg.type || "text",
           paymentData: msg.paymentData,
@@ -901,7 +906,9 @@ export default function ChatInterface({
             className="flex items-center space-x-2 min-w-0 cursor-pointer hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors"
             onClick={onToggleProfile}
           >
-            <div className={`w-8 h-8 ${customerStatusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs`}>
+            <div
+              className={`w-8 h-8 ${customerStatusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs`}
+            >
               {customerAvatar}
             </div>
             <div className="min-w-0">
@@ -1428,7 +1435,9 @@ export default function ChatInterface({
                         hour: "2-digit",
                         minute: "2-digit",
                       }),
-                  avatar: msg.avatar || (msg.sender === "agent" ? "AG" : customerAvatar),
+                  avatar:
+                    msg.avatar ||
+                    (msg.sender === "agent" ? "AG" : customerAvatar),
                   timestamp: msg.createdAt,
                   type: msg.type || "text",
                   paymentData: msg.paymentData,
