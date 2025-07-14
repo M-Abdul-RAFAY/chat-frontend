@@ -1,17 +1,58 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Copy, Eye, RefreshCw } from "lucide-react";
+import {
+  Copy,
+  Eye,
+  RefreshCw,
+  MapPin,
+  Star,
+  Phone,
+  Globe,
+  Clock,
+  Building,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { widgetAPI } from "@/lib/api";
+import { googlePlacesAPI, GooglePlaceSuggestion } from "@/lib/googlePlaces";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 interface WidgetConfig {
   companyName: string;
   welcomeMessage: string;
   primaryColor: string;
   isActive: boolean;
+}
+
+interface BusinessInfo {
+  placeId?: string;
+  name?: string;
+  address?: string;
+  formattedAddress?: string;
+  phoneNumber?: string;
+  website?: string;
+  rating?: number;
+  userRatingsTotal?: number;
+  businessStatus?: string;
+  types?: string[];
+  geometry?: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+  photos?: Array<{
+    photoReference: string;
+    width: number;
+    height: number;
+  }>;
+  openingHours?: {
+    openNow: boolean;
+    periods: unknown[];
+    weekdayText: string[];
+  };
 }
 
 export default function WidgetManager() {
@@ -28,10 +69,34 @@ export default function WidgetManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
 
+  // Business info states
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
+  const [showBusinessSearch, setShowBusinessSearch] = useState(false);
+  const [businessSearchQuery, setBusinessSearchQuery] = useState("");
+  const [businessSuggestions, setBusinessSuggestions] = useState<
+    GooglePlaceSuggestion[]
+  >([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
   const initializeWidget = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
+
+      // Load business info first
+      try {
+        const businessData = await widgetAPI.getBusinessInfo(user?.id);
+        if (businessData.success && businessData.businessInfo) {
+          setBusinessInfo(businessData.businessInfo);
+          setConfig((prev) => ({
+            ...prev,
+            companyName: businessData.companyName || prev.companyName,
+          }));
+        }
+      } catch {
+        console.log("No existing business info found");
+      }
+
       // First try to get existing widget config
       const data = await widgetAPI.getWidgetConfig(user?.id);
       setWidgetId(data.widgetId);
@@ -178,6 +243,94 @@ export default function WidgetManager() {
       });
   };
 
+  // Handle business search
+  const handleBusinessSearch = async (query: string) => {
+    setBusinessSearchQuery(query);
+
+    if (query.length < 2) {
+      setBusinessSuggestions([]);
+      return;
+    }
+
+    try {
+      setLoadingSuggestions(true);
+      const suggestions = await googlePlacesAPI.getPlaceSuggestions(query);
+      setBusinessSuggestions(suggestions);
+    } catch (error) {
+      console.error("Error fetching business suggestions:", error);
+      setBusinessSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Handle business selection
+  const handleBusinessSelection = async (suggestion: GooglePlaceSuggestion) => {
+    try {
+      setLoadingSuggestions(true);
+      const details = await googlePlacesAPI.getPlaceDetails(
+        suggestion.place_id
+      );
+
+      if (details) {
+        setConfig((prev) => ({
+          ...prev,
+          companyName: details.name || prev.companyName,
+        }));
+        setBusinessSearchQuery(details.name || "");
+        setBusinessSuggestions([]);
+
+        // Save business info to backend
+        const businessInfoData = {
+          placeId: details.place_id,
+          name: details.name,
+          address: details.formatted_address,
+          formattedAddress: details.formatted_address,
+          phoneNumber: details.formatted_phone_number,
+          website: details.website,
+          rating: details.rating,
+          userRatingsTotal: details.user_ratings_total,
+          businessStatus: details.business_status,
+          types: details.types,
+          geometry: details.geometry,
+          photos: details.photos?.map((photo) => ({
+            photoReference: photo.photo_reference,
+            width: photo.width,
+            height: photo.height,
+          })),
+          openingHours: details.opening_hours
+            ? {
+                openNow: details.opening_hours.open_now,
+                periods: details.opening_hours.periods,
+                weekdayText: details.opening_hours.weekday_text,
+              }
+            : undefined,
+        };
+
+        await widgetAPI.updateBusinessInfo(businessInfoData, user?.id);
+        setBusinessInfo(businessInfoData);
+        setShowBusinessSearch(false);
+      }
+    } catch (error) {
+      console.error("Error selecting business:", error);
+      setError("Failed to save business information. Please try again.");
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Clear business info
+  const clearBusinessInfo = async () => {
+    try {
+      await widgetAPI.updateBusinessInfo(null, user?.id);
+      setBusinessInfo(null);
+      setConfig((prev) => ({ ...prev, companyName: "Your Company" }));
+    } catch (error) {
+      console.error("Error clearing business info:", error);
+      setError("Failed to clear business information. Please try again.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -207,6 +360,174 @@ export default function WidgetManager() {
         </div>
       )}
 
+      {/* Business Information Section */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Building className="w-5 h-5" />
+            Business Information
+          </h3>
+          {businessInfo ? (
+            <Button onClick={clearBusinessInfo} variant="outline" size="sm">
+              Change Business
+            </Button>
+          ) : (
+            <Button onClick={() => setShowBusinessSearch(true)} size="sm">
+              Add Business Info
+            </Button>
+          )}
+        </div>
+
+        {businessInfo ? (
+          /* Display selected business info */
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              {businessInfo.photos && businessInfo.photos.length > 0 && (
+                <Image
+                  src={googlePlacesAPI.getPhotoUrl(
+                    businessInfo.photos[0].photoReference,
+                    100
+                  )}
+                  alt={businessInfo.name || "Business"}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-lg object-cover"
+                />
+              )}
+              <div className="flex-1">
+                <h4 className="font-semibold text-lg">{businessInfo.name}</h4>
+                {businessInfo.rating && (
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span>{businessInfo.rating}</span>
+                    {businessInfo.userRatingsTotal && (
+                      <span>({businessInfo.userRatingsTotal} reviews)</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {businessInfo.formattedAddress && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-gray-500 mt-1" />
+                  <span className="text-sm text-gray-700">
+                    {businessInfo.formattedAddress}
+                  </span>
+                </div>
+              )}
+
+              {businessInfo.phoneNumber && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-700">
+                    {businessInfo.phoneNumber}
+                  </span>
+                </div>
+              )}
+
+              {businessInfo.website && (
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-gray-500" />
+                  <a
+                    href={businessInfo.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Visit Website
+                  </a>
+                </div>
+              )}
+
+              {businessInfo.openingHours && (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-500" />
+                  <span
+                    className={`text-sm ${
+                      businessInfo.openingHours.openNow
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {businessInfo.openingHours.openNow ? "Open Now" : "Closed"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {businessInfo.types && businessInfo.types.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {businessInfo.types.slice(0, 3).map((type, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                  >
+                    {type.replace(/_/g, " ").toLowerCase()}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : showBusinessSearch ? (
+          /* Business search interface */
+          <div className="space-y-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search for your business..."
+                value={businessSearchQuery}
+                onChange={(e) => handleBusinessSearch(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {loadingSuggestions && (
+                <RefreshCw className="w-4 h-4 animate-spin absolute right-3 top-3 text-gray-400" />
+              )}
+            </div>
+
+            {businessSuggestions.length > 0 && (
+              <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                {businessSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.place_id}
+                    onClick={() => handleBusinessSelection(suggestion)}
+                    className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium">
+                      {suggestion.structured_formatting.main_text}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {suggestion.structured_formatting.secondary_text}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowBusinessSearch(false)}
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Default state - no business info */
+          <div className="text-center py-8 text-gray-500">
+            <Building className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="mb-2">No business information added yet</p>
+            <p className="text-sm">
+              Add your business info to help customers find and contact you
+              easily.
+            </p>
+          </div>
+        )}
+      </Card>
+
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Widget Configuration</h3>
         <div className="space-y-4">
@@ -214,14 +535,49 @@ export default function WidgetManager() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Company Name
             </label>
-            <input
-              type="text"
-              value={config.companyName}
-              onChange={(e) =>
-                setConfig({ ...config, companyName: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={config.companyName}
+                onChange={(e) => {
+                  setConfig({ ...config, companyName: e.target.value });
+                  // Trigger business search if no business info exists
+                  if (!businessInfo && e.target.value.length > 2) {
+                    handleBusinessSearch(e.target.value);
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your company name..."
+              />
+
+              {/* Show suggestions if typing and no business info exists */}
+              {!businessInfo &&
+                businessSuggestions.length > 0 &&
+                config.companyName.length > 2 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {businessSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.place_id}
+                        onClick={() => handleBusinessSelection(suggestion)}
+                        className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        type="button"
+                      >
+                        <div className="font-medium text-sm">
+                          {suggestion.structured_formatting.main_text}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {suggestion.structured_formatting.secondary_text}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+            </div>
+            {!businessInfo && (
+              <p className="text-xs text-gray-500 mt-1">
+                Start typing to search for your business on Google Maps
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

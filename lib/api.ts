@@ -2,7 +2,7 @@ import { use } from "react";
 
 // API configuration
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -555,101 +555,39 @@ export const widgetAPI = {
       throw error;
     }
   },
-};
 
-// Payment API functions
-export const paymentAPI = {
-  // Create a payment link
-  createPayment: async (paymentData: {
-    conversationId: string;
-    amount: number;
-    currency?: string;
-    description: string;
-    customerEmail: string;
-    dueDate?: string;
-    lineItems?: Array<{
-      description: string;
-      quantity?: number;
-      unitPrice: number;
-    }>;
-  }): Promise<any> => {
+  // Update business information from Google Places
+  updateBusinessInfo: async (
+    businessInfo: any,
+    userId?: string
+  ): Promise<any> => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`${API_BASE_URL}/payments`, {
+      const response = await fetch(`${API_BASE_URL}/widget/business-info`, {
         method: "POST",
         headers,
-        body: JSON.stringify(paymentData),
+        body: JSON.stringify({ businessInfo, userId }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create payment: ${response.statusText}`);
+        throw new Error(
+          `Failed to update business info: ${response.statusText}`
+        );
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error creating payment:", error);
+      console.error("Error updating business info:", error);
       throw error;
     }
   },
 
-  // Get all payments for user
-  getPayments: async (filters?: {
-    status?: string;
-    customerId?: string;
-    conversationId?: string;
-  }): Promise<any> => {
-    try {
-      const headers = await getAuthHeaders();
-      const queryParams = new URLSearchParams();
-
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value) queryParams.append(key, value);
-        });
-      }
-
-      const response = await fetch(`${API_BASE_URL}/payments?${queryParams}`, {
-        method: "GET",
-        headers,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch payments: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      throw error;
-    }
-  },
-
-  // Get specific payment
-  getPayment: async (paymentId: string): Promise<any> => {
-    try {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
-        method: "GET",
-        headers,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch payment: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching payment:", error);
-      throw error;
-    }
-  },
-
-  // Get payments for a conversation
-  getConversationPayments: async (conversationId: string): Promise<any> => {
+  // Get business information
+  getBusinessInfo: async (userId?: string): Promise<any> => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(
-        `${API_BASE_URL}/payments/conversation/${conversationId}`,
+        `${API_BASE_URL}/widget/business-info/${userId}`,
         {
           method: "GET",
           headers,
@@ -658,13 +596,13 @@ export const paymentAPI = {
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch conversation payments: ${response.statusText}`
+          `Failed to fetch business info: ${response.statusText}`
         );
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error fetching conversation payments:", error);
+      console.error("Error fetching business info:", error);
       throw error;
     }
   },
