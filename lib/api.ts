@@ -564,6 +564,7 @@ export const widgetAPI = {
     userId?: string
   ): Promise<any> => {
     try {
+      console.log("Updating business info:", { businessInfo, userId });
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/widget/business-info`, {
         method: "POST",
@@ -571,13 +572,16 @@ export const widgetAPI = {
         body: JSON.stringify({ businessInfo, userId }),
       });
 
+      const responseData = await response.json();
+      console.log("Business info update response:", responseData);
+
       if (!response.ok) {
         throw new Error(
-          `Failed to update business info: ${response.statusText}`
+          responseData.error || `Failed to update business info: ${response.statusText}`
         );
       }
 
-      return await response.json();
+      return responseData;
     } catch (error) {
       console.error("Error updating business info:", error);
       throw error;

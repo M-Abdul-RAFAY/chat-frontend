@@ -276,6 +276,7 @@ export default function WidgetManager() {
   // Clear business info
   const clearBusinessInfo = async () => {
     try {
+      console.log("Attempting to clear business info for user:", user?.id);
       await widgetAPI.updateBusinessInfo(null, user?.id);
       setBusinessInfo(null);
       setConfig((prev) => ({ ...prev, companyName: "Your Company" }));
@@ -285,6 +286,7 @@ export default function WidgetManager() {
     } catch (error) {
       console.error("Error clearing business info:", error);
       setError("Failed to clear business information. Please try again.");
+      setTimeout(() => setError(""), 5000);
     }
   };
 
