@@ -17,6 +17,7 @@ import {
   Check,
   MapPin,
   DollarSign,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
@@ -29,6 +30,7 @@ interface ChatInterfaceProps {
   onToggleProfile: () => void;
   profileVisible: boolean;
   maxSuggestions?: number;
+  onBackToConversations?: () => void;
 }
 
 interface AISuggestion {
@@ -72,6 +74,7 @@ export default function ChatInterface({
   onToggleProfile,
   profileVisible,
   maxSuggestions = 2,
+  onBackToConversations,
 }: ChatInterfaceProps) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -878,21 +881,33 @@ export default function ChatInterface({
     <div className="flex flex-col bg-white flex-1 min-w-0 h-full relative">
       {/* Header - Fixed */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div
-          className="flex items-center space-x-2 min-w-0 cursor-pointer hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors"
-          onClick={onToggleProfile}
-        >
-          <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs">
-            WP
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-semibold text-gray-900 truncate text-sm">
-              {customerName}
-            </h2>
-            <p className="text-xs text-gray-500 flex items-center">
-              <MapPin size={12} />
-              <span className="truncate">{customerLocation}</span>
-            </p>
+        <div className="flex items-center space-x-2 min-w-0">
+          {/* Back Button - Show only on small screens */}
+          {onBackToConversations && (
+            <button
+              onClick={onBackToConversations}
+              className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+            >
+              <ArrowLeft size={18} />
+            </button>
+          )}
+
+          <div
+            className="flex items-center space-x-2 min-w-0 cursor-pointer hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors"
+            onClick={onToggleProfile}
+          >
+            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs">
+              WP
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-semibold text-gray-900 truncate text-sm">
+                {customerName}
+              </h2>
+              <p className="text-xs text-gray-500 flex items-center">
+                <MapPin size={12} />
+                <span className="truncate">{customerLocation}</span>
+              </p>
+            </div>
           </div>
         </div>
 
