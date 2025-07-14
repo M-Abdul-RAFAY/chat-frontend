@@ -1293,7 +1293,7 @@ export default function ChatInterface({
         >
           <button
             type="button"
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 mb-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             onClick={handleAttachClick}
           >
             <Paperclip size={18} />
@@ -1301,7 +1301,7 @@ export default function ChatInterface({
 
           <button
             type="button"
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 mb-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           >
             <Smile size={18} />
@@ -1309,7 +1309,7 @@ export default function ChatInterface({
 
           <button
             type="button"
-            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 mb-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors flex-shrink-0"
             onClick={() => setShowPaymentModal(true)}
             title="Request Payment"
           >
@@ -1325,7 +1325,7 @@ export default function ChatInterface({
             accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
           />
 
-          <div className="flex-1">
+          <div className="flex-1 mt-2">
             <textarea
               ref={inputRef}
               value={newMessage}
@@ -1342,7 +1342,7 @@ export default function ChatInterface({
             type="button"
             onClick={handleAIGenerate}
             className={cn(
-              "p-2 rounded-lg transition-colors flex-shrink-0",
+              "p-2 mb-1.5 rounded-lg transition-colors flex-shrink-0",
               loadingAI
                 ? "text-purple-400 cursor-not-allowed"
                 : "text-purple-600 hover:bg-purple-50"
@@ -1373,7 +1373,7 @@ export default function ChatInterface({
               !conversationId
             }
             className={cn(
-              "p-2 rounded-lg transition-colors flex-shrink-0",
+              "p-2 mb-1.5 rounded-lg transition-colors flex-shrink-0",
               (newMessage.trim() || attachedFiles.length > 0) &&
                 !sending &&
                 conversationId
