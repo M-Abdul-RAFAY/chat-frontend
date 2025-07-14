@@ -625,7 +625,11 @@ export default function ChatInterface({
     } catch (err) {
       console.error("Error generating AI suggestions:", err);
       const fallbackSuggestions: AISuggestion[] = [
-        { id: "1", text: "Thank you for reaching out!", type: "quick" as const },
+        {
+          id: "1",
+          text: "Thank you for reaching out!",
+          type: "quick" as const,
+        },
         {
           id: "2",
           text: "I'd be happy to help you with that.",
