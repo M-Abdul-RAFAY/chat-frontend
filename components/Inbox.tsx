@@ -23,7 +23,7 @@ export default function Inbox() {
           setShowConversationList(false);
         }
       } else {
-        setSidebarCollapsed(false);
+        // On desktop, always show conversation list but don't change sidebar state
         setShowConversationList(true);
       }
     };
@@ -44,7 +44,9 @@ export default function Inbox() {
 
   // Handle back to conversations
   const handleBackToConversations = () => {
+    console.log("Back button clicked - showing conversation list");
     setShowConversationList(true);
+    // Don't clear the selected conversation - just show the conversation list
   };
 
   return (
@@ -56,13 +58,31 @@ export default function Inbox() {
       />
 
       <div className="flex flex-1 h-full min-h-0 overflow-hidden">
-        <ConversationList
-          selectedConversation={selectedConversation}
-          onSelectConversation={setSelectedConversation}
-          collapsed={sidebarCollapsed}
-        />
+        {/* Conversation List - Show/Hide based on mobile state */}
+        <div
+          className={`
+          ${
+            showConversationList ? "flex w-full bg-blue-50" : "hidden"
+          } md:flex md:w-64 lg:w-80 md:bg-transparent
+          h-full min-h-0 overflow-hidden
+        `}
+        >
+          <ConversationList
+            selectedConversation={selectedConversation}
+            onSelectConversation={handleSelectConversation}
+            collapsed={sidebarCollapsed}
+          />
+        </div>
 
-        <div className="flex flex-1 h-full min-h-0 overflow-hidden relative">
+        {/* Chat Interface - Show based on state */}
+        <div
+          className={`
+          ${
+            !showConversationList ? "flex w-full bg-green-50" : "hidden"
+          } md:flex md:flex-1 md:bg-transparent
+          h-full min-h-0 overflow-hidden relative
+        `}
+        >
           <ChatInterface
             conversationId={selectedConversation}
             onToggleProfile={() => setProfileVisible(!profileVisible)}
