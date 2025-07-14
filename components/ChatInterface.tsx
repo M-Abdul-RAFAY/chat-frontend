@@ -227,8 +227,6 @@ export default function ChatInterface({
   // Use conversation data if available, otherwise fallback to placeholder
   const customerName =
     conversationData?.name || conversation?.name || "Will Pantente";
-  const customerLocation =
-    conversationData?.location || conversation?.location || "Venture Auto ...";
   const customerAvatar =
     conversationData?.avatar || conversation?.avatar || "WP";
   const customerStatusColor =
@@ -918,10 +916,6 @@ export default function ChatInterface({
                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(" ")}
               </h2>
-              <p className="text-xs text-gray-500 flex items-center">
-                <MapPin size={12} />
-                <span className="truncate">{customerLocation}</span>
-              </p>
             </div>
           </div>
         </div>
@@ -1027,34 +1021,36 @@ export default function ChatInterface({
               Conversation with {customerName}
             </p>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              Started {(() => {
+              Started{" "}
+              {(() => {
                 // Use the first message's timestamp if available, otherwise fallback
                 const firstMessage = messages[0];
                 if (firstMessage?.timestamp) {
                   try {
                     const date = new Date(firstMessage.timestamp);
                     const today = new Date();
-                    const isToday = date.toDateString() === today.toDateString();
-                    
+                    const isToday =
+                      date.toDateString() === today.toDateString();
+
                     if (isToday) {
-                      return `today at ${date.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      return `today at ${date.toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}`;
                     } else {
-                      return `on ${date.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })} at ${date.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      return `on ${date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })} at ${date.toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}`;
                     }
                   } catch (error) {
-                    return 'recently';
+                    return "recently";
                   }
                 }
-                return 'recently';
+                return "recently";
               })()}
             </p>
           </div>
