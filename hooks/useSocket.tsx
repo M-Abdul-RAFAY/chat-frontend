@@ -43,7 +43,14 @@ interface UseSocketProps {
   onConversationUpdated?: (data: { conversationId: string; lastMessage: string; unread?: boolean }) => void;
   onTypingStart?: (data: { userId: string; conversationId: string }) => void;
   onTypingStop?: (data: { userId: string; conversationId: string }) => void;
-  onPaymentStatusUpdate?: (data: { paymentId: string; status: string; message: string; paidAt?: string }) => void;
+  onPaymentStatusUpdate?: (data: { 
+    messageId?: string;
+    paymentId: string; 
+    status: string; 
+    message: string; 
+    paidAt?: string;
+    conversationId?: string;
+  }) => void;
 }
 
 export const useSocket = ({
@@ -166,7 +173,17 @@ export const useSocket = ({
 
     if (onPaymentStatusUpdate) {
       console.log("💳 Setting up onPaymentStatusUpdate handler");
-      socketEventHandlers.onPaymentStatusUpdate(onPaymentStatusUpdate);
+      socketEventHandlers.onPaymentStatusUpdate((data) => {
+        console.log("🎯 Socket event: paymentStatusUpdate received", {
+          messageId: data.messageId,
+          paymentId: data.paymentId,
+          status: data.status,
+          conversationId: data.conversationId,
+          timestamp: new Date().toISOString()
+        });
+        console.log("📞 Calling onPaymentStatusUpdate callback with data:", data);
+        onPaymentStatusUpdate(data);
+      });
     }
 
     // Cleanup event listeners

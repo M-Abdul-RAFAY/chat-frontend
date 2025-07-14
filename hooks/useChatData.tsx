@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { initializeSocket, socketEventHandlers, connectSocket, disconnectSocket } from "@/lib/socket";
+import { initializeSocket, socketEventHandlers, connectSocket, disconnectSocket, joinConversation } from "@/lib/socket";
 import { useAuth } from "@clerk/nextjs";
 
 export interface Message {
@@ -148,6 +148,51 @@ export function useChatData(): ChatDataContext {
           socketEventHandlers.onDisconnect(() => {
             console.log("Socket disconnected");
           });
+
+          // Payment status update handler
+          socketEventHandlers.onPaymentStatusUpdate((data: {
+            messageId?: string;
+            paymentId: string;
+            status: string;
+            message: string;
+            paidAt?: string;
+            conversationId?: string;
+          }) => {
+            console.log("💳 Payment status update received:", data);
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === data.conversationId
+                  ? {
+                      ...conv,
+                      messages: conv.messages.map(msg => {
+                        if (msg.id === data.messageId && msg.paymentData) {
+                          console.log("💰 Updating message payment status:", {
+                            messageId: msg.id,
+                            oldStatus: msg.paymentData.status,
+                            newStatus: data.status
+                          });
+                          
+                          return {
+                            ...msg,
+                            paymentData: {
+                              ...msg.paymentData,
+                              status: data.status,
+                            }
+                          };
+                        }
+                        return msg;
+                      })
+                    }
+                  : conv
+              )
+            );
+
+            // Show success notification
+            if (data.status === 'completed') {
+              console.log('✅ Payment completed successfully!');
+              // You can add a toast notification here if you have one
+            }
+          });
         }
       } catch (error) {
         console.error("Error initializing socket:", error);
@@ -167,7 +212,7 @@ export function useChatData(): ChatDataContext {
       setError(null);
       const response = await fetch(
         (process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:8000/api/v1") + "/conversations",
+        "http://localhost:4000/api/v1") + "/conversations",
         {
           headers: getAuthHeaders(),
         }
@@ -221,10 +266,13 @@ export function useChatData(): ChatDataContext {
 
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
+      // Join the conversation room for real-time updates
+      joinConversation(conversationId);
+      
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          "http://localhost:8000/api/v1"
+          "http://localhost:4000/api/v1"
         }/conversations/${conversationId}/messages`,
         {
           headers: getAuthHeaders(),
@@ -291,7 +339,7 @@ export function useChatData(): ChatDataContext {
         const response = await fetch(
           `${
             process.env.NEXT_PUBLIC_API_URL ||
-            "http://localhost:8000/api/v1"
+            "http://localhost:4000/api/v1"
           }/messages`,
           {
             method: "POST",

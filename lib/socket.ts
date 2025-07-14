@@ -90,7 +90,14 @@ export const socketEventHandlers = {
     socket?.on("typing:stop", callback);
   },
   
-  onPaymentStatusUpdate: (callback: (data: { paymentId: string; status: string; message: string; paidAt?: string }) => void) => {
+  onPaymentStatusUpdate: (callback: (data: { 
+    messageId?: string;
+    paymentId: string; 
+    status: string; 
+    message: string; 
+    paidAt?: string;
+    conversationId?: string;
+  }) => void) => {
     console.log("🔧 Setting up paymentStatusUpdate event listener");
     socket?.on("paymentStatusUpdate", (data) => {
       console.log("💳 Raw socket event: paymentStatusUpdate", data);
@@ -132,23 +139,60 @@ export const socketEventHandlers = {
   },
 };
 
-// Socket emit functions
+export const joinConversation = (conversationId: string) => {
+  if (socket && socket.connected) {
+    console.log("🔗 Joining conversation room:", conversationId);
+    socket.emit("joinConversation", conversationId);
+  } else {
+    console.warn("❌ Cannot join conversation - socket not connected");
+  }
+};
+
+export const leaveConversation = (conversationId: string) => {
+  if (socket && socket.connected) {
+    console.log("🚪 Leaving conversation room:", conversationId);
+    socket.emit("leaveConversation", conversationId);
+  } else {
+    console.warn("❌ Cannot leave conversation - socket not connected");
+  }
+};
+
+// Socket emit object with specific methods
 export const socketEmit = {
   joinConversation: (conversationId: string) => {
-    console.log("📡 Emitting joinConversation event:", conversationId);
-    socket?.emit("joinConversation", conversationId);
+    if (socket && socket.connected) {
+      console.log("🔗 Joining conversation:", conversationId);
+      socket.emit("joinConversation", conversationId);
+    }
   },
   
   leaveConversation: (conversationId: string) => {
-    console.log("📡 Emitting leaveConversation event:", conversationId);
-    socket?.emit("leaveConversation", conversationId);
+    if (socket && socket.connected) {
+      console.log("🚪 Leaving conversation:", conversationId);
+      socket.emit("leaveConversation", conversationId);
+    }
   },
   
   startTyping: (conversationId: string) => {
-    socket?.emit("typing:start", { conversationId });
+    if (socket && socket.connected) {
+      console.log("⌨️ Start typing in conversation:", conversationId);
+      socket.emit("typing:start", { conversationId });
+    }
   },
   
   stopTyping: (conversationId: string) => {
-    socket?.emit("typing:stop", { conversationId });
-  },
+    if (socket && socket.connected) {
+      console.log("⌨️ Stop typing in conversation:", conversationId);
+      socket.emit("typing:stop", { conversationId });
+    }
+  }
+};
+
+export const genericSocketEmit = (event: string, data: unknown) => {
+  if (socket && socket.connected) {
+    console.log("📤 Emitting socket event:", event, data);
+    socket.emit(event, data);
+  } else {
+    console.warn("❌ Cannot emit event - socket not connected");
+  }
 };
