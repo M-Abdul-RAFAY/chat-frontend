@@ -765,20 +765,16 @@ export default function WidgetManager() {
                   Live Preview
                 </h3>
                 <div className="bg-gray-100 rounded-xl p-6 min-h-[300px] relative overflow-hidden">
+                  {/* Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-50"></div>
-                  <div className="relative">
-                    <div
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium shadow-lg animate-pulse"
-                      style={{ backgroundColor: config.primaryColor }}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Text Us
-                    </div>
-                    <div className="mt-4 bg-white rounded-lg p-4 shadow-sm max-w-xs">
-                      <p className="text-sm text-gray-800">
-                        {config.welcomeMessage}
-                      </p>
-                    </div>
+
+                  {/* Button placed at bottom-right */}
+                  <div
+                    className="absolute bottom-4 right-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium shadow-lg animate-pulse z-10"
+                    style={{ backgroundColor: config.primaryColor }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Text Us
                   </div>
                 </div>
               </div>
