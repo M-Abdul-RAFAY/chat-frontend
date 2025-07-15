@@ -532,7 +532,7 @@ export const widgetAPI = {
     companyName: string;
     welcomeMessage: string;
     primaryColor: string;
-    isActive: boolean;
+    textColor: string;
   }> => {
     try {
       const response = await fetch(

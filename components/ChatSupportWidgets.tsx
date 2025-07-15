@@ -9,7 +9,7 @@ interface WidgetData {
   companyName: string;
   welcomeMessage: string;
   primaryColor: string;
-  isActive: boolean;
+  textColor: string;
 }
 
 interface Message {
@@ -49,7 +49,7 @@ export default function ChatSupportWidget({
     companyName: "Support",
     welcomeMessage: "Hi! How can we help you today?",
     primaryColor: "#3B82F6",
-    isActive: true,
+    textColor: "#FFFFFF",
   });
 
   useEffect(() => {
@@ -162,10 +162,6 @@ export default function ChatSupportWidget({
       touched[fieldName] && !errors[fieldName] && form[fieldName].trim() !== ""
     );
   };
-
-  if (!widgetData.isActive) {
-    return null;
-  }
 
   return (
     <>
@@ -451,13 +447,11 @@ export default function ChatSupportWidget({
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => (isOpen ? handleClose() : setIsOpen(true))}
-          className={`text-white rounded-full py-3 px-3 shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2
-            ${
-              isOpen
-                ? "bg-blue-700 hover:bg-blue-900"
-                : "bg-blue-600 hover:bg-blue-700"
-            }
-          `}
+          className="rounded-full py-3 px-3 shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 hover:opacity-90"
+          style={{
+            backgroundColor: widgetData.primaryColor,
+            color: widgetData.textColor,
+          }}
           aria-label={isOpen ? "Close chat" : "Open chat support"}
         >
           {isOpen ? (

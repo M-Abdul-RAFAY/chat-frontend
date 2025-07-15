@@ -33,7 +33,7 @@ interface WidgetConfig {
   companyName: string;
   welcomeMessage: string;
   primaryColor: string;
-  isActive: boolean;
+  textColor: string;
 }
 
 interface BusinessInfo {
@@ -73,7 +73,7 @@ export default function WidgetManager() {
     companyName: "Your Company",
     welcomeMessage: "Hi! How can we help you today?",
     primaryColor: "#3B82F6",
-    isActive: true,
+    textColor: "#FFFFFF",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -736,26 +736,32 @@ export default function WidgetManager() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">
-                      Widget Status
-                    </label>
-                    <p className="text-xs text-gray-500">
-                      Enable or disable the widget on your website
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.isActive}
-                      onChange={(e) =>
-                        setConfig({ ...config, isActive: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <Palette className="w-4 h-4" />
+                    Text Color
                   </label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="color"
+                      value={config.textColor}
+                      onChange={(e) =>
+                        setConfig({ ...config, textColor: e.target.value })
+                      }
+                      className="w-16 h-12 border border-gray-300 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={config.textColor}
+                        onChange={(e) =>
+                          setConfig({ ...config, textColor: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -770,8 +776,11 @@ export default function WidgetManager() {
 
                   {/* Button placed at bottom-right */}
                   <div
-                    className="absolute bottom-4 right-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium shadow-lg animate-pulse z-10"
-                    style={{ backgroundColor: config.primaryColor }}
+                    className="absolute bottom-4 right-4 inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium shadow-lg animate-pulse z-10"
+                    style={{
+                      backgroundColor: config.primaryColor,
+                      color: config.textColor,
+                    }}
                   >
                     <MessageCircle className="w-4 h-4" />
                     Text Us
