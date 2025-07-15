@@ -1227,7 +1227,7 @@ export default function ChatInterface({
                     <p
                       className={cn(
                         "text-xs flex items-center space-x-1",
-                        isCustomer ? "text-gray-500" : "text-blue-100"
+                        isCustomer ? "text-gray-500" : "text-gray-400"
                       )}
                     >
                       <Clock className="w-3 h-3" />
