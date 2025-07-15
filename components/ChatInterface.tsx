@@ -1515,9 +1515,7 @@ export default function ChatInterface({
 
           setTimeout(async () => {
             try {
-              console.log(
-                "Refreshing conversation after payment creation..."
-              );
+              console.log("Refreshing conversation after payment creation...");
               const data = await chatAPI.getConversation(conversationId);
 
               const transformedMessages = data.messages.map((msg: any) => ({
