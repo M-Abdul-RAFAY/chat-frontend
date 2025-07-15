@@ -981,18 +981,19 @@ export default function ChatInterface({
                         />
                         <div
                           className={cn(
-                            "w-10 h-6 rounded-full transition-colors duration-200",
+                            "w-10 h-5 rounded-full transition-colors duration-200 pt-[1px] flex items-center",
                             autoAIResponse ? "bg-blue-500" : "bg-gray-300"
                           )}
                         >
                           <div
                             className={cn(
-                              "w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 mt-1",
-                              autoAIResponse ? "translate-x-5" : "translate-x-1"
+                              "w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ",
+                              autoAIResponse ? "translate-x-5" : "translate-x-0"
                             )}
                           />
                         </div>
                       </div>
+
                       <div>
                         <span className="text-sm font-medium text-gray-700">
                           Auto AI Response
