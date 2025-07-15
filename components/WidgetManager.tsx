@@ -19,6 +19,7 @@ import {
   Settings,
   Palette,
   MessageSquare,
+  MessageCircle,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -770,8 +771,8 @@ export default function WidgetManager() {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium shadow-lg animate-pulse"
                       style={{ backgroundColor: config.primaryColor }}
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      Chat with {config.companyName}
+                      <MessageCircle className="w-4 h-4" />
+                      Text Us
                     </div>
                     <div className="mt-4 bg-white rounded-lg p-4 shadow-sm max-w-xs">
                       <p className="text-sm text-gray-800">
