@@ -164,8 +164,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in-0 duration-300">
       <div className="w-full max-w-4xl max-h-[95vh] flex items-center justify-center">
-        <Card className="w-full overflow-hidden shadow-2xl border-0 animate-in zoom-in-95 duration-300 bg-white">
-          <CardHeader className="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white overflow-hidden">
+        <Card className="w-full p-0 overflow-hidden shadow-2xl border-0 animate-in zoom-in-95 duration-300 bg-white">
+          <CardHeader className="relative pt-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 backdrop-blur-sm"></div>
             <div className="relative flex items-center justify-between">
               <CardTitle className="flex items-center gap-3 text-xl font-bold">
