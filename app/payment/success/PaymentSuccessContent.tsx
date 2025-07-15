@@ -31,7 +31,7 @@ export default function PaymentSuccessContent() {
 
         // Call our backend API to verify the session
         const response = await fetch(
-          `http://localhost:4000/api/v1/payment/verify-session?session_id=${sessionId}`,
+          `http://localhost:4000/api/v1/payments/verify-session/${sessionId}`,
           {
             method: "GET",
             headers: {
