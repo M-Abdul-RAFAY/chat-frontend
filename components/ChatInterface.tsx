@@ -17,6 +17,9 @@ import {
   Check,
   DollarSign,
   ArrowLeft,
+  MessageCircle,
+  Clock,
+  CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
@@ -229,7 +232,9 @@ export default function ChatInterface({
   const customerAvatar =
     conversationData?.avatar || conversation?.avatar || "WP";
   const customerStatusColor =
-    conversationData?.statusColor || conversation?.statusColor || "bg-pink-500";
+    conversationData?.statusColor ||
+    conversation?.statusColor ||
+    "bg-gradient-to-br from-pink-500 to-rose-500";
 
   // Join conversation when component mounts or conversationId changes
   useEffect(() => {
@@ -850,10 +855,16 @@ export default function ChatInterface({
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-500">Loading conversation...</p>
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-20 animate-pulse"></div>
+            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-3">
+              <RefreshCw className="w-6 h-6 animate-spin text-white" />
+            </div>
+          </div>
+          <p className="text-gray-600 font-medium">Loading conversation...</p>
+          <p className="text-sm text-gray-400 mt-1">Please wait a moment</p>
         </div>
       </div>
     );
@@ -861,9 +872,15 @@ export default function ChatInterface({
 
   if (error) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 mb-2">{error}</p>
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-red-50 to-rose-50">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-red-100">
+          <div className="bg-red-100 rounded-full p-3 w-fit mx-auto mb-4">
+            <X className="w-6 h-6 text-red-600" />
+          </div>
+          <p className="text-red-600 font-medium mb-2">{error}</p>
+          <p className="text-sm text-gray-500">
+            Please try refreshing the page
+          </p>
         </div>
       </div>
     );
@@ -871,9 +888,12 @@ export default function ChatInterface({
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="bg-blue-100 rounded-full p-3 w-fit mx-auto mb-4">
+            <MessageCircle className="w-6 h-6 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             No conversation selected
           </h3>
           <p className="text-gray-500">
@@ -885,144 +905,178 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col bg-white flex-1 min-w-0 h-full relative">
-      {/* Header - Fixed */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="flex items-center space-x-2 min-w-0">
-          {/* Back Button - Show only on small screens */}
-          {onBackToConversations && (
-            <button
-              onClick={onBackToConversations}
-              className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
-            >
-              <ArrowLeft size={18} />
-            </button>
-          )}
+    <div className="flex flex-col bg-gradient-to-br from-slate-50 to-blue-50 flex-1 min-w-0 h-full relative">
+      {/* Header - Enhanced with gradient and better styling */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center space-x-3 min-w-0">
+            {/* Back Button - Enhanced */}
+            {onBackToConversations && (
+              <button
+                onClick={onBackToConversations}
+                className="p-2 text-gray-500 hover:bg-white hover:text-gray-700 rounded-xl transition-all duration-200 md:hidden shadow-sm"
+              >
+                <ArrowLeft size={20} />
+              </button>
+            )}
 
-          <div
-            className="flex items-center space-x-2 min-w-0 cursor-pointer hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors"
-            onClick={onToggleProfile}
-          >
             <div
-              className={`w-8 h-8 ${customerStatusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-xs`}
+              className="flex items-center space-x-3 min-w-0 cursor-pointer hover:bg-white/50 rounded-xl p-2 -m-2 transition-all duration-200 group"
+              onClick={onToggleProfile}
             >
-              {customerAvatar}
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-semibold text-gray-900 truncate text-sm">
-                {customerName
-                  .split(" ")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ")}
-              </h2>
+              <div className="relative">
+                <div
+                  className={`w-10 h-10 ${customerStatusColor} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 text-sm shadow-lg`}
+                >
+                  {customerAvatar}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-gray-900 truncate">
+                  {customerName
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
+                </h2>
+                <p className="text-xs text-green-600 font-medium">Online</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center space-x-1 flex-shrink-0">
-          <button className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <Phone size={18} />
-          </button>
-          <button className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <Video size={18} />
-          </button>
-
-          {/* More Options Menu */}
-          <div className="relative" ref={moreMenuRef}>
-            <button
-              className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setShowMoreMenu(!showMoreMenu)}
-            >
-              <MoreHorizontal size={18} />
+          <div className="flex items-center space-x-1 flex-shrink-0">
+            <button className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm">
+              <Phone size={20} />
+            </button>
+            <button className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm">
+              <Video size={20} />
             </button>
 
-            {/* --- REPLACED SECTION START --- */}
-            {showMoreMenu && (
-              <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                {/* Auto AI Toggle */}
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={autoAIResponse}
-                      onChange={async (e) => {
-                        setAutoAIResponse(e.target.checked);
-                        await saveUserSettings(
-                          "aiGeneratedResponse",
-                          e.target.checked
-                        );
-                      }}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">
-                      Auto AI Response
-                    </span>
-                  </label>
-                </div>
+            {/* More Options Menu - Enhanced */}
+            <div className="relative" ref={moreMenuRef}>
+              <button
+                className="p-2.5 text-gray-500 hover:bg-white hover:text-gray-700 rounded-xl transition-all duration-200 shadow-sm"
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+              >
+                <MoreHorizontal size={20} />
+              </button>
 
-                {/* Platform Options */}
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-xs text-gray-500 mb-2">
-                    Send via Platform:
-                  </p>
-                  <button
-                    onClick={async () => {
-                      setWhatsappEnabled(true);
-                      setSmsEnabled(false);
-                      await saveUserSettings("whatsapp", true, {
-                        whatsapp: true,
-                        sms: false,
-                      });
-                    }}
-                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded mb-1 flex items-center justify-between"
-                  >
-                    <span className="flex items-center space-x-2">
-                      <span>📱</span>
-                      <span>WhatsApp</span>
-                    </span>
-                    {whatsappEnabled && (
-                      <Check className="w-4 h-4 text-green-600" />
-                    )}
-                  </button>
-                  <button
-                    onClick={async () => {
-                      setWhatsappEnabled(false);
-                      setSmsEnabled(true);
-                      await saveUserSettings("sms", true, {
-                        whatsapp: false,
-                        sms: true,
-                      });
-                    }}
-                    className="w-full px-2 py-1 text-left text-sm text-gray-700 hover:bg-gray-50 rounded flex items-center justify-between"
-                  >
-                    <span className="flex items-center space-x-2">
-                      <span>💬</span>
-                      <span>SMS</span>
-                    </span>
-                    {smsEnabled && <Check className="w-4 h-4 text-green-600" />}
-                  </button>
+              {showMoreMenu && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-xl z-20 overflow-hidden">
+                  {/* Auto AI Toggle */}
+                  <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          checked={autoAIResponse}
+                          onChange={async (e) => {
+                            setAutoAIResponse(e.target.checked);
+                            await saveUserSettings(
+                              "aiGeneratedResponse",
+                              e.target.checked
+                            );
+                          }}
+                          className="sr-only"
+                        />
+                        <div
+                          className={cn(
+                            "w-10 h-6 rounded-full transition-colors duration-200",
+                            autoAIResponse ? "bg-blue-500" : "bg-gray-300"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 mt-1",
+                              autoAIResponse ? "translate-x-5" : "translate-x-1"
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">
+                          Auto AI Response
+                        </span>
+                        <p className="text-xs text-gray-500">
+                          Generate suggestions automatically
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Platform Options */}
+                  <div className="px-4 py-3">
+                    <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">
+                      Send via Platform
+                    </p>
+                    <div className="space-y-2">
+                      <button
+                        onClick={async () => {
+                          setWhatsappEnabled(true);
+                          setSmsEnabled(false);
+                          await saveUserSettings("whatsapp", true, {
+                            whatsapp: true,
+                            sms: false,
+                          });
+                        }}
+                        className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 rounded-xl transition-colors duration-200 flex items-center justify-between group"
+                      >
+                        <span className="flex items-center space-x-3">
+                          <span className="text-lg">📱</span>
+                          <span className="font-medium">WhatsApp</span>
+                        </span>
+                        {whatsappEnabled && (
+                          <div className="bg-green-500 rounded-full p-1">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setWhatsappEnabled(false);
+                          setSmsEnabled(true);
+                          await saveUserSettings("sms", true, {
+                            whatsapp: false,
+                            sms: true,
+                          });
+                        }}
+                        className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 rounded-xl transition-colors duration-200 flex items-center justify-between group"
+                      >
+                        <span className="flex items-center space-x-3">
+                          <span className="text-lg">💬</span>
+                          <span className="font-medium">SMS</span>
+                        </span>
+                        {smsEnabled && (
+                          <div className="bg-blue-500 rounded-full p-1">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            {/* --- REPLACED SECTION END --- */}
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Messages - Scrollable placeholder*/}
+      {/* Messages - Enhanced with better styling */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-2 py-2 space-y-3"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
       >
         {messages.length > 0 && (
-          <div className="text-center">
-            <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block">
-              Conversation with {customerName}
-            </p>
-            <p className="text-[10px] text-gray-400 mt-0.5">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center space-x-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-gray-200/50">
+              <Clock className="w-4 h-4 text-gray-400" />
+              <p className="text-sm text-gray-600 font-medium">
+                Conversation with {customerName}
+              </p>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
               Started{" "}
               {(() => {
-                // Use the first message's timestamp if available, otherwise fallback
                 const firstMessage = messages[0];
                 if (firstMessage?.timestamp) {
                   try {
@@ -1056,7 +1110,6 @@ export default function ChatInterface({
         )}
 
         {messages.map((message, index) => {
-          // Determine if message is from customer (left side) or agent/ai/system (right side)
           const isCustomer = message.sender === "customer";
           const isAgent = ["agent", "AI", "system"].includes(message.sender);
 
@@ -1064,14 +1117,16 @@ export default function ChatInterface({
             <div
               key={`${message.id}-${index}`}
               className={cn(
-                "flex items-start group",
+                "flex items-start group animate-in slide-in-from-bottom-2 duration-300",
                 isAgent ? "flex-row-reverse" : ""
               )}
             >
               <div
                 className={cn(
-                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0",
-                  isCustomer ? customerStatusColor : "bg-blue-500"
+                  "w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0 shadow-lg",
+                  isCustomer
+                    ? customerStatusColor
+                    : "bg-gradient-to-br from-blue-500 to-indigo-600"
                 )}
               >
                 {message.avatar}
@@ -1079,100 +1134,107 @@ export default function ChatInterface({
 
               <div
                 className={cn(
-                  "flex items-start min-w-0",
-                  isAgent ? "mr-2" : "ml-2"
+                  "flex items-start min-w-0 max-w-xs lg:max-w-md",
+                  isAgent ? "mr-3" : "ml-3"
                 )}
               >
                 <div
                   className={cn(
-                    "flex items-start",
-                    isAgent
-                      ? "flex-row-reverse space-x-reverse space-x-2"
-                      : "space-x-2"
+                    "px-4 py-3 rounded-2xl text-sm relative shadow-sm border",
+                    message.type === "payment"
+                      ? "bg-gradient-to-br from-green-50 to-emerald-50 text-green-900 border-green-200"
+                      : isCustomer
+                      ? "bg-white text-gray-900 border-gray-200"
+                      : "bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-blue-300",
+                    isAgent ? "rounded-tr-md" : "rounded-tl-md"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "px-3 py-1.5 rounded-2xl text-xs relative inline-block max-w-xs lg:max-w-md",
-                      message.type === "payment"
-                        ? "bg-green-100 text-green-900 border border-green-200"
-                        : isCustomer
-                        ? "bg-gray-100 text-gray-900"
-                        : "bg-blue-500 text-white"
-                    )}
-                  >
-                    {message.type === "payment" && message.paymentData ? (
-                      <div className="text-xs">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span>💳</span>
+                  {message.type === "payment" && message.paymentData ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-green-500 rounded-full p-1">
+                          <DollarSign className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-semibold text-green-800">
+                          Payment Invoice Created
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-green-700">Amount:</span>
                           <span className="font-semibold">
-                            Payment Invoice Created
+                            ${message.paymentData.amount}{" "}
+                            {message.paymentData.currency.toUpperCase()}
                           </span>
                         </div>
-                        <div className="space-y-1">
-                          <p>
-                            <span className="font-medium">Amount:</span> $
-                            {message.paymentData.amount}{" "}
-                            {message.paymentData.currency.toUpperCase()}
-                          </p>
-                          <p>
-                            <span className="font-medium">Description:</span>{" "}
+                        <div>
+                          <span className="text-green-700">Description:</span>
+                          <p className="mt-1">
                             {message.paymentData.description}
                           </p>
-                          <p>
-                            <span className="font-medium">Invoice #:</span>{" "}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-green-700">Invoice #:</span>
+                          <span className="font-mono text-xs">
                             {message.paymentData.invoiceNumber}
-                          </p>
-                          {message.paymentData.dueDate && (
-                            <p>
-                              <span className="font-medium">Due Date:</span>{" "}
+                          </span>
+                        </div>
+                        {message.paymentData.dueDate && (
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Due Date:</span>
+                            <span>
                               {new Date(
                                 message.paymentData.dueDate
                               ).toLocaleDateString()}
-                            </p>
-                          )}
-                          <p>
-                            <span className="font-medium">Status:</span>{" "}
-                            <span className="capitalize">
-                              {message.paymentData.status}
                             </span>
-                          </p>
-                        </div>
-                        {message.paymentData.paymentUrl && (
-                          <div className="mt-3">
-                            <a
-                              href={message.paymentData.paymentUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={cn(
-                                "inline-block px-3 py-1.5 rounded-lg text-xs font-medium text-center min-w-[100px] transition-colors",
-                                message.type === "payment"
-                                  ? "bg-green-600 text-white hover:bg-green-700"
-                                  : isCustomer
-                                  ? "bg-blue-500 text-white hover:bg-blue-600"
-                                  : "bg-white text-blue-500 hover:bg-gray-50"
-                              )}
-                            >
-                              Pay Invoice
-                            </a>
                           </div>
                         )}
+                        <div className="flex justify-between items-center">
+                          <span className="text-green-700">Status:</span>
+                          <span
+                            className={cn(
+                              "px-2 py-1 rounded-full text-xs font-medium capitalize",
+                              message.paymentData.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            )}
+                          >
+                            {message.paymentData.status}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <p className="text-xs whitespace-pre-wrap break-words">
-                        {message.content}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p
-                        className={cn(
-                          "text-[10px]",
-                          isCustomer ? "text-gray-500" : "text-blue-100"
-                        )}
-                      >
-                        {message.time}
-                      </p>
+                      {message.paymentData.paymentUrl && (
+                        <div className="pt-2 border-t border-green-200">
+                          <a
+                            href={message.paymentData.paymentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center w-full px-4 py-2 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors duration-200 shadow-sm"
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Pay Invoice
+                          </a>
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap break-words leading-relaxed">
+                      {message.content}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-2 pt-1">
+                    <p
+                      className={cn(
+                        "text-xs flex items-center space-x-1",
+                        isCustomer ? "text-gray-500" : "text-blue-100"
+                      )}
+                    >
+                      <Clock className="w-3 h-3" />
+                      <span>{message.time}</span>
+                    </p>
+                    {isAgent && (
+                      <CheckCheck className="w-4 h-4 text-blue-200" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -1182,46 +1244,46 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input - Fixed */}
-      <div className="px-2 py-2 border-t border-gray-200 bg-white sticky bottom-0 left-0 right-0 z-10">
-        {/* AI Suggestions Bar - Above Input - More Compact */}
+      {/* Message Input - Enhanced with modern styling */}
+      <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-t border-gray-200/50 sticky bottom-0 left-0 right-0 z-10">
+        {/* AI Suggestions Bar - Enhanced */}
         {showSuggestions && aiSuggestions.length > 0 && (
-          <div className="mb-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-2">
+          <div className="mb-4 p-4 bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border border-purple-200/50 rounded-2xl shadow-sm backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <div className="p-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
-                  <Sparkles className="w-3 h-3 text-white" />
+                <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-full p-1.5">
+                  <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xs font-medium text-gray-800">
-                  Suggested responses
+                <span className="text-sm font-semibold text-gray-800">
+                  AI Suggested Responses
                 </span>
               </div>
               <button
                 onClick={() => setShowSuggestions(false)}
-                className="p-0.5 hover:bg-white hover:bg-opacity-50 rounded-full transition-colors"
+                className="p-1 hover:bg-white/50 rounded-full transition-colors duration-200"
               >
-                <X className="w-3 h-3 text-gray-600" />
+                <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {aiSuggestions.map((suggestion, index) => (
                 <button
                   key={suggestion.id}
                   onClick={() => handleSuggestionSelect(suggestion)}
                   className={cn(
-                    "w-full text-left px-3 py-2 rounded-md text-xs transition-all duration-200 border group hover:shadow-sm",
+                    "w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-200 border group hover:shadow-md",
                     index === selectedSuggestionIndex
-                      ? "bg-white border-blue-300 shadow-sm"
-                      : "bg-white bg-opacity-70 border-transparent hover:bg-white hover:border-blue-200"
+                      ? "bg-white border-purple-300 shadow-md ring-2 ring-purple-100"
+                      : "bg-white/70 border-transparent hover:bg-white hover:border-purple-200"
                   )}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-start space-x-3">
                     <div
                       className={cn(
-                        "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+                        "w-2 h-2 rounded-full flex-shrink-0 mt-2 transition-colors",
                         index === selectedSuggestionIndex
-                          ? "bg-blue-500"
-                          : "bg-gray-300 group-hover:bg-blue-400"
+                          ? "bg-purple-500"
+                          : "bg-gray-300 group-hover:bg-purple-400"
                       )}
                     />
                     <span className="flex-1 text-gray-800 leading-relaxed">
@@ -1234,21 +1296,22 @@ export default function ChatInterface({
           </div>
         )}
 
-        {/* Attached Files Preview */}
+        {/* Attached Files Preview - Enhanced */}
         {attachedFiles.length > 0 && (
-          <div className="mb-2 p-2 bg-gray-50 rounded-lg border">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-700">
-                Attached Files ({attachedFiles.length})
+          <div className="mb-4 p-4 bg-gray-50/80 backdrop-blur-sm rounded-2xl border border-gray-200/50">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+                <Paperclip className="w-4 h-4" />
+                <span>Attached Files ({attachedFiles.length})</span>
               </span>
             </div>
             <div className="space-y-2">
               {attachedFiles.map((attachedFile, index) => (
                 <div
                   key={index}
-                  className="flex items-center space-x-2 p-2 bg-white rounded border"
+                  className="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm"
                 >
-                  <div className="flex-shrink-0 text-gray-500">
+                  <div className="flex-shrink-0 text-gray-500 bg-gray-100 rounded-lg p-2">
                     {getFileIcon(attachedFile.type)}
                   </div>
 
@@ -1256,12 +1319,12 @@ export default function ChatInterface({
                     <img
                       src={attachedFile.preview}
                       alt="Preview"
-                      className="w-8 h-8 object-cover rounded"
+                      className="w-10 h-10 object-cover rounded-lg shadow-sm"
                     />
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {attachedFile.file.name}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -1270,9 +1333,9 @@ export default function ChatInterface({
 
                     {uploadProgress[attachedFile.file.name] !== undefined &&
                       uploadProgress[attachedFile.file.name] < 100 && (
-                        <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                           <div
-                            className="bg-blue-500 h-1 rounded-full transition-all duration-300"
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
                             style={{
                               width: `${
                                 uploadProgress[attachedFile.file.name]
@@ -1285,9 +1348,9 @@ export default function ChatInterface({
 
                   <button
                     onClick={() => removeFile(attachedFile.file.name)}
-                    className="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                    className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -1295,29 +1358,30 @@ export default function ChatInterface({
           </div>
         )}
 
-        {/* Emoji Picker */}
+        {/* Emoji Picker - Enhanced */}
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="mb-2 p-3 bg-white border border-gray-200 rounded-lg shadow-lg"
+            className="mb-4 p-4 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-lg"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-700">
-                Quick Emojis
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+                <Smile className="w-4 h-4" />
+                <span>Quick Emojis</span>
               </span>
               <button
                 onClick={() => setShowEmojiPicker(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-10 gap-1">
+            <div className="grid grid-cols-10 gap-2">
               {COMMON_EMOJIS.map((emoji, index) => (
                 <button
                   key={index}
                   onClick={() => handleEmojiSelect(emoji)}
-                  className="p-1 text-lg hover:bg-gray-100 rounded transition-colors"
+                  className="p-2 text-xl hover:bg-gray-100 rounded-lg transition-colors duration-200 hover:scale-110 transform"
                 >
                   {emoji}
                 </button>
@@ -1331,32 +1395,37 @@ export default function ChatInterface({
             console.log("Form onSubmit triggered");
             handleSendMessage(e);
           }}
-          className="flex items-end space-x-2"
+          className="flex items-end space-x-3"
         >
-          <button
-            type="button"
-            className="p-2 mb-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-            onClick={handleAttachClick}
-          >
-            <Paperclip size={18} />
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-1">
+            <button
+              type="button"
+              className="p-3 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm"
+              onClick={handleAttachClick}
+              title="Attach file"
+            >
+              <Paperclip size={20} />
+            </button>
 
-          <button
-            type="button"
-            className="p-2 mb-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          >
-            <Smile size={18} />
-          </button>
+            <button
+              type="button"
+              className="p-3 text-gray-500 hover:bg-white hover:text-yellow-600 rounded-xl transition-all duration-200 shadow-sm"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              title="Add emoji"
+            >
+              <Smile size={20} />
+            </button>
 
-          <button
-            type="button"
-            className="p-2 mb-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors flex-shrink-0"
-            onClick={() => setShowPaymentModal(true)}
-            title="Request Payment"
-          >
-            <DollarSign size={18} />
-          </button>
+            <button
+              type="button"
+              className="p-3 text-green-600 hover:bg-white hover:text-green-700 rounded-xl transition-all duration-200 shadow-sm"
+              onClick={() => setShowPaymentModal(true)}
+              title="Request Payment"
+            >
+              <DollarSign size={20} />
+            </button>
+          </div>
 
           <input
             type="file"
@@ -1367,44 +1436,46 @@ export default function ChatInterface({
             accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
           />
 
-          <div className="flex-1 mt-2">
-            <textarea
-              ref={inputRef}
-              value={newMessage}
-              onChange={handleInputChange}
-              onKeyDown={handleInputKeyDown}
-              placeholder="Type a message..."
-              className="w-full px-3 py-2 border text-black border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs resize-none min-h-[2.5rem] max-h-[7.5rem]"
-              rows={1}
-            />
+          {/* Message Input */}
+          <div className="flex-1">
+            <div className="relative">
+              <textarea
+                ref={inputRef}
+                value={newMessage}
+                onChange={handleInputChange}
+                onKeyDown={handleInputKeyDown}
+                placeholder="Type your message..."
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none min-h-[3rem] max-h-[8rem] bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-200"
+                rows={1}
+              />
+
+              {/* AI Generate Button - Inside input */}
+              <button
+                type="button"
+                onClick={handleAIGenerate}
+                className={cn(
+                  "absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200",
+                  loadingAI
+                    ? "text-purple-400 cursor-not-allowed"
+                    : "text-purple-600 hover:bg-purple-50"
+                )}
+                title="Generate AI suggestions"
+                disabled={loadingAI}
+              >
+                {loadingAI ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Sparkles size={16} />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* AI Generate Button */}
-          <button
-            type="button"
-            onClick={handleAIGenerate}
-            className={cn(
-              "p-2 mb-1.5 rounded-lg transition-colors flex-shrink-0",
-              loadingAI
-                ? "text-purple-400 cursor-not-allowed"
-                : "text-purple-600 hover:bg-purple-50"
-            )}
-            title="Generate suggestions"
-            disabled={loadingAI}
-          >
-            {loadingAI ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Sparkles size={18} />
-            )}
-          </button>
-
-          {/* Send Button */}
+          {/* Send Button - Enhanced */}
           <button
             type="submit"
             onClick={(e) => {
               console.log("Send button clicked");
-              // Fallback: also trigger handleSendMessage directly
               if (e.type === "click") {
                 handleSendMessage(e);
               }
@@ -1415,74 +1486,71 @@ export default function ChatInterface({
               !conversationId
             }
             className={cn(
-              "p-2 mb-1.5 rounded-lg transition-colors flex-shrink-0",
+              "p-3 rounded-xl transition-all duration-200 shadow-sm transform hover:scale-105",
               (newMessage.trim() || attachedFiles.length > 0) &&
                 !sending &&
                 conversationId
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-200 text-gray-400"
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-lg"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
             )}
           >
             {sending ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-5 h-5 animate-spin" />
             ) : (
-              <Send size={18} />
+              <Send size={20} />
             )}
           </button>
         </form>
-
-        {/* Payment Modal */}
-        <PaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          conversationId={conversationId}
-          customerEmail=""
-          onPaymentCreated={async (payment) => {
-            console.log("Payment created:", payment);
-            // Close the modal - the payment message will be added via socket from backend
-            setShowPaymentModal(false);
-
-            // Force refresh conversation data as fallback if socket doesn't work
-            setTimeout(async () => {
-              try {
-                console.log(
-                  "Refreshing conversation after payment creation..."
-                );
-                const data = await chatAPI.getConversation(conversationId);
-
-                // Transform messages to match the expected format
-                const transformedMessages = data.messages.map((msg: any) => ({
-                  id: msg._id || msg.id || Math.random().toString(),
-                  sender: msg.sender,
-                  content: msg.content,
-                  time: msg.createdAt
-                    ? new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : msg.time ||
-                      new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
-                  avatar:
-                    msg.avatar ||
-                    (msg.sender === "agent" ? "AG" : customerAvatar),
-                  timestamp: msg.createdAt,
-                  type: msg.type || "text",
-                  paymentData: msg.paymentData,
-                  isPayment: msg.type === "payment" || msg.isPayment || false,
-                }));
-
-                setMessages(transformedMessages);
-                console.log("Conversation refreshed successfully");
-              } catch (error) {
-                console.error("Error refreshing conversation:", error);
-              }
-            }, 1000); // Wait 1 second for backend to process
-          }}
-        />
       </div>
+
+      {/* Payment Modal - Properly positioned */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        conversationId={conversationId}
+        customerEmail=""
+        onPaymentCreated={async (payment) => {
+          console.log("Payment created:", payment);
+          setShowPaymentModal(false);
+
+          setTimeout(async () => {
+            try {
+              console.log(
+                "Refreshing conversation after payment creation..."
+              );
+              const data = await chatAPI.getConversation(conversationId);
+
+              const transformedMessages = data.messages.map((msg: any) => ({
+                id: msg._id || msg.id || Math.random().toString(),
+                sender: msg.sender,
+                content: msg.content,
+                time: msg.createdAt
+                  ? new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : msg.time ||
+                    new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
+                avatar:
+                  msg.avatar ||
+                  (msg.sender === "agent" ? "AG" : customerAvatar),
+                timestamp: msg.createdAt,
+                type: msg.type || "text",
+                paymentData: msg.paymentData,
+                isPayment: msg.type === "payment" || msg.isPayment || false,
+              }));
+
+              setMessages(transformedMessages);
+              console.log("Conversation refreshed successfully");
+            } catch (error) {
+              console.error("Error refreshing conversation:", error);
+            }
+          }, 1000);
+        }}
+      />
     </div>
   );
 }
