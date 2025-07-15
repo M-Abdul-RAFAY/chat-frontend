@@ -70,7 +70,7 @@ export default function Inbox() {
           className={`
           ${
             showConversationList ? "flex w-full" : "hidden"
-          } md:flex md:w-64 lg:w-64
+          } md:flex md:w-64 lg:w-80
           h-full min-h-0 overflow-hidden
         `}
         >

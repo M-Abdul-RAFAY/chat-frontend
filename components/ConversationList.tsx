@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, MessageCircle, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 import { chatAPI, Conversation } from "@/lib/api";
@@ -315,12 +315,18 @@ export default function ConversationList({
     return (
       <div
         className={cn(
-          "bg-white border-r border-gray-200 flex flex-col transition-all duration-300",
-          collapsed ? "w-0 overflow-hidden md:w-64" : "w-full md:w-64"
+          "bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col transition-all duration-300 shadow-sm",
+          collapsed ? "w-0 overflow-hidden md:w-80" : "w-full md:w-80"
         )}
       >
-        <div className="flex items-center justify-center p-8">
-          <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="flex items-center justify-center p-12">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="relative">
+              <RefreshCw className="w-8 h-8 animate-spin text-slate-400" />
+              <div className="absolute inset-0 w-8 h-8 border-2 border-slate-200 rounded-full animate-pulse"></div>
+            </div>
+            <p className="text-sm text-slate-500 font-medium">Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -333,143 +339,257 @@ export default function ConversationList({
     return matchesSearch;
   });
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "NEW":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "ACTIVE":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "PENDING":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "CLOSED":
+        return "bg-slate-100 text-slate-600 border-slate-200";
+      default:
+        return "bg-slate-100 text-slate-600 border-slate-200";
+    }
+  };
+
   return (
     <div
       className={cn(
-        "bg-white border-r border-gray-200 flex flex-col transition-all duration-300",
-        collapsed ? "w-0 overflow-hidden md:w-64" : "w-full md:w-64"
+        "bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col transition-all duration-300 shadow-sm",
+        collapsed ? "w-0 overflow-hidden md:w-80" : "w-full md:w-80"
       )}
     >
       {/* Header - Fixed */}
-      <div className="px-3 py-2 text-center border-b border-gray-200 bg-white sticky top-0 z-10">
-        <h2 className="text-base  font-semibold text-gray-900 mb-2">
-          All Conversations
-        </h2>
+      <div className="px-6 py-5 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Conversations</h2>
+            <p className="text-xs text-slate-500">
+              {conversations.length} total
+            </p>
+          </div>
+        </div>
 
         {/* Search */}
-        <div className="relative mb-2">
+        <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={14}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+            size={16}
           />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm placeholder:text-slate-400"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              ×
+            </button>
+          )}
         </div>
       </div>
 
       {/* Conversation List - Scrollable */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-sm text-gray-500">
-              Loading conversations...
-            </span>
+          <div className="flex items-center justify-center p-12">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <RefreshCw className="w-8 h-8 animate-spin text-slate-400" />
+                <div className="absolute inset-0 w-8 h-8 border-2 border-slate-200 rounded-full animate-pulse"></div>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-600 mb-1">
+                  Loading conversations
+                </p>
+                <p className="text-xs text-slate-400">
+                  Please wait a moment...
+                </p>
+              </div>
+            </div>
           </div>
         ) : error ? (
-          <div className="p-4 text-center">
-            <p className="text-sm text-red-600 mb-2">{error}</p>
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle size={24} className="text-red-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Connection Error
+            </h3>
+            <p className="text-sm text-red-600 mb-4">{error}</p>
             <button
               onClick={() => fetchConversations()}
-              className="text-xs text-blue-600 hover:underline"
               disabled={loading}
+              className="inline-flex items-center px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "Loading..." : "Try again"}
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                "Try Again"
+              )}
             </button>
           </div>
         ) : filteredConversations.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search size={24} className="text-gray-400" />
+          <div className="p-8 text-center">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              {searchQuery ? (
+                <Search size={28} className="text-slate-400" />
+              ) : (
+                <MessageCircle size={28} className="text-slate-400" />
+              )}
             </div>
-            <p className="text-lg font-medium mb-2">No conversations found</p>
-            <p className="text-sm text-gray-400 mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              {searchQuery ? "No matches found" : "No conversations yet"}
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 max-w-xs mx-auto">
               {searchQuery
-                ? "Try adjusting your search terms"
-                : "No conversations available"}
+                ? "Try adjusting your search terms or check for typos"
+                : "Start a new conversation to see it appear here"}
             </p>
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="text-blue-600 hover:underline text-sm font-medium"
+                className="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors"
               >
                 Clear search
               </button>
             )}
           </div>
         ) : (
-          filteredConversations
-            .filter(
-              (conversation) =>
-                conversation.id !== undefined && conversation.id !== null
-            )
-            .map((conversation) => (
-              <div
-                key={conversation.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log("Selecting conversation:", conversation.id);
-                  onSelectConversation(
-                    conversation.id.toString(),
-                    conversation
-                  );
-                }}
-                className={cn(
-                  "px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50",
-                  selectedConversation === conversation.id.toString() &&
-                    "bg-blue-50 border-blue-200"
-                )}
-              >
-                <div className="flex items-start space-x-2">
-                  <div
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center mt-3 justify-center text-xs font-medium text-white flex-shrink-0",
-                      conversation.statusColor || "bg-red-500"
-                    )}
-                  >
-                    {conversation.avatar}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <h3 className="text-xs font-bold text-gray-900 truncate">
-                        {conversation.name
-                          .split(" ")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                          )
-                          .join(" ")}
-                      </h3>
-                      <span className="text-[10px] text-gray-500 flex-shrink-0">
-                        {conversation.time}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-gray-600 truncate mb-1">
-                      {conversation.lastMessage}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px]  bg-blue-100 text-zinc-700 font-semibold">
-                        {conversation.status}
-                      </span>
+          <div className="p-2">
+            {filteredConversations
+              .filter(
+                (conversation) =>
+                  conversation.id !== undefined && conversation.id !== null
+              )
+              .map((conversation, index) => (
+                <div
+                  key={conversation.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Selecting conversation:", conversation.id);
+                    onSelectConversation(
+                      conversation.id.toString(),
+                      conversation
+                    );
+                  }}
+                  className={cn(
+                    "group relative p-4 mx-2 mb-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
+                    selectedConversation === conversation.id.toString()
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg"
+                      : "bg-white hover:bg-slate-50 border border-slate-200/60 hover:border-slate-300"
+                  )}
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animation: mounted
+                      ? "fadeInUp 0.3s ease-out forwards"
+                      : "none",
+                  }}
+                >
+                  <div className="flex items-start space-x-3">
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0">
+                      <div
+                        className={cn(
+                          "w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform duration-200 group-hover:scale-110",
+                          conversation.statusColor
+                        )}
+                      >
+                        {conversation.avatar}
+                      </div>
                       {conversation.unread && (
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        </div>
                       )}
                     </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                          {conversation.name
+                            .split(" ")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
+                        </h3>
+                        <div className="flex items-center space-x-1 text-xs text-slate-500">
+                          <Clock size={12} />
+                          <span>{conversation.time}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-slate-600 truncate mb-3 leading-relaxed">
+                        {conversation.lastMessage || "No messages yet"}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={cn(
+                            "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors",
+                            getStatusColor(conversation.status)
+                          )}
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-current mr-1.5"></div>
+                          {conversation.status}
+                        </span>
+
+                        {conversation.unread && (
+                          <div className="flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            <span className="text-xs font-medium text-blue-600">
+                              New
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Hover effect overlay */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-xl transition-opacity duration-200 pointer-events-none",
+                      selectedConversation === conversation.id.toString()
+                        ? "bg-gradient-to-r from-blue-500/5 to-indigo-500/5"
+                        : "bg-slate-500/0 group-hover:bg-slate-500/5"
+                    )}
+                  ></div>
                 </div>
-              </div>
-            ))
+              ))}
+          </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
