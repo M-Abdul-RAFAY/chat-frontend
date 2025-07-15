@@ -857,14 +857,14 @@ export default function ChatInterface({
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-          <div className="relative mb-4">
+          <p className="text-gray-600 font-medium">Loading conversation...</p>
+          <p className="text-sm text-gray-400 mt-1">Please wait a moment</p>
+          <div className="relative mt-4">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-20 animate-pulse"></div>
-            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-3">
+            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-3 flex items-center justify-center">
               <RefreshCw className="w-6 h-6 animate-spin text-white" />
             </div>
           </div>
-          <p className="text-gray-600 font-medium">Loading conversation...</p>
-          <p className="text-sm text-gray-400 mt-1">Please wait a moment</p>
         </div>
       </div>
     );

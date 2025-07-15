@@ -143,7 +143,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setPaymentMethod("quick");
     } catch (error) {
       console.error("Error creating payment:", error);
-      alert("Failed to create payment. Please try again.");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      alert(
+        `Failed to create payment: ${errorMessage}. Please check the console for more details.`
+      );
     } finally {
       setIsLoading(false);
     }

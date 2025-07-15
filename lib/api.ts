@@ -615,6 +615,156 @@ export const widgetAPI = {
   },
 };
 
+// Payment API
+export interface PaymentData {
+  conversationId: string;
+  amount: number;
+  currency: string;
+  description: string;
+  customerEmail: string;
+  dueDate?: string;
+  lineItems?: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentUrl: string;
+  paymentLink?: string;
+  description: string;
+  customerEmail: string;
+  conversationId: string;
+  invoiceNumber?: string;
+  dueDate?: string;
+}
+
+export const paymentAPI = {
+  // Create a new payment
+  createPayment: async (paymentData: PaymentData): Promise<Payment> => {
+    try {
+      console.log("🔄 Creating payment with data:", paymentData);
+      const headers = await getAuthHeaders();
+      console.log("🔐 Auth headers:", headers);
+
+      const response = await fetch(`${API_BASE_URL}/payments`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(paymentData),
+      });
+
+      console.log(
+        "📡 Payment API response status:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.log("❌ Payment API error data:", errorData);
+        } catch (parseError) {
+          console.log("❌ Failed to parse error response:", parseError);
+          errorData = {
+            error: `HTTP ${response.status}: ${response.statusText}`,
+          };
+        }
+
+        throw new Error(
+          errorData.error || `Failed to create payment: ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("✅ Payment created successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("💥 Error creating payment:", error);
+      // Log the full error details
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.error(
+          "🌐 Network error - check if backend is running at:",
+          API_BASE_URL
+        );
+      }
+      throw error;
+    }
+  },
+
+  // Get payment details
+  getPayment: async (paymentId: string): Promise<Payment> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get payment: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting payment:", error);
+      throw error;
+    }
+  },
+
+  // Get all payments
+  getAllPayments: async (): Promise<Payment[]> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/payments`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get payments: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting payments:", error);
+      throw error;
+    }
+  },
+
+  // Get payments for a specific conversation
+  getConversationPayments: async (
+    conversationId: string
+  ): Promise<Payment[]> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/payments/conversation/${conversationId}`,
+        {
+          method: "GET",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get conversation payments: ${response.statusText}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting conversation payments:", error);
+      throw error;
+    }
+  },
+};
+
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:
 
