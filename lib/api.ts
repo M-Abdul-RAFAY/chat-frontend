@@ -389,7 +389,7 @@ export const widgetAPI = {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/widget/config`, {
-        method: "GET",
+        method: "POST",
         headers,
         body: JSON.stringify({ userId }),
       });

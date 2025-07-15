@@ -94,25 +94,40 @@ export default function WidgetManager() {
       setLoading(true);
       setError("");
 
-      // Load business info first
+      // First try to get existing widget config
+      const data = await widgetAPI.getWidgetConfig(user?.id);
+      console.log("Widget config from backend:", data);
+      setWidgetId(data.widgetId);
+
+      // Ensure all required fields are present with fallbacks
+      const configWithDefaults = {
+        companyName: data.config.companyName || "Your Company",
+        welcomeMessage:
+          data.config.welcomeMessage || "Hi! How can we help you today?",
+        primaryColor: data.config.primaryColor || "#3B82F6",
+        textColor: data.config.textColor || "#FFFFFF",
+      };
+
+      console.log("Config with defaults:", configWithDefaults);
+      setConfig(configWithDefaults);
+      generateEmbedCode(data.widgetId);
+
+      // Load business info after widget config to avoid overriding
       try {
         const businessData = await widgetAPI.getBusinessInfo(user?.id);
         if (businessData.success && businessData.businessInfo) {
           setBusinessInfo(businessData.businessInfo);
-          setConfig((prev) => ({
-            ...prev,
-            companyName: businessData.companyName || prev.companyName,
-          }));
+          // Only update company name from business info if widget doesn't have one
+          if (businessData.businessInfo.name && !data.config.companyName) {
+            setConfig((prev) => ({
+              ...prev,
+              companyName: businessData.businessInfo.name,
+            }));
+          }
         }
       } catch {
         console.log("No existing business info found");
       }
-
-      // First try to get existing widget config
-      const data = await widgetAPI.getWidgetConfig(user?.id);
-      setWidgetId(data.widgetId);
-      setConfig(data.config);
-      generateEmbedCode(data.widgetId);
     } catch (error) {
       console.error("No existing widget found, generating new one:", error);
       // If no existing widget, try to generate a new one
