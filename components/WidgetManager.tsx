@@ -630,7 +630,7 @@ export default function WidgetManager() {
                   Widget Configuration
                 </h2>
                 <p className="text-gray-600">
-                  Customize your widget's appearance and behavior
+                  Customize your widget&#39;s appearance and behavior
                 </p>
               </div>
             </div>
