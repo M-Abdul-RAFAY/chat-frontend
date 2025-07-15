@@ -765,6 +765,124 @@ export const paymentAPI = {
   },
 };
 
+// Customer and Activity API functions
+export const customerAPI = {
+  // Get customer details by conversation ID
+  getCustomerByConversation: async (
+    conversationId: string
+  ): Promise<{
+    success: boolean;
+    data?: {
+      id?: string;
+      name: string;
+      phone: string;
+      email: string;
+      status?: string;
+    };
+    message?: string;
+  }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/customers/conversation/${conversationId}`,
+        {
+          method: "GET",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: `Failed to fetch customer: ${response.statusText}`,
+        };
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      return {
+        success: false,
+        message: "Network error occurred",
+      };
+    }
+  },
+
+  // Get customer activities (payments, calls, etc.)
+  getCustomerActivities: async (
+    customerId: string,
+    conversationId?: string
+  ): Promise<{
+    success: boolean;
+    data?: {
+      id: string;
+      type: "payment" | "call" | "message";
+      title: string;
+      timestamp: string;
+      amount?: number;
+      duration?: number;
+    }[];
+    message?: string;
+  }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const url = new URL(`${API_BASE_URL}/customers/${customerId}/activities`);
+
+      // Add conversationId as query parameter if provided
+      if (conversationId) {
+        url.searchParams.append("conversationId", conversationId);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: `Failed to fetch activities: ${response.statusText}`,
+        };
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching activities:", error);
+      return {
+        success: false,
+        message: "Network error occurred",
+      };
+    }
+  },
+
+  // Update customer status
+  updateCustomerStatus: async (
+    customerId: string,
+    status: string
+  ): Promise<void> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/customers/${customerId}/status`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ status }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update customer status: ${response.statusText}`
+        );
+      }
+    } catch (error) {
+      console.error("Error updating customer status:", error);
+      throw error;
+    }
+  },
+};
+
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:
 

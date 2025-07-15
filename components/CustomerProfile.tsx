@@ -5,13 +5,12 @@ import {
   MessageSquare,
   Phone,
   Mail,
-  FileText,
   ChevronDown,
   ArrowLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Conversation } from "@/lib/api";
+import { Conversation, customerAPI } from "@/lib/api";
 
 interface CustomerProfileProps {
   conversationId: string;
@@ -21,10 +20,26 @@ interface CustomerProfileProps {
 
 interface ActivityItem {
   id: string;
-  type: "feedback" | "payment" | "call";
+  type: "payment" | "call" | "message";
   title: string;
+  description?: string;
   timestamp: string;
-  status?: "completed" | "received" | "missed";
+  status?: string;
+  amount?: number;
+  currency?: string;
+  direction?: string;
+  duration?: number;
+  paymentUrl?: string;
+  sender?: string;
+  content?: string;
+}
+
+interface CustomerData {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  status?: string;
 }
 
 export default function CustomerProfile({
@@ -34,47 +49,126 @@ export default function CustomerProfile({
 }: CustomerProfileProps) {
   const [activeTab, setActiveTab] = useState<"details" | "activity">("details");
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
 
-  // Use conversation data if available, otherwise fallback to placeholder
-  const customer = {
-    name: conversationData?.name || "Will Pantente",
-    phone: conversationData?.phone || "(555) 555-5555",
-    email: conversationData?.email || "will@email.com",
-    location: conversationData?.location || "Venture Auto ...",
-    status: conversationData?.status || "NEW",
-    avatar: conversationData?.avatar || "WP",
-    statusColor: conversationData?.statusColor || "bg-pink-500",
-    cardOnFile: {
-      type: "Visa",
-      number: "**** 1234",
-      expires: "12/26",
-    },
-    tags: [],
+  // Load customer data and activities on mount
+  useEffect(() => {
+    const loadCustomerData = async () => {
+      try {
+        setLoading(true);
+        let finalCustomerData = null;
+
+        // If we have conversation data, use it, otherwise fetch from API
+        if (conversationData) {
+          finalCustomerData = {
+            id: conversationData.id, // Use conversation ID as fallback
+            name: conversationData.name || "Unknown",
+            phone: conversationData.phone || "",
+            email: conversationData.email || "",
+            status: conversationData.status || "NEW",
+          };
+          setCustomerData(finalCustomerData);
+        } else {
+          // Fetch customer data from conversation
+          const customerResponse = await customerAPI.getCustomerByConversation(
+            conversationId
+          );
+          if (customerResponse.success && customerResponse.data) {
+            finalCustomerData = {
+              ...customerResponse.data,
+              id: customerResponse.data.id || conversationId, // Ensure id is always present
+            };
+            setCustomerData(finalCustomerData);
+          } else {
+            setError(
+              customerResponse.message || "Failed to load customer data"
+            );
+            // Use fallback data if API fails
+            finalCustomerData = {
+              id: conversationId, // Use conversationId as customer ID fallback
+              name: "Unknown Customer",
+              phone: "",
+              email: "",
+              status: "NEW",
+            };
+            setCustomerData(finalCustomerData);
+          }
+        }
+
+        // Now fetch activities using the customer ID we have or the conversationId as fallback
+        const customerId = finalCustomerData?.id || conversationId;
+        console.log("🔍 Fetching activities for:", {
+          customerId,
+          conversationId,
+        });
+
+        const activitiesResponse = await customerAPI.getCustomerActivities(
+          customerId,
+          conversationId // Pass conversationId as well
+        );
+
+        if (activitiesResponse.success && activitiesResponse.data) {
+          setActivities(activitiesResponse.data);
+        } else {
+          setError(activitiesResponse.message || "Failed to load activities");
+        }
+      } catch (err) {
+        console.error("Error loading customer data:", err);
+        setError("Failed to load customer data");
+        // Use fallback data if API fails
+        setCustomerData({
+          id: conversationId,
+          name: conversationData?.name || "Unknown Customer",
+          phone: conversationData?.phone || "",
+          email: conversationData?.email || "",
+          status: conversationData?.status || "NEW",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCustomerData();
+  }, [conversationId, conversationData]);
+
+  // Use customer data or fallback
+  const customer = customerData || {
+    name: "Loading...",
+    phone: "",
+    email: "",
+    status: "NEW",
   };
 
-  const recentActivity: ActivityItem[] = [
-    {
-      id: "1",
-      type: "feedback",
-      title: "Completed Feedback Survey",
-      timestamp: "59m",
-      status: "completed",
-    },
-    {
-      id: "2",
-      type: "payment",
-      title: "$149.00 payment received",
-      timestamp: "2d",
-      status: "received",
-    },
-    {
-      id: "3",
-      type: "call",
-      title: "Missed call",
-      timestamp: "3d",
-      status: "missed",
-    },
-  ];
+  // Generate avatar from name
+  const getAvatar = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Generate status color
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
+      NEW: "bg-blue-500",
+      QUALIFYING: "bg-yellow-500",
+      "ESTIMATES SENT": "bg-orange-500",
+      SERVICES: "bg-purple-500",
+      "PAYMENTS SENT": "bg-indigo-500",
+      WON: "bg-green-500",
+      UNQUALIFIED: "bg-gray-500",
+      LOST: "bg-red-500",
+    };
+    return colors[status.toUpperCase()] || "bg-blue-500";
+  };
+
+  const avatar = getAvatar(customer.name);
+  const statusColor = getStatusColor(customer.status || "NEW");
 
   const statusOptions = [
     "New",
@@ -100,9 +194,9 @@ export default function CustomerProfile({
 
         <div className="flex items-center space-x-2 flex-1 min-w-0">
           <div
-            className={`w-7 h-7 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-[11px]`}
+            className={`w-7 h-7 ${statusColor} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 text-[11px]`}
           >
-            {customer.avatar}
+            {avatar}
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold text-gray-900 truncate text-[12px]">
@@ -111,9 +205,6 @@ export default function CustomerProfile({
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(" ")}
             </h2>
-            <p className="text-[11px] text-gray-500 truncate">
-              {customer.phone}
-            </p>
           </div>
         </div>
 
@@ -125,12 +216,19 @@ export default function CustomerProfile({
         </button>
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <div className="mx-2 mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-[10px] text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* Profile Image Section */}
       <div className="px-2 py-3 text-center border-b border-gray-200 bg-gray-50">
         <div
-          className={`w-12 h-12 ${customer.statusColor} rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2`}
+          className={`w-12 h-12 ${statusColor} rounded-full flex items-center justify-center text-white font-bold text-[14px] mx-auto mb-2`}
         >
-          {customer.avatar}
+          {avatar}
         </div>
         <h3 className="text-[12px] font-semibold text-gray-900 mb-1">
           {customer.name
@@ -143,7 +241,7 @@ export default function CustomerProfile({
 
       {/* Action Buttons */}
       <div className="px-3 py-3 border-b border-gray-200 bg-white">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button className="flex flex-col items-center p-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
             <MessageSquare size={16} className="mb-1" />
             <span className="text-[10px]">Message</span>
@@ -156,10 +254,6 @@ export default function CustomerProfile({
             <Mail size={16} className="mb-1" />
             <span className="text-[10px]">Email</span>
           </button>
-          <button className="flex flex-col items-center p-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <FileText size={16} className="mb-1" />
-            <span className="text-[10px]">Files</span>
-          </button>
         </div>
       </div>
 
@@ -169,42 +263,79 @@ export default function CustomerProfile({
           RECENT ACTIVITY
         </h3>
         <div className="space-y-3">
-          {recentActivity.slice(0, 2).map((activity) => (
-            <div key={activity.id} className="flex items-center space-x-3">
-              <div
-                className={cn(
-                  "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
-                  activity.type === "feedback" &&
-                    activity.status === "completed" &&
-                    "bg-pink-100",
-                  activity.type === "payment" &&
-                    activity.status === "received" &&
-                    "bg-green-100",
-                  activity.type === "call" &&
-                    activity.status === "missed" &&
-                    "bg-red-100"
-                )}
-              >
-                {activity.type === "feedback" && (
-                  <div className="w-2 h-2 bg-pink-500 rounded-full" />
-                )}
-                {activity.type === "payment" && (
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                )}
-                {activity.type === "call" && (
-                  <div className="w-2 h-2 bg-red-500 rounded-full" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-gray-900 truncate">
-                  {activity.title}
-                </p>
-                <p className="text-[10px] text-gray-500">
-                  {activity.timestamp} ago
-                </p>
-              </div>
+          {loading ? (
+            <div className="text-[10px] text-gray-500">
+              Loading activities...
             </div>
-          ))}
+          ) : activities.length === 0 ? (
+            <div className="text-[10px] text-gray-500">No recent activity</div>
+          ) : (
+            activities.slice(0, 2).map((activity) => (
+              <div key={activity.id} className="flex items-center space-x-3">
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                    activity.type === "payment" && "bg-green-100",
+                    activity.type === "call" &&
+                      activity.status === "missed" &&
+                      "bg-red-100",
+                    activity.type === "call" &&
+                      activity.status !== "missed" &&
+                      "bg-blue-100",
+                    activity.type === "message" &&
+                      activity.title === "Message sent" &&
+                      "bg-blue-100",
+                    activity.type === "message" &&
+                      activity.title === "Message received" &&
+                      "bg-gray-100",
+                    activity.type === "message" &&
+                      activity.title === "AI message sent" &&
+                      "bg-purple-100"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full",
+                      activity.type === "payment" && "bg-green-500",
+                      activity.type === "call" &&
+                        activity.status === "missed" &&
+                        "bg-red-500",
+                      activity.type === "call" &&
+                        activity.status !== "missed" &&
+                        "bg-blue-500",
+                      activity.type === "message" &&
+                        activity.title === "Message sent" &&
+                        "bg-blue-500",
+                      activity.type === "message" &&
+                        activity.title === "Message received" &&
+                        "bg-gray-500",
+                      activity.type === "message" &&
+                        activity.title === "AI message sent" &&
+                        "bg-purple-500"
+                    )}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-900 truncate">
+                    {activity.title}
+                  </p>
+                  {activity.description && (
+                    <p className="text-[10px] text-gray-600 truncate">
+                      {activity.description}
+                    </p>
+                  )}
+                  {activity.type === "message" && activity.content && (
+                    <p className="text-[10px] text-gray-600 truncate">
+                      {activity.content}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-gray-500">
+                    {activity.timestamp} ago
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -294,74 +425,70 @@ export default function CustomerProfile({
                 <p className="text-[10px] text-gray-900">{customer.email}</p>
               </div>
             </div>
-
-            {/* Card on File */}
-            <div>
-              <label className="block text-[10px] font-medium text-gray-700 mb-1">
-                CARD ON FILE
-              </label>
-              <div className="flex items-center space-x-2 p-2 border border-gray-200 rounded-lg">
-                <div className="w-6 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                  <span className="text-[9px] text-white font-bold">V</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-900">
-                    {customer.cardOnFile.type} {customer.cardOnFile.number}
-                  </p>
-                  <p className="text-[9px] text-gray-500">
-                    Expires {customer.cardOnFile.expires}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div>
-              <label className="block text-[10px] font-medium text-gray-700 mb-1">
-                TAGS
-              </label>
-              <p className="text-[10px] text-gray-500">No tags added</p>
-            </div>
           </div>
         )}
 
         {activeTab === "activity" && (
           <div className="space-y-3">
-            {recentActivity.map((activity) => (
-              <div
-                key={activity.id}
-                className="border-b border-gray-100 pb-3 last:border-b-0"
-              >
-                <div className="flex items-start space-x-3">
-                  <div
-                    className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center mt-1 flex-shrink-0",
-                      activity.type === "feedback" && "bg-pink-100",
-                      activity.type === "payment" && "bg-green-100",
-                      activity.type === "call" && "bg-red-100"
-                    )}
-                  >
-                    {activity.type === "feedback" && (
-                      <div className="w-2 h-2 bg-pink-500 rounded-full" />
-                    )}
-                    {activity.type === "payment" && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    )}
-                    {activity.type === "call" && (
-                      <div className="w-2 h-2 bg-red-500 rounded-full" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-[10px] font-medium text-gray-900">
-                      {activity.title}
-                    </h4>
-                    <p className="text-[9px] text-gray-500 mt-1">
-                      {activity.timestamp} ago
-                    </p>
-                  </div>
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="text-[10px] text-gray-500">
+                  Loading activities...
                 </div>
               </div>
-            ))}
+            ) : activities.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="text-[10px] text-gray-500">
+                  No activities found
+                </div>
+              </div>
+            ) : (
+              activities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="border-b border-gray-100 pb-3 last:border-b-0"
+                >
+                  <div className="flex items-start space-x-3">
+                    <div
+                      className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center mt-1 flex-shrink-0",
+                        activity.type === "payment" && "bg-green-100",
+                        activity.type === "call" && "bg-blue-100",
+                        activity.type === "message" && "bg-gray-100"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          activity.type === "payment" && "bg-green-500",
+                          activity.type === "call" && "bg-blue-500",
+                          activity.type === "message" && "bg-gray-500"
+                        )}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-[10px] font-medium text-gray-900">
+                        {activity.title}
+                      </h4>
+                      <p className="text-[9px] text-gray-500 mt-1">
+                        {activity.timestamp} ago
+                      </p>
+                      {activity.amount && (
+                        <p className="text-[9px] text-green-600 mt-1">
+                          ${(activity.amount / 100).toFixed(2)}
+                        </p>
+                      )}
+                      {activity.duration && (
+                        <p className="text-[9px] text-blue-600 mt-1">
+                          Duration: {Math.floor(activity.duration / 60)}m{" "}
+                          {activity.duration % 60}s
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
