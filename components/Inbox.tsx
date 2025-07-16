@@ -16,6 +16,7 @@ export default function Inbox() {
   const [showConversationList, setShowConversationList] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [conversationListKey, setConversationListKey] = useState(0); // Force re-render when status updates
+  const [sidebarKey, setSidebarKey] = useState(0); // Force Sidebar to refresh
 
   // Auto-collapse sidebar on small devices and handle mobile navigation
   useEffect(() => {
@@ -61,8 +62,7 @@ export default function Inbox() {
   // Handle status update from CustomerProfile
   const handleStatusUpdate = (
     conversationId: string,
-    newStatus: string,
-    statusColor: string
+    newStatus: string
   ) => {
     // Update the selected conversation data
     if (
@@ -74,7 +74,6 @@ export default function Inbox() {
           ? {
               ...prev,
               status: newStatus,
-              statusColor: statusColor,
             }
           : null
       );
@@ -82,6 +81,9 @@ export default function Inbox() {
 
     // Force ConversationList to refresh by incrementing the key
     setConversationListKey((prev) => prev + 1);
+    
+    // Force Sidebar to refresh its conversation counts
+    setSidebarKey((prev) => prev + 1);
   };
 
   // Handle status filter from Sidebar
@@ -94,6 +96,7 @@ export default function Inbox() {
   return (
     <div className="flex flex-1 h-full min-h-0 overflow-hidden relative">
       <Sidebar
+        key={sidebarKey} // Force Sidebar to refresh when status changes
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         pathname="/dashboard/inbox"

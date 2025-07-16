@@ -22,8 +22,7 @@ interface CustomerProfileProps {
   onClose: () => void;
   onStatusUpdate?: (
     conversationId: string,
-    newStatus: string,
-    statusColor: string
+    newStatus: string
   ) => void;
 }
 
@@ -248,13 +247,12 @@ export default function CustomerProfile({
 
       if (response.success) {
         console.log("✅ CustomerProfile: Status update successful");
-        // Update local customer data
+        // Update local customer data - only update status, not statusColor
         setCustomerData((prev) =>
           prev
             ? {
                 ...prev,
                 status: newStatus,
-                statusColor: response.data?.statusColor || prev.statusColor,
               }
             : null
         );
@@ -262,14 +260,11 @@ export default function CustomerProfile({
         // Update conversation data if available (for parent component)
         if (conversationData && typeof conversationData === "object") {
           conversationData.status = newStatus;
-          if (response.data?.statusColor) {
-            conversationData.statusColor = response.data.statusColor;
-          }
         }
 
-        // Notify parent component about status update
-        if (onStatusUpdate && response.data?.statusColor) {
-          onStatusUpdate(conversationId, newStatus, response.data.statusColor);
+        // Notify parent component about status update - only pass status
+        if (onStatusUpdate) {
+          onStatusUpdate(conversationId, newStatus);
         }
 
         setStatusDropdownOpen(false);
