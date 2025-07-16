@@ -255,7 +255,6 @@ export default function CustomerProfile({
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(" ")}
             </h2>
-            <p className="text-sm text-gray-500 truncate">{customer.phone}</p>
           </div>
         </div>
 
@@ -316,7 +315,10 @@ export default function CustomerProfile({
         {/* Action Buttons - Enhanced */}
         <div className="px-6 py-4 border-b border-gray-100 bg-white">
           <div className="grid grid-cols-3 gap-4">
-            <button className="flex flex-col items-center p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group">
+            <button
+              onClick={onClose}
+              className="flex flex-col items-center p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group"
+            >
               <div className="p-2 rounded-lg bg-gray-100 group-hover:bg-blue-100 transition-colors duration-200 mb-2">
                 <MessageSquare size={18} />
               </div>
