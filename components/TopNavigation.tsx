@@ -1,8 +1,9 @@
 "use client";
 
-import { Unplug, Plus, Menu, X, CircleDollarSign } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import GlitchText from "./GlitchText";
 import {
   UserButton,
   SignedIn,
@@ -59,7 +60,7 @@ export default function TopNavigation({
     if (controlledActive && controlledActive !== activeItem) {
       setActiveItem(controlledActive);
     }
-  }, [controlledActive]);
+  }, [controlledActive, activeItem]);
 
   // Calculate underline position and width
   useEffect(() => {
@@ -90,7 +91,14 @@ export default function TopNavigation({
         {/* Left side - Logo and Navigation */}
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
-            <CircleDollarSign className="text-white" size={24} />
+            <GlitchText
+              className="text-sm md:text-xl lg:text-2xl font-bold"
+              speed={0.5}
+              enableShadows={true}
+              enableOnHover={false} // Change this to false to see constant animation
+            >
+              Hi_Chat
+            </GlitchText>
           </div>
 
           {/* Desktop Navigation */}
@@ -101,12 +109,9 @@ export default function TopNavigation({
                 .map((item) => (
                   <Link
                     key={item.id}
-                    href={
-                      item.url ||
-                      `/dashboard/${item.label
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`
-                    }
+                    href={`/dashboard/${item.label
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
                     onClick={() => handleNavClick(item.id)}
                     data-nav-id={item.id}
                     className={cn(
@@ -177,10 +182,9 @@ export default function TopNavigation({
             .map((item) => (
               <Link
                 key={item.id}
-                href={
-                  item.url ||
-                  `/dashboard/${item.label.toLowerCase().replace(/\s+/g, "-")}`
-                }
+                href={`/dashboard/${item.label
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
                 onClick={() => handleNavClick(item.id)}
                 className={cn(
                   "w-full text-left px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
