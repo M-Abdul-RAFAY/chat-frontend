@@ -174,6 +174,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
+          zIndex: 1, // Place canvas above background but below most UI components
         }}
       />
       {children}
