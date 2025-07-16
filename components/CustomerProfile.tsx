@@ -44,6 +44,7 @@ interface CustomerData {
   phone: string;
   email: string;
   status?: string;
+  statusColor?: string;
 }
 
 export default function CustomerProfile({
@@ -73,6 +74,7 @@ export default function CustomerProfile({
             phone: conversationData.phone || "",
             email: conversationData.email || "",
             status: conversationData.status || "NEW",
+            statusColor: conversationData.statusColor || undefined,
           };
           setCustomerData(finalCustomerData);
         } else {
@@ -97,6 +99,7 @@ export default function CustomerProfile({
               phone: "",
               email: "",
               status: "NEW",
+              statusColor: undefined,
             };
             setCustomerData(finalCustomerData);
           }
@@ -129,6 +132,7 @@ export default function CustomerProfile({
           phone: conversationData?.phone || "",
           email: conversationData?.email || "",
           status: conversationData?.status || "NEW",
+          statusColor: conversationData?.statusColor || undefined,
         });
       } finally {
         setLoading(false);
@@ -144,6 +148,7 @@ export default function CustomerProfile({
     phone: "",
     email: "",
     status: "NEW",
+    statusColor: undefined,
   };
 
   // Generate avatar from name
@@ -229,7 +234,14 @@ export default function CustomerProfile({
 
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold shadow-lg">
+            <div
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow-lg",
+                customer.statusColor
+                  ? customer.statusColor
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              )}
+            >
               {avatar}
             </div>
             <div
@@ -270,7 +282,14 @@ export default function CustomerProfile({
         {/* Profile Section - Redesigned */}
         <div className="px-6 py-6 text-center bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
           <div className="relative inline-block mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            <div
+              className={cn(
+                "w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg",
+                customer.statusColor
+                  ? customer.statusColor
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              )}
+            >
               {avatar}
             </div>
             <div
