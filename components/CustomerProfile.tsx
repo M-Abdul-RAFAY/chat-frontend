@@ -20,10 +20,7 @@ interface CustomerProfileProps {
   conversationId: string;
   conversationData?: Conversation | null;
   onClose: () => void;
-  onStatusUpdate?: (
-    conversationId: string,
-    newStatus: string
-  ) => void;
+  onStatusUpdate?: (conversationId: string, newStatus: string) => void;
 }
 
 interface ActivityItem {

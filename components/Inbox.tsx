@@ -60,10 +60,7 @@ export default function Inbox() {
   };
 
   // Handle status update from CustomerProfile
-  const handleStatusUpdate = (
-    conversationId: string,
-    newStatus: string
-  ) => {
+  const handleStatusUpdate = (conversationId: string, newStatus: string) => {
     // Update the selected conversation data
     if (
       selectedConversationData &&
@@ -81,7 +78,7 @@ export default function Inbox() {
 
     // Force ConversationList to refresh by incrementing the key
     setConversationListKey((prev) => prev + 1);
-    
+
     // Force Sidebar to refresh its conversation counts
     setSidebarKey((prev) => prev + 1);
   };
