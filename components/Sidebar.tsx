@@ -172,7 +172,7 @@ export default function Sidebar({
         className={cn(
           "bg-zinc-900 text-white transition-all duration-300 z-50 flex flex-col",
           collapsed
-            ? "w-0 overflow-hidden md:w-16"
+            ? "w-16 md:w-16" // Show collapsed sidebar (16px) on all screen sizes
             : "w-64 fixed md:relative inset-y-0 left-0 md:w-64"
         )}
       >

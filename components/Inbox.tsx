@@ -22,16 +22,24 @@ export default function Inbox() {
   // Auto-collapse sidebar on small devices and handle mobile navigation
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        // md breakpoint
-        setSidebarCollapsed(true);
+      const isMobile = window.innerWidth < 768;
+
+      if (isMobile) {
+        // md breakpoint - Mobile behavior
+        setSidebarCollapsed(true); // Sidebar should be collapsed on mobile
         // If we have a conversation selected on mobile, hide conversation list
         if (selectedConversation) {
           setShowConversationList(false);
+        } else {
+          setShowConversationList(true); // Show conversation list when no conversation selected
         }
       } else {
-        // On desktop, always show conversation list but don't change sidebar state
+        // Desktop/Tablet - always show conversation list
         setShowConversationList(true);
+        // On desktop, sidebar can be toggled but starts expanded
+        if (window.innerWidth >= 768) {
+          setSidebarCollapsed(false);
+        }
       }
     };
 
@@ -47,9 +55,10 @@ export default function Inbox() {
   ) => {
     setSelectedConversation(conversationId);
     setSelectedConversationData(conversationData);
-    // On mobile, hide conversation list when a conversation is selected
+    // On mobile, hide conversation list and sidebar when a conversation is selected
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setShowConversationList(false);
+      setSidebarCollapsed(true);
     }
   };
 
@@ -57,6 +66,10 @@ export default function Inbox() {
   const handleBackToConversations = () => {
     console.log("Back button clicked - showing conversation list");
     setShowConversationList(true);
+    // On mobile, also ensure sidebar is collapsed but accessible via toggle
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarCollapsed(true);
+    }
     // Don't clear the selected conversation - just show the conversation list
   };
 
@@ -105,7 +118,11 @@ export default function Inbox() {
       <Sidebar
         key={sidebarKey} // Force Sidebar to refresh when status changes
         collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggle={() => {
+          setSidebarCollapsed(!sidebarCollapsed);
+          // On mobile, if we're in a conversation and sidebar is being opened,
+          // the conversation list should still stay hidden
+        }}
         pathname="/dashboard/inbox"
         onStatusFilter={handleStatusFilter}
         onConversationFilter={handleConversationFilter}
@@ -115,10 +132,9 @@ export default function Inbox() {
         {/* Conversation List - Show/Hide based on mobile state */}
         <div
           className={`
-          ${
-            showConversationList ? "flex w-full" : "hidden"
-          } md:flex md:w-64 lg:w-80
-          h-full min-h-0 overflow-hidden
+          ${showConversationList ? "block" : "hidden"} 
+          w-full sm:w-80 md:w-64 lg:w-80
+          h-full min-h-0 overflow-hidden flex-shrink-0
         `}
         >
           <ConversationList

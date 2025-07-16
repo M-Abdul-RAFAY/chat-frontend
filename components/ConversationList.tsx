@@ -388,12 +388,7 @@ export default function ConversationList({
   };
 
   return (
-    <div
-      className={cn(
-        "bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col transition-all duration-300 shadow-sm",
-        collapsed ? "w-0 overflow-hidden md:w-80" : "w-full md:w-80"
-      )}
-    >
+    <div className="bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col transition-all duration-300 shadow-sm w-full h-full">
       {/* Header - Fixed */}
       <div className="px-6 py-5 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center space-x-3 mb-4">
