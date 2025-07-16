@@ -11,6 +11,7 @@ interface ConversationListProps {
   onSelectConversation: (id: string, conversationData: Conversation) => void;
   collapsed: boolean;
   statusFilter?: string;
+  conversationFilter?: string;
 }
 
 interface SocketMessage {
@@ -28,6 +29,7 @@ export default function ConversationList({
   onSelectConversation,
   collapsed,
   statusFilter = "all",
+  conversationFilter = "all",
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -340,10 +342,34 @@ export default function ConversationList({
       .includes(searchQuery.toLowerCase());
 
     const matchesStatus =
+      statusFilter === "" ||
       statusFilter === "all" ||
       conv.status?.toLowerCase() === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
+    // Apply conversation filter logic
+    let matchesConversationFilter = true;
+    if (
+      conversationFilter &&
+      conversationFilter !== "" &&
+      conversationFilter !== "all"
+    ) {
+      switch (conversationFilter) {
+        case "assigned":
+          // Add logic for assigned conversations if you have user assignment data
+          // For now, we'll assume all conversations are "assigned"
+          matchesConversationFilter = true;
+          break;
+        case "unassigned":
+          // Add logic for unassigned conversations if you have user assignment data
+          // For now, we'll assume no conversations are "unassigned"
+          matchesConversationFilter = false;
+          break;
+        default:
+          matchesConversationFilter = true;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesConversationFilter;
   });
 
   const getStatusColor = (status: string) => {

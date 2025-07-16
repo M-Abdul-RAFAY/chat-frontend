@@ -38,6 +38,7 @@ interface SidebarProps {
   pathname: string;
   onReviewClick?: () => void;
   onStatusFilter?: (status: string) => void; // Add callback for status filtering
+  onConversationFilter?: (filter: string) => void; // Add callback for conversation filtering
 }
 
 export default function Sidebar({
@@ -46,9 +47,10 @@ export default function Sidebar({
   pathname,
   onReviewClick,
   onStatusFilter,
+  onConversationFilter,
 }: SidebarProps) {
   const [conversationFilter, setConversationFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("new-lead");
+  const [statusFilter, setStatusFilter] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
 
@@ -136,9 +138,23 @@ export default function Sidebar({
   // Handle status filter change
   const handleStatusFilterChange = (statusId: string) => {
     setStatusFilter(statusId);
+    // Clear conversation filter when status is selected
+    setConversationFilter("");
     if (onStatusFilter) {
       const statusItem = statusItems.find((item) => item.id === statusId);
       onStatusFilter(statusItem?.status || statusId);
+    }
+  };
+
+  // Handle conversation filter change
+  const handleConversationFilterChange = (filterId: string) => {
+    setConversationFilter(filterId);
+    // Clear status filter when conversation filter is selected
+    if (filterId !== "") {
+      setStatusFilter("");
+    }
+    if (onConversationFilter) {
+      onConversationFilter(filterId);
     }
   };
 
@@ -198,7 +214,9 @@ export default function Sidebar({
                     {conversationFilters.map((filter) => (
                       <button
                         key={filter.id}
-                        onClick={() => setConversationFilter(filter.id)}
+                        onClick={() =>
+                          handleConversationFilterChange(filter.id)
+                        }
                         className={cn(
                           "w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm",
                           conversationFilter === filter.id

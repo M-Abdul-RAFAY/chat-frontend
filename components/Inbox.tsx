@@ -14,7 +14,8 @@ export default function Inbox() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [conversationFilter, setConversationFilter] = useState<string>("all");
   const [conversationListKey, setConversationListKey] = useState(0); // Force re-render when status updates
   const [sidebarKey, setSidebarKey] = useState(0); // Force Sidebar to refresh
 
@@ -87,6 +88,15 @@ export default function Inbox() {
   const handleStatusFilter = (status: string) => {
     console.log("📊 Filtering conversations by status:", status);
     setStatusFilter(status);
+    setConversationFilter(""); // Clear conversation filter when status is selected
+    // You can pass this to ConversationList or implement filtering logic here
+  };
+
+  // Handle conversation filter from Sidebar
+  const handleConversationFilter = (filter: string) => {
+    console.log("💬 Filtering conversations by type:", filter);
+    setConversationFilter(filter);
+    setStatusFilter(""); // Clear status filter when conversation filter is selected
     // You can pass this to ConversationList or implement filtering logic here
   };
 
@@ -98,6 +108,7 @@ export default function Inbox() {
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         pathname="/dashboard/inbox"
         onStatusFilter={handleStatusFilter}
+        onConversationFilter={handleConversationFilter}
       />
 
       <div className="flex flex-1 h-full min-h-0 overflow-hidden">
@@ -116,6 +127,7 @@ export default function Inbox() {
             onSelectConversation={handleSelectConversation}
             collapsed={sidebarCollapsed}
             statusFilter={statusFilter}
+            conversationFilter={conversationFilter}
           />
         </div>
 
