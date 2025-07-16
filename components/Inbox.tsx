@@ -149,6 +149,7 @@ export default function Inbox() {
           ${showConversationList ? "block" : "hidden"} 
           w-full md:w-64 lg:w-80
           h-full min-h-0 overflow-hidden flex-shrink-0
+          relative z-10
         `}
         >
           <ConversationList

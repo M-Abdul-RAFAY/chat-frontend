@@ -160,20 +160,12 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile overlay */}
-      {!collapsed && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={onToggle}
-        />
-      )}
-
       <div
         className={cn(
-          "bg-zinc-900 text-white transition-all duration-300 z-50 flex flex-col h-full",
+          "bg-zinc-900 text-white transition-all duration-300 z-40 flex flex-col h-full",
           collapsed
             ? "w-16 md:w-16" // Show collapsed sidebar (16px) on all screen sizes
-            : "w-64 fixed md:relative inset-y-0 left-0 md:w-64"
+            : "w-64 md:w-64"
         )}
       >
         {/* Header - Fixed */}
