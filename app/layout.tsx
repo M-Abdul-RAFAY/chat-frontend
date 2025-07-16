@@ -29,7 +29,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClickSpark
-          sparkColor="#0000ff"
+          sparkColor="#ffa500"
           sparkSize={10}
           sparkRadius={15}
           sparkCount={8}
