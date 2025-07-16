@@ -144,6 +144,11 @@ export default function Sidebar({
       const statusItem = statusItems.find((item) => item.id === statusId);
       onStatusFilter(statusItem?.status || statusId);
     }
+
+    // Auto-collapse sidebar on small screens when status is selected
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      onToggle();
+    }
   };
 
   // Handle conversation filter change
@@ -155,6 +160,11 @@ export default function Sidebar({
     }
     if (onConversationFilter) {
       onConversationFilter(filterId);
+    }
+
+    // Auto-collapse sidebar on small screens when filter is selected
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      onToggle();
     }
   };
 
@@ -252,13 +262,20 @@ export default function Sidebar({
                         <button
                           key={item.id}
                           className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
-                          onClick={
-                            onReviewClick
-                              ? onReviewClick
-                              : () => {
-                                  window.location.href = "/dashboard/review";
-                                }
-                          }
+                          onClick={() => {
+                            if (onReviewClick) {
+                              onReviewClick();
+                            } else {
+                              window.location.href = "/dashboard/review";
+                            }
+                            // Auto-collapse sidebar on small screens when review is clicked
+                            if (
+                              typeof window !== "undefined" &&
+                              window.innerWidth < 768
+                            ) {
+                              onToggle();
+                            }
+                          }}
                         >
                           <item.icon size={16} className="flex-shrink-0" />
                           <span className="truncate">{item.label}</span>
@@ -267,6 +284,15 @@ export default function Sidebar({
                         <button
                           key={item.id}
                           className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
+                          onClick={() => {
+                            // Auto-collapse sidebar on small screens when activity item is clicked
+                            if (
+                              typeof window !== "undefined" &&
+                              window.innerWidth < 768
+                            ) {
+                              onToggle();
+                            }
+                          }}
                         >
                           <item.icon size={16} className="flex-shrink-0" />
                           <span className="truncate">{item.label}</span>
