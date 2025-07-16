@@ -23,23 +23,25 @@ export default function Inbox() {
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth < 1000;
 
       if (isMobile) {
-        // md breakpoint - Mobile behavior
+        // Mobile behavior (< 768px)
         setSidebarCollapsed(true); // Sidebar should be collapsed on mobile
-        // If we have a conversation selected on mobile, hide conversation list
+        // If we have a conversation selected on mobile, hide conversation list and sidebar
         if (selectedConversation) {
           setShowConversationList(false);
         } else {
           setShowConversationList(true); // Show conversation list when no conversation selected
         }
+      } else if (isTablet) {
+        // Tablet behavior (768px - 1000px)
+        setSidebarCollapsed(true); // Collapse sidebar when screen < 1000px
+        setShowConversationList(true); // Always show conversation list on tablet
       } else {
-        // Desktop/Tablet - always show conversation list
+        // Desktop behavior (>= 1000px)
         setShowConversationList(true);
-        // On desktop, sidebar can be toggled but starts expanded
-        if (window.innerWidth >= 768) {
-          setSidebarCollapsed(false);
-        }
+        setSidebarCollapsed(false); // Sidebar expanded on desktop
       }
     };
 
@@ -115,25 +117,37 @@ export default function Inbox() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 overflow-hidden relative">
-      <Sidebar
-        key={sidebarKey} // Force Sidebar to refresh when status changes
-        collapsed={sidebarCollapsed}
-        onToggle={() => {
-          setSidebarCollapsed(!sidebarCollapsed);
-          // On mobile, if we're in a conversation and sidebar is being opened,
-          // the conversation list should still stay hidden
-        }}
-        pathname="/dashboard/inbox"
-        onStatusFilter={handleStatusFilter}
-        onConversationFilter={handleConversationFilter}
-      />
+      {/* Hide sidebar only on mobile when chat is open */}
+      <div
+        className={`${
+          selectedConversation &&
+          !showConversationList &&
+          typeof window !== "undefined" &&
+          window.innerWidth < 768
+            ? "hidden"
+            : "block"
+        }`}
+      >
+        <Sidebar
+          key={sidebarKey} // Force Sidebar to refresh when status changes
+          collapsed={sidebarCollapsed}
+          onToggle={() => {
+            setSidebarCollapsed(!sidebarCollapsed);
+            // On mobile, if we're in a conversation and sidebar is being opened,
+            // the conversation list should still stay hidden
+          }}
+          pathname="/dashboard/inbox"
+          onStatusFilter={handleStatusFilter}
+          onConversationFilter={handleConversationFilter}
+        />
+      </div>
 
       <div className="flex flex-1 h-full min-h-0 overflow-hidden">
         {/* Conversation List - Show/Hide based on mobile state */}
         <div
           className={`
           ${showConversationList ? "block" : "hidden"} 
-          w-full sm:w-80 md:w-64 lg:w-80
+          w-full md:w-64 lg:w-80
           h-full min-h-0 overflow-hidden flex-shrink-0
         `}
         >
@@ -150,7 +164,8 @@ export default function Inbox() {
         {/* Chat Interface - Show based on state */}
         <div
           className={`
-          ${!showConversationList ? "flex w-full" : "hidden"} md:flex md:flex-1
+          ${selectedConversation ? "block" : "hidden"}
+          ${!showConversationList ? "w-full" : "hidden md:flex md:flex-1"}
           h-full min-h-0 overflow-hidden relative
         `}
         >
