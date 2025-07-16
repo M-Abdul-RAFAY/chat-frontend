@@ -170,7 +170,7 @@ export default function Sidebar({
 
       <div
         className={cn(
-          "bg-zinc-900 text-white transition-all duration-300 z-50 flex flex-col",
+          "bg-zinc-900 text-white transition-all duration-300 z-50 flex flex-col h-full",
           collapsed
             ? "w-16 md:w-16" // Show collapsed sidebar (16px) on all screen sizes
             : "w-64 fixed md:relative inset-y-0 left-0 md:w-64"

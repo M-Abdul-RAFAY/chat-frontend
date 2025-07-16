@@ -126,7 +126,7 @@ export default function Inbox() {
           window.innerWidth < 768
             ? "hidden"
             : "block"
-        }`}
+        } h-full`}
       >
         <Sidebar
           key={sidebarKey} // Force Sidebar to refresh when status changes
