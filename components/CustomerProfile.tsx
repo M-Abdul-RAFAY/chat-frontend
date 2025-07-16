@@ -20,6 +20,11 @@ interface CustomerProfileProps {
   conversationId: string;
   conversationData?: Conversation | null;
   onClose: () => void;
+  onStatusUpdate?: (
+    conversationId: string,
+    newStatus: string,
+    statusColor: string
+  ) => void;
 }
 
 interface ActivityItem {
@@ -51,6 +56,7 @@ export default function CustomerProfile({
   conversationId,
   conversationData,
   onClose,
+  onStatusUpdate,
 }: CustomerProfileProps) {
   const [activeTab, setActiveTab] = useState<"details" | "activity">("details");
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
@@ -58,6 +64,7 @@ export default function CustomerProfile({
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   // Load customer data and activities on mount
   useEffect(() => {
@@ -220,6 +227,66 @@ export default function CustomerProfile({
     "Unqualified",
     "Lost",
   ];
+
+  // Function to update customer status
+  const updateCustomerStatus = async (newStatus: string) => {
+    try {
+      console.log("🔄 CustomerProfile: Starting status update:", {
+        conversationId,
+        newStatus,
+      });
+      setStatusUpdating(true);
+      setError("");
+
+      // Update the backend
+      const response = await customerAPI.updateCustomerStatus(
+        conversationId,
+        newStatus
+      );
+
+      console.log("📡 CustomerProfile: API response:", response);
+
+      if (response.success) {
+        console.log("✅ CustomerProfile: Status update successful");
+        // Update local customer data
+        setCustomerData((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: newStatus,
+                statusColor: response.data?.statusColor || prev.statusColor,
+              }
+            : null
+        );
+
+        // Update conversation data if available (for parent component)
+        if (conversationData && typeof conversationData === "object") {
+          conversationData.status = newStatus;
+          if (response.data?.statusColor) {
+            conversationData.statusColor = response.data.statusColor;
+          }
+        }
+
+        // Notify parent component about status update
+        if (onStatusUpdate && response.data?.statusColor) {
+          onStatusUpdate(conversationId, newStatus, response.data.statusColor);
+        }
+
+        setStatusDropdownOpen(false);
+      } else {
+        console.log(
+          "❌ CustomerProfile: API returned error:",
+          response.message
+        );
+        setError(response.message || "Failed to update status");
+      }
+    } catch (err) {
+      console.error("💥 CustomerProfile: Caught error:", err);
+      setError("Failed to update status");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
 
   return (
     <div className="w-full h-full bg-gradient-to-b from-gray-50 to-white shadow-2xl flex flex-col text-sm">
@@ -499,9 +566,10 @@ export default function CustomerProfile({
                       {statusOptions.map((status) => (
                         <button
                           key={status}
-                          className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 transition-colors duration-200 flex items-center"
+                          className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 transition-colors duration-200 flex items-center disabled:opacity-50"
+                          disabled={statusUpdating}
                           onClick={() => {
-                            setStatusDropdownOpen(false);
+                            updateCustomerStatus(status.toUpperCase());
                           }}
                         >
                           <div

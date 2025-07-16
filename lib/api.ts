@@ -7,28 +7,62 @@ const API_BASE_URL =
 // Helper function to get auth headers (client-side)
 export const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
+    console.log("🔐 Getting auth headers...");
     // Check if we're on the client side
     if (typeof window !== "undefined") {
-      // Try to get token from Clerk
-      if ((window as any).Clerk && (window as any).Clerk.session) {
-        const token = await (window as any).Clerk.session.getToken();
-        console.log("Got Clerk token:", token ? "YES" : "NO");
-        if (token) {
-          return {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          };
-        }
+      console.log("🌐 Client side detected");
+
+      // Wait for Clerk to be loaded if it's not ready yet
+      let maxWaitTime = 5000; // 5 seconds max wait
+      let waitTime = 0;
+      const checkInterval = 100; // Check every 100ms
+
+      while (
+        waitTime < maxWaitTime &&
+        (!(window as any).Clerk || !(window as any).Clerk.loaded)
+      ) {
+        console.log("⏳ Waiting for Clerk to load...", waitTime);
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+        waitTime += checkInterval;
       }
+
+      // Try to get token from Clerk
+      console.log("🎫 Checking for Clerk...", {
+        hasClerk: !!(window as any).Clerk,
+        hasSession: !!(window as any).Clerk?.session,
+        clerkLoaded: (window as any).Clerk?.loaded,
+      });
+
+      if ((window as any).Clerk && (window as any).Clerk.session) {
+        console.log("🎫 Clerk session found");
+        try {
+          const token = await (window as any).Clerk.session.getToken();
+          console.log("🔑 Got Clerk token:", token ? "YES" : "NO");
+          if (token) {
+            const headers = {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            };
+            console.log("✅ Auth headers prepared with token");
+            return headers;
+          }
+        } catch (tokenError) {
+          console.error("❌ Error getting Clerk token:", tokenError);
+        }
+      } else {
+        console.log("❌ No Clerk session found");
+      }
+    } else {
+      console.log("🖥️ Server side detected");
     }
 
-    console.log("No Clerk token available - using fallback");
+    console.log("🔄 No Clerk token available - using fallback");
     // If no token, return headers without Authorization
     return {
       "Content-Type": "application/json",
     };
   } catch (error) {
-    console.error("Error getting auth headers:", error);
+    console.error("💥 Error getting auth headers:", error);
     // Never throw, just return Content-Type for public routes
     return {
       "Content-Type": "application/json",
@@ -857,28 +891,83 @@ export const customerAPI = {
 
   // Update customer status
   updateCustomerStatus: async (
-    customerId: string,
+    conversationId: string,
     status: string
-  ): Promise<void> => {
+  ): Promise<{
+    success: boolean;
+    data?: {
+      status: string;
+      statusColor?: string;
+    };
+    message?: string;
+  }> => {
     try {
+      console.log("🔄 Updating customer status:", { conversationId, status });
+      console.log("🌐 API_BASE_URL:", API_BASE_URL);
+
       const headers = await getAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/customers/${customerId}/status`,
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({ status }),
-        }
+      console.log("🔐 Auth headers:", headers);
+      console.log(
+        "🔑 Has Authorization header:",
+        headers.Authorization ? "YES" : "NO"
       );
 
+      const url = `${API_BASE_URL}/conversations/${conversationId}/status`;
+      console.log("📡 Request URL:", url);
+
+      const payload = { status };
+      console.log("📦 Request payload:", payload);
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      console.log("📡 Response status:", response.status, response.statusText);
+
       if (!response.ok) {
-        throw new Error(
-          `Failed to update customer status: ${response.statusText}`
-        );
+        let errorText = "";
+        try {
+          errorText = await response.text();
+          console.log("❌ Error response text:", errorText);
+        } catch (e) {
+          console.log("❌ Could not read error response text");
+        }
+
+        // Handle specific authentication error
+        if (response.status === 302 || response.status === 401) {
+          return {
+            success: false,
+            message: `Authentication failed. Please refresh the page and try again. Status: ${response.status}`,
+          };
+        }
+
+        return {
+          success: false,
+          message: `Failed to update status: ${response.statusText} - ${errorText}`,
+        };
       }
+
+      const data = await response.json();
+      console.log("✅ Success response data:", data);
+      return {
+        success: true,
+        data: data.data || data,
+      };
     } catch (error) {
-      console.error("Error updating customer status:", error);
-      throw error;
+      console.error("💥 Error updating customer status:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        });
+      }
+      return {
+        success: false,
+        message: "Network error occurred",
+      };
     }
   },
 };

@@ -29,23 +29,28 @@ import {
   CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { chatAPI, Conversation } from "@/lib/api";
 
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   pathname: string;
-  onReviewClick?: () => void; // Add this prop
+  onReviewClick?: () => void;
+  onStatusFilter?: (status: string) => void; // Add callback for status filtering
 }
 
 export default function Sidebar({
   collapsed,
   onToggle,
   pathname,
-  onReviewClick, // Add this prop
+  onReviewClick,
+  onStatusFilter,
 }: SidebarProps) {
   const [conversationFilter, setConversationFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("new-lead");
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
 
   // Collapsible states
   const [showConversations, setShowConversations] = useState(true);
@@ -70,15 +75,72 @@ export default function Sidebar({
 
   // Use icons instead of color for statusItems
   const statusItems = [
-    { id: "new-lead", label: "New lead", icon: UserPlus },
-    { id: "qualifying", label: "Qualifying", icon: Filter },
-    { id: "estimates-sent", label: "Estimates sent", icon: Send },
-    { id: "services", label: "Services", icon: Zap },
-    { id: "payments-sent", label: "Payments sent", icon: BadgeDollarSign },
-    { id: "won", label: "Won", icon: ThumbsUp },
-    { id: "unqualified", label: "Unqualified", icon: Ban },
-    { id: "lost", label: "Lost", icon: XCircle },
+    { id: "new-lead", label: "New lead", icon: UserPlus, status: "NEW LEAD" },
+    {
+      id: "qualifying",
+      label: "Qualifying",
+      icon: Filter,
+      status: "QUALIFYING",
+    },
+    {
+      id: "estimates-sent",
+      label: "Estimates sent",
+      icon: Send,
+      status: "ESTIMATES SENT",
+    },
+    { id: "services", label: "Services", icon: Zap, status: "SERVICES" },
+    {
+      id: "payments-sent",
+      label: "Payments sent",
+      icon: BadgeDollarSign,
+      status: "PAYMENTS SENT",
+    },
+    { id: "won", label: "Won", icon: ThumbsUp, status: "WON" },
+    {
+      id: "unqualified",
+      label: "Unqualified",
+      icon: Ban,
+      status: "UNQUALIFIED",
+    },
+    { id: "lost", label: "Lost", icon: XCircle, status: "LOST" },
   ];
+
+  // Fetch conversations and calculate status counts
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const conversationsData = await chatAPI.getConversations();
+        setConversations(conversationsData);
+
+        // Calculate status counts
+        const counts: Record<string, number> = {};
+        statusItems.forEach((item) => {
+          counts[item.id] = conversationsData.filter(
+            (conv) => conv.status?.toUpperCase() === item.status.toUpperCase()
+          ).length;
+        });
+        setStatusCounts(counts);
+      } catch (error) {
+        console.error("Error fetching conversations for sidebar:", error);
+      }
+    };
+
+    fetchConversations();
+
+    // Set up interval to refresh counts every 30 seconds
+    const interval = setInterval(fetchConversations, 30000);
+
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle status filter change
+  const handleStatusFilterChange = (statusId: string) => {
+    setStatusFilter(statusId);
+    if (onStatusFilter) {
+      const statusItem = statusItems.find((item) => item.id === statusId);
+      onStatusFilter(statusItem?.status || statusId);
+    }
+  };
 
   return (
     <>
@@ -231,16 +293,31 @@ export default function Sidebar({
                     {statusItems.map((status) => (
                       <button
                         key={status.id}
-                        onClick={() => setStatusFilter(status.id)}
+                        onClick={() => handleStatusFilterChange(status.id)}
                         className={cn(
-                          "w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                          "w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm",
                           statusFilter === status.id
                             ? "bg-blue-700 text-white"
                             : "text-gray-400 hover:bg-blue-700 hover:text-white"
                         )}
                       >
-                        <status.icon size={16} className="flex-shrink-0" />
-                        <span className="truncate">{status.label}</span>
+                        <div className="flex items-center space-x-3">
+                          <status.icon size={16} className="flex-shrink-0" />
+                          <span className="truncate">{status.label}</span>
+                        </div>
+                        {/* Status count badge */}
+                        {statusCounts[status.id] !== undefined && (
+                          <span
+                            className={cn(
+                              "inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full",
+                              statusFilter === status.id
+                                ? "bg-white text-blue-700"
+                                : "bg-gray-700 text-gray-300"
+                            )}
+                          >
+                            {statusCounts[status.id]}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>

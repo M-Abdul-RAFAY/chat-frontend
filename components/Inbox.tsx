@@ -14,6 +14,8 @@ export default function Inbox() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [conversationListKey, setConversationListKey] = useState(0); // Force re-render when status updates
 
   // Auto-collapse sidebar on small devices and handle mobile navigation
   useEffect(() => {
@@ -56,12 +58,46 @@ export default function Inbox() {
     // Don't clear the selected conversation - just show the conversation list
   };
 
+  // Handle status update from CustomerProfile
+  const handleStatusUpdate = (
+    conversationId: string,
+    newStatus: string,
+    statusColor: string
+  ) => {
+    // Update the selected conversation data
+    if (
+      selectedConversationData &&
+      selectedConversationData.id === conversationId
+    ) {
+      setSelectedConversationData((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: newStatus,
+              statusColor: statusColor,
+            }
+          : null
+      );
+    }
+
+    // Force ConversationList to refresh by incrementing the key
+    setConversationListKey((prev) => prev + 1);
+  };
+
+  // Handle status filter from Sidebar
+  const handleStatusFilter = (status: string) => {
+    console.log("📊 Filtering conversations by status:", status);
+    setStatusFilter(status);
+    // You can pass this to ConversationList or implement filtering logic here
+  };
+
   return (
     <div className="flex flex-1 h-full min-h-0 overflow-hidden relative">
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         pathname="/dashboard/inbox"
+        onStatusFilter={handleStatusFilter}
       />
 
       <div className="flex flex-1 h-full min-h-0 overflow-hidden">
@@ -75,9 +111,11 @@ export default function Inbox() {
         `}
         >
           <ConversationList
+            key={conversationListKey}
             selectedConversation={selectedConversation}
             onSelectConversation={handleSelectConversation}
             collapsed={sidebarCollapsed}
+            statusFilter={statusFilter}
           />
         </div>
 
@@ -111,6 +149,7 @@ export default function Inbox() {
                   conversationId={selectedConversation}
                   conversationData={selectedConversationData}
                   onClose={() => setProfileVisible(false)}
+                  onStatusUpdate={handleStatusUpdate}
                 />
               </div>
             </>

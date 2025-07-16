@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, RefreshCw, MessageCircle, Clock, User } from "lucide-react";
+import { Search, RefreshCw, MessageCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 import { chatAPI, Conversation } from "@/lib/api";
@@ -10,6 +10,7 @@ interface ConversationListProps {
   selectedConversation: string;
   onSelectConversation: (id: string, conversationData: Conversation) => void;
   collapsed: boolean;
+  statusFilter?: string;
 }
 
 interface SocketMessage {
@@ -26,6 +27,7 @@ export default function ConversationList({
   selectedConversation,
   onSelectConversation,
   collapsed,
+  statusFilter = "all",
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -336,7 +338,12 @@ export default function ConversationList({
     const matchesSearch = (conv.name || "")
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesSearch;
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      conv.status?.toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
