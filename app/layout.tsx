@@ -1,6 +1,7 @@
 import { type Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClickSpark from "@/components/ClickSpark";
+import TextCursor from "@/components/TextCursor";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,6 +29,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <TextCursor
+          text="🤖"
+          delay={0.01}
+          spacing={80}
+          followMouseDirection={true}
+          randomFloat={true}
+          exitDuration={0.01}
+          removalInterval={20}
+          maxPoints={10}
+        />
         <ClickSpark
           sparkColor="#ffa500"
           sparkSize={10}
