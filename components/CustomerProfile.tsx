@@ -405,14 +405,6 @@ export default function CustomerProfile({
               <Activity size={16} className="mr-2 text-gray-500" />
               RECENT ACTIVITY
             </h3>
-            {activities.length > 2 && (
-              <button
-                onClick={() => setActiveTab("activity")}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              >
-                View all
-              </button>
-            )}
           </div>
           <div className="space-y-4">
             {loading ? (
