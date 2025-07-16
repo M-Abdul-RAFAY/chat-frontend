@@ -24,4 +24,5 @@
   font-size: 1.875rem;
   z-index: 9999;
   pointer-events: none;
+  color: rgb(169, 0, 0);
 }

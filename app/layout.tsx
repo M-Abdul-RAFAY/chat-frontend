@@ -30,14 +30,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TextCursor
-          text="🤖"
+          text="Hi_Chat"
           delay={0.01}
-          spacing={80}
+          spacing={120}
           followMouseDirection={true}
           randomFloat={true}
           exitDuration={0.01}
           removalInterval={20}
-          maxPoints={10}
+          maxPoints={2}
         />
         <ClickSpark
           sparkColor="#ffa500"
