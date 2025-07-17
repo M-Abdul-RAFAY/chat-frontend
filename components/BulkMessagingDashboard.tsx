@@ -24,6 +24,7 @@ import {
 import BulkMessageModal from "@/components/BulkMessageModal";
 import Table from "@/components/Table";
 import { bulkMessageAPI, BulkMessage } from "@/lib/api";
+import { useSocket } from "@/hooks/useSocket";
 
 const faqItems = [
   {
@@ -55,6 +56,7 @@ export default function BulkMessagingDashboard() {
   const [bulkMessages, setBulkMessages] = useState<BulkMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { socket } = useSocket();
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -77,6 +79,49 @@ export default function BulkMessagingDashboard() {
   useEffect(() => {
     fetchBulkMessages();
   }, []);
+
+  // Socket listener for real-time bulk message updates
+  useEffect(() => {
+    if (socket) {
+      const handleBulkMessageUpdate = (data: {
+        bulkMessageId: string;
+        status: string;
+        sentCount: number;
+        failedCount: number;
+        totalCount: number;
+      }) => {
+        setBulkMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg._id === data.bulkMessageId
+              ? {
+                  ...msg,
+                  status: data.status as
+                    | "pending"
+                    | "in_progress"
+                    | "completed"
+                    | "failed",
+                  sentCount: data.sentCount,
+                  failedCount: data.failedCount,
+                  totalCount: data.totalCount,
+                }
+              : msg
+          )
+        );
+      };
+
+      const handleBulkMessageCreated = (data: { bulkMessage: BulkMessage }) => {
+        setBulkMessages((prevMessages) => [data.bulkMessage, ...prevMessages]);
+      };
+
+      socket.on("bulkMessageUpdated", handleBulkMessageUpdate);
+      socket.on("bulkMessageCreated", handleBulkMessageCreated);
+
+      return () => {
+        socket.off("bulkMessageUpdated", handleBulkMessageUpdate);
+        socket.off("bulkMessageCreated", handleBulkMessageCreated);
+      };
+    }
+  }, [socket]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

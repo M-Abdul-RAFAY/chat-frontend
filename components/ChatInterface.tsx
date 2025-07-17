@@ -145,9 +145,12 @@ export default function ChatInterface({
               msg.id === message.id ||
               msg.id === message._id ||
               (msg.content === message.content &&
-                Math.abs(
-                  new Date().getTime() - new Date(msg.timestamp || 0).getTime()
-                ) < 5000)
+                msg.sender === message.sender &&
+                (message.isBulkMessage ||
+                  Math.abs(
+                    new Date().getTime() -
+                      new Date(msg.timestamp || 0).getTime()
+                  ) < 5000))
           );
 
           if (existingMessage) {
