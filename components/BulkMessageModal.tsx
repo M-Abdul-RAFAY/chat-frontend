@@ -213,9 +213,6 @@ export default function BulkMessageModal({
           <DialogTitle className="text-xl font-semibold">
             Send Bulk Message
           </DialogTitle>
-          <Button variant="ghost" size="sm" onClick={handleClose}>
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -442,27 +439,6 @@ export default function BulkMessageModal({
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Calendar className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Package className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Paperclip className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Link className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Smile className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Star className="h-4 w-4" />
-              </Button>
-            </div>
-
             <Badge variant="secondary" className="bg-blue-100 text-blue-800">
               <Users className="h-3 w-3 mr-1" />
               {recipientMode === "conversations"
