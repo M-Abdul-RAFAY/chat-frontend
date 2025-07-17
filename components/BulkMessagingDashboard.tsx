@@ -288,10 +288,7 @@ export default function BulkMessagingDashboard() {
                         ) : (
                           <Table
                             bulkMessages={bulkMessages}
-                            onViewAll={() => {
-                              // TODO: Navigate to all bulk messages page
-                              console.log("View all bulk messages");
-                            }}
+                            onViewAll={() => setCurrentView("all-messages")}
                           />
                         )}
                       </CardContent>
