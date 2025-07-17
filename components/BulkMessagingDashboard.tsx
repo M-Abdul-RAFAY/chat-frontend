@@ -3,17 +3,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
   Activity,
   MessageSquare,
-  Zap,
-  MoreHorizontal,
   Plus,
   List,
-  UserPlus,
   Menu,
   X,
   ChevronDown,
@@ -23,6 +18,7 @@ import {
 } from "lucide-react";
 import BulkMessageModal from "@/components/BulkMessageModal";
 import Table from "@/components/Table";
+import AllBulkMessagesPage from "@/components/AllBulkMessagesPage";
 import { bulkMessageAPI, BulkMessage } from "@/lib/api";
 import { useSocket } from "@/hooks/useSocket";
 
@@ -56,6 +52,9 @@ export default function BulkMessagingDashboard() {
   const [bulkMessages, setBulkMessages] = useState<BulkMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<"dashboard" | "all-messages">(
+    "dashboard"
+  );
   const { socket } = useSocket();
 
   const toggleFaq = (index: number) => {
@@ -123,30 +122,6 @@ export default function BulkMessagingDashboard() {
     }
   }, [socket]);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "sent":
-        return "bg-green-100 text-green-800";
-      case "scheduled":
-        return "bg-orange-100 text-orange-800";
-      case "sending":
-        return "bg-blue-100 text-blue-800";
-      case "failed":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   const handleModalSuccess = () => {
     fetchBulkMessages(); // Refresh the list
   };
@@ -190,15 +165,25 @@ export default function BulkMessagingDashboard() {
 
             <nav className="space-y-2">
               <Button
-                variant="secondary"
-                className="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100 text-sm"
+                variant={currentView === "dashboard" ? "secondary" : "ghost"}
+                className={`w-full justify-start text-sm ${
+                  currentView === "dashboard"
+                    ? "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setCurrentView("dashboard")}
               >
                 <Activity className="mr-2 h-4 w-4" />
                 Activity
               </Button>
               <Button
-                variant="ghost"
-                className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm"
+                variant={currentView === "all-messages" ? "secondary" : "ghost"}
+                className={`w-full justify-start text-sm ${
+                  currentView === "all-messages"
+                    ? "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setCurrentView("all-messages")}
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 All Bulk Messages
@@ -240,121 +225,127 @@ export default function BulkMessagingDashboard() {
         <main className="flex-1 w-full min-w-0">
           <div className="p-4 lg:p-6 pt-16 lg:pt-6">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
-                {/* Activity Section */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 lg:mb-6 gap-3">
-                    <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
-                      Activity
-                    </h1>
-                    <Button
-                      onClick={() => setIsModalOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-sm lg:text-base"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create bulk message
-                    </Button>
-                  </div>
+              {currentView === "dashboard" ? (
+                <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
+                  {/* Activity Section */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 lg:mb-6 gap-3">
+                      <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
+                        Activity
+                      </h1>
+                      <Button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-sm lg:text-base"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create bulk message
+                      </Button>
+                    </div>
 
-                  <Card>
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-base lg:text-lg">
-                        Recent Bulk Messages
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 lg:px-6">
-                      {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                          <span className="ml-2 text-sm text-gray-600">
-                            Loading bulk messages...
-                          </span>
-                        </div>
-                      ) : error ? (
-                        <div className="flex items-center justify-center py-8">
-                          <AlertCircle className="h-6 w-6 text-red-500" />
-                          <span className="ml-2 text-sm text-red-600">
-                            {error}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={fetchBulkMessages}
-                            className="ml-2"
-                          >
-                            Retry
-                          </Button>
-                        </div>
-                      ) : bulkMessages.length === 0 ? (
-                        <div className="text-center py-8">
-                          <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-500 mb-4">
-                            No campaigns have been created yet
-                          </p>
-                          <Button
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Your First Campaign
-                          </Button>
-                        </div>
-                      ) : (
-                        <Table
-                          bulkMessages={bulkMessages}
-                          onViewAll={() => {
-                            // TODO: Navigate to all bulk messages page
-                            console.log("View all bulk messages");
-                          }}
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* FAQ Section */}
-                <div className="w-full xl:w-80 flex-shrink-0">
-                  <Card>
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-base lg:text-lg">
-                        FAQs
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 lg:px-6">
-                      <div className="space-y-2">
-                        {faqItems.map((item, index) => (
-                          <div
-                            key={index}
-                            className="border border-gray-100 rounded-lg"
-                          >
+                    <Card>
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-base lg:text-lg">
+                          Recent Bulk Messages
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="px-4 lg:px-6">
+                        {isLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                            <span className="ml-2 text-sm text-gray-600">
+                              Loading bulk messages...
+                            </span>
+                          </div>
+                        ) : error ? (
+                          <div className="flex items-center justify-center py-8">
+                            <AlertCircle className="h-6 w-6 text-red-500" />
+                            <span className="ml-2 text-sm text-red-600">
+                              {error}
+                            </span>
                             <Button
                               variant="ghost"
-                              className="w-full justify-between text-left p-3 h-auto text-xs lg:text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                              onClick={() => toggleFaq(index)}
+                              size="sm"
+                              onClick={fetchBulkMessages}
+                              className="ml-2"
                             >
-                              <span className="text-left pr-2">
-                                {item.question}
-                              </span>
-                              {expandedFaq === index ? (
-                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                              )}
+                              Retry
                             </Button>
-                            {expandedFaq === index && (
-                              <div className="px-3 pb-3">
-                                <p className="text-xs lg:text-sm text-gray-600 leading-relaxed">
-                                  {item.answer}
-                                </p>
-                              </div>
-                            )}
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        ) : bulkMessages.length === 0 ? (
+                          <div className="text-center py-8">
+                            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-500 mb-4">
+                              No campaigns have been created yet
+                            </p>
+                            <Button
+                              onClick={() => setIsModalOpen(true)}
+                              className="bg-blue-600 hover:bg-blue-700"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Create Your First Campaign
+                            </Button>
+                          </div>
+                        ) : (
+                          <Table
+                            bulkMessages={bulkMessages}
+                            onViewAll={() => {
+                              // TODO: Navigate to all bulk messages page
+                              console.log("View all bulk messages");
+                            }}
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* FAQ Section */}
+                  <div className="w-full xl:w-80 flex-shrink-0">
+                    <Card>
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-base lg:text-lg">
+                          FAQs
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="px-4 lg:px-6">
+                        <div className="space-y-2">
+                          {faqItems.map((item, index) => (
+                            <div
+                              key={index}
+                              className="border border-gray-100 rounded-lg"
+                            >
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-between text-left p-3 h-auto text-xs lg:text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                                onClick={() => toggleFaq(index)}
+                              >
+                                <span className="text-left pr-2">
+                                  {item.question}
+                                </span>
+                                {expandedFaq === index ? (
+                                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                                )}
+                              </Button>
+                              {expandedFaq === index && (
+                                <div className="px-3 pb-3">
+                                  <p className="text-xs lg:text-sm text-gray-600 leading-relaxed">
+                                    {item.answer}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <AllBulkMessagesPage
+                  onBack={() => setCurrentView("dashboard")}
+                />
+              )}
             </div>
           </div>
         </main>

@@ -987,7 +987,7 @@ export interface BulkMessage {
   title: string;
   message: string;
   recipients: BulkMessageRecipient[];
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: "pending" | "in_progress" | "completed" | "failed" | "scheduled";
   scheduledDate: string;
   sentCount: number;
   failedCount: number;

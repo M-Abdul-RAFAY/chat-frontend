@@ -56,6 +56,9 @@ export default function BulkMessageModal({
     []
   );
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [conversationError, setConversationError] = useState<string | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [recipientMode, setRecipientMode] = useState<
     "manual" | "conversations"
@@ -70,12 +73,27 @@ export default function BulkMessageModal({
 
   const fetchConversations = async () => {
     setIsLoadingConversations(true);
+    setConversationError(null);
     try {
       const conversationsData = await chatAPI.getConversations();
       setConversations(conversationsData);
     } catch (error) {
       console.error("Error fetching conversations:", error);
-      alert("Failed to load conversations");
+      // More specific error handling
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (
+        errorMessage.includes("Network Error") ||
+        errorMessage.includes("timeout")
+      ) {
+        setConversationError(
+          "Connection timeout. Please check your network connection and try again."
+        );
+      } else if (errorMessage.includes("500")) {
+        setConversationError("Server error. Please try again in a moment.");
+      } else {
+        setConversationError("Failed to load conversations. Please try again.");
+      }
     } finally {
       setIsLoadingConversations(false);
     }
@@ -304,6 +322,22 @@ export default function BulkMessageModal({
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin" />
                       <span className="ml-2">Loading conversations...</span>
+                    </div>
+                  ) : conversationError ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="text-red-500 mb-4">
+                        <X className="h-8 w-8 mx-auto mb-2" />
+                        <p className="text-sm">{conversationError}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={fetchConversations}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Loader2 className="h-4 w-4 mr-2" />
+                        Retry
+                      </Button>
                     </div>
                   ) : filteredConversations.length === 0 ? (
                     <div className="flex items-center justify-center py-8 text-gray-500">
