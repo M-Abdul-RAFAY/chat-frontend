@@ -186,7 +186,7 @@ export default function WidgetManager() {
     iframe.style.bottom = "20px";
     iframe.style.right = "20px";
     iframe.style.width = "350px";
-    iframe.style.height = "80px"; // Initial button height
+    iframe.style.height = "80px";
     iframe.style.border = "none";
     iframe.style.zIndex = "999999";
     iframe.style.transition = "height 0.3s ease-in-out";
