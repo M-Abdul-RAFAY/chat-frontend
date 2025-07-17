@@ -27,6 +27,13 @@ export default function ChatSupportWidget({
   widgetId,
 }: ChatSupportWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Notify parent window of state changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.parent.postMessage({ type: "widgetState", isOpen }, "*");
+    }
+  }, [isOpen]);
   const [step, setStep] = useState<"form" | "optIn">("form");
   const [form, setForm] = useState({
     name: "",

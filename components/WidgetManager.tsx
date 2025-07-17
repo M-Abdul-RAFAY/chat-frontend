@@ -178,21 +178,26 @@ export default function WidgetManager() {
     console.log("Generating embed code for widget ID:", id);
     const frontendUrl =
       process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3001";
-    const code = `<iframe
-  src="${frontendUrl}/widget?id=${id}"
-  style="
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 350px;
-    height: 500px;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    z-index: 9999;
-  "
-  allowtransparency="true"
-></iframe>`;
+    const code = `<script>
+  (function () {
+    const iframe = document.createElement('iframe');
+    iframe.src="${frontendUrl}/widget?id=${id}";
+    iframe.style.position = "fixed";
+    iframe.style.bottom = "20px";
+    iframe.style.right = "20px";
+    iframe.style.width = "350px";
+    iframe.style.height = "80px"; // Initial button height
+    iframe.style.border = "none";
+    iframe.style.zIndex = "999999";
+    iframe.style.transition = "height 0.3s ease-in-out";
+    document.body.appendChild(iframe);
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'widgetState') {
+        iframe.style.height = event.data.isOpen ? '500px' : '80px';
+      }
+    });
+  })();
+</script>`;
     setEmbedCode(code);
   };
 
