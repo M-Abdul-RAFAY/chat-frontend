@@ -189,23 +189,6 @@ export default function BulkMessagingDashboard() {
                 All Bulk Messages
               </Button>
             </nav>
-
-            <Separator className="my-6" />
-
-            <div>
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-                AUDIENCE
-              </h3>
-              <nav className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm"
-                >
-                  <List className="mr-2 h-4 w-4" />
-                  Marketing List
-                </Button>
-              </nav>
-            </div>
           </div>
         </aside>
 
