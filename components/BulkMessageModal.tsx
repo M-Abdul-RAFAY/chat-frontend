@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,8 +30,16 @@ import {
   UserCheck,
   Phone,
   Mail,
+  Sparkles,
 } from "lucide-react";
-import { bulkMessageAPI, chatAPI, type Conversation } from "@/lib/api";
+import {
+  bulkMessageAPI,
+  chatAPI,
+  widgetAPI,
+  aiAPI,
+  type Conversation,
+} from "@/lib/api";
+import { useUser } from "@clerk/nextjs";
 
 interface BulkMessageModalProps {
   isOpen: boolean;
@@ -44,11 +52,16 @@ export default function BulkMessageModal({
   onClose,
   onSuccess,
 }: BulkMessageModalProps) {
+  const { user } = useUser();
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("");
   const [recipients, setRecipients] = useState<string[]>([""]);
   const [isLoading, setIsLoading] = useState(false);
   const [scheduledFor, setScheduledFor] = useState("");
+
+  // AI generation state
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState<any>(null);
 
   // New state for conversations and recipient selection
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -64,14 +77,21 @@ export default function BulkMessageModal({
     "manual" | "conversations"
   >("conversations");
 
-  // Fetch conversations when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchConversations();
-    }
-  }, [isOpen]);
+  const fetchBusinessInfo = useCallback(async () => {
+    if (!user?.id) return;
 
-  const fetchConversations = async () => {
+    try {
+      const businessData = await widgetAPI.getBusinessInfo(user.id);
+      if (businessData.success && businessData.businessInfo) {
+        setBusinessInfo(businessData.businessInfo);
+      }
+    } catch (error) {
+      console.error("Error fetching business info:", error);
+      // Business info is optional, so we don't show error to user
+    }
+  }, [user?.id]);
+
+  const fetchConversations = useCallback(async () => {
     setIsLoadingConversations(true);
     setConversationError(null);
     try {
@@ -96,6 +116,32 @@ export default function BulkMessageModal({
       }
     } finally {
       setIsLoadingConversations(false);
+    }
+  }, []);
+
+  // Fetch conversations when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchConversations();
+      fetchBusinessInfo();
+    }
+  }, [isOpen, fetchConversations, fetchBusinessInfo]);
+
+  const handleGenerateAI = async () => {
+    if (!user?.id) {
+      alert("Please sign in to use AI generation");
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    try {
+      const aiMessage = await aiAPI.generateBulkMessage(businessInfo, title);
+      setMessage(aiMessage);
+    } catch (error) {
+      console.error("Error generating AI message:", error);
+      alert("Failed to generate AI message. Please try again.");
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -459,9 +505,26 @@ export default function BulkMessageModal({
 
           {/* Message Input */}
           <div className="space-y-2">
-            <Label htmlFor="message" className="text-sm font-medium">
-              Message Content
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="message" className="text-sm font-medium">
+                Message Content
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateAI}
+                disabled={isGeneratingAI}
+                className="text-purple-600 border-purple-200 hover:bg-purple-50 hover:border-purple-300"
+              >
+                {isGeneratingAI ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-2" />
+                )}
+                {isGeneratingAI ? "Generating..." : "Generate with AI"}
+              </Button>
+            </div>
             <Textarea
               id="message"
               placeholder="Write your message here"
