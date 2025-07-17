@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   Activity,
   MessageSquare,
-  Users,
   Zap,
   MoreHorizontal,
   Plus,
@@ -19,63 +18,12 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import BulkMessageModal from "@/components/BulkMessageModal";
-
-const bulkMessages = [
-  {
-    id: 1,
-    title: "Free Delivery Promo",
-    description:
-      "Contact - how can you get free delivery all month long? It's easy, just join us at the showroom this...",
-    status: "Scheduled",
-    statusColor: "bg-orange-100 text-orange-800",
-    activity: 46,
-    activityType: "Messages",
-    activityCount: 4662,
-    date: "Scheduled for April 3, 2024",
-    progress: null,
-  },
-  {
-    id: 2,
-    title: "Showroom Event",
-    description:
-      "Hey Contact, this is Venture Auto! We're excited about our upcoming showroom event...",
-    status: "Completed",
-    statusColor: "bg-green-100 text-green-800",
-    activity: 40,
-    activityType: "Click rate",
-    activityCount: 5004,
-    date: "Sent January 15, 2024",
-    progress: 40,
-  },
-  {
-    id: 3,
-    title: "Mega Sale",
-    description:
-      "Contact - now's your chance to shop our biggest sale yet! On Friday, our entire showroom will...",
-    status: "Completed",
-    statusColor: "bg-green-100 text-green-800",
-    activity: 42,
-    activityType: "Click rate",
-    activityCount: 4114,
-    date: "Sent December 21, 2023",
-    progress: 42,
-  },
-  {
-    id: 4,
-    title: "Holiday Shopping",
-    description:
-      "Hey, Contact! Venture Auto is ready to celebrate the holidays with a brand new ride for you and...",
-    status: "Completed",
-    statusColor: "bg-green-100 text-green-800",
-    activity: 30,
-    activityType: "Click rate",
-    activityCount: 3032,
-    date: "Sent December 15, 2023",
-    progress: 30,
-  },
-];
+import Table from "@/components/Table";
+import { bulkMessageAPI, BulkMessage } from "@/lib/api";
 
 const faqItems = [
   {
@@ -104,9 +52,58 @@ export default function BulkMessagingDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [bulkMessages, setBulkMessages] = useState<BulkMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
+  };
+
+  const fetchBulkMessages = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await bulkMessageAPI.getRecentBulkMessages();
+      setBulkMessages(response.data);
+    } catch (err) {
+      console.error("Error fetching bulk messages:", err);
+      setError("Failed to load bulk messages. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBulkMessages();
+  }, []);
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "sent":
+        return "bg-green-100 text-green-800";
+      case "scheduled":
+        return "bg-orange-100 text-orange-800";
+      case "sending":
+        return "bg-blue-100 text-blue-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const handleModalSuccess = () => {
+    fetchBulkMessages(); // Refresh the list
   };
 
   return (
@@ -161,13 +158,6 @@ export default function BulkMessagingDashboard() {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 All Bulk Messages
               </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm"
-              >
-                <Zap className="mr-2 h-4 w-4" />
-                Automations
-              </Button>
             </nav>
 
             <Separator className="my-6" />
@@ -183,13 +173,6 @@ export default function BulkMessagingDashboard() {
                 >
                   <List className="mr-2 h-4 w-4" />
                   Marketing List
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm"
-                >
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Sign-Up Tools
                 </Button>
               </nav>
             </div>
@@ -235,82 +218,51 @@ export default function BulkMessagingDashboard() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4 lg:px-6">
-                      <div className="space-y-4 lg:space-y-6">
-                        {bulkMessages.map((message) => (
-                          <div
-                            key={message.id}
-                            className="border-b border-gray-100 pb-4 lg:pb-6 last:border-b-0"
-                          >
-                            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                                  <h3 className="font-medium text-gray-900 text-sm lg:text-base">
-                                    {message.title}
-                                  </h3>
-                                  <Badge
-                                    className={`${message.statusColor} text-xs w-fit`}
-                                  >
-                                    {message.status}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs lg:text-sm text-gray-600 mb-2 line-clamp-2">
-                                  {message.description}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {message.date}
-                                </p>
-                                {message.progress && (
-                                  <div className="mt-2">
-                                    <Progress
-                                      value={message.progress}
-                                      className="h-2"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex items-center justify-between lg:justify-end gap-3 lg:gap-4 lg:ml-4">
-                                <div className="flex gap-3 lg:gap-4">
-                                  <div className="text-center">
-                                    <div className="text-base lg:text-lg font-semibold text-gray-900">
-                                      {message.activity}%
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {message.activityType}
-                                    </div>
-                                  </div>
-
-                                  <div className="text-center">
-                                    <div className="text-base lg:text-lg font-semibold text-gray-900">
-                                      {message.activityCount.toLocaleString()}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      Messages
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="p-1"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        <div className="text-center pt-4">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                          <span className="ml-2 text-sm text-gray-600">
+                            Loading bulk messages...
+                          </span>
+                        </div>
+                      ) : error ? (
+                        <div className="flex items-center justify-center py-8">
+                          <AlertCircle className="h-6 w-6 text-red-500" />
+                          <span className="ml-2 text-sm text-red-600">
+                            {error}
+                          </span>
                           <Button
-                            variant="link"
-                            className="text-blue-600 text-sm"
+                            variant="ghost"
+                            size="sm"
+                            onClick={fetchBulkMessages}
+                            className="ml-2"
                           >
-                            View all bulk messages
+                            Retry
                           </Button>
                         </div>
-                      </div>
+                      ) : bulkMessages.length === 0 ? (
+                        <div className="text-center py-8">
+                          <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500 mb-4">
+                            No campaigns have been created yet
+                          </p>
+                          <Button
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Your First Campaign
+                          </Button>
+                        </div>
+                      ) : (
+                        <Table
+                          bulkMessages={bulkMessages}
+                          onViewAll={() => {
+                            // TODO: Navigate to all bulk messages page
+                            console.log("View all bulk messages");
+                          }}
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -367,6 +319,7 @@ export default function BulkMessagingDashboard() {
       <BulkMessageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={handleModalSuccess}
       />
     </div>
   );

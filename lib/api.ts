@@ -126,6 +126,7 @@ export const userAPI = {
 // Types for API responses
 export interface Conversation {
   id: string; // Changed from number to string
+  _id?: string; // MongoDB ObjectId
   name: string;
   avatar: string;
   time: string;
@@ -186,7 +187,14 @@ export const chatAPI = {
         );
       }
 
-      return await response.json();
+      const conversations = await response.json();
+
+      // Map _id to id for frontend compatibility
+      return conversations.map((conv: { _id: string; [key: string]: any }) => ({
+        ...conv,
+        id: conv._id.toString(),
+        _id: conv._id.toString(), // Preserve _id for backend compatibility
+      }));
     } catch (error) {
       console.error("Error fetching conversations:", error);
       throw error;
@@ -969,6 +977,163 @@ export const customerAPI = {
         message: "Network error occurred",
       };
     }
+  },
+};
+
+// Bulk Message Types
+export interface BulkMessage {
+  _id: string;
+  userId: string;
+  title: string;
+  message: string;
+  recipients: BulkMessageRecipient[];
+  status: "pending" | "in_progress" | "completed" | "failed";
+  scheduledDate: string;
+  sentCount: number;
+  failedCount: number;
+  totalCount: number;
+  isAIGenerated: boolean;
+  aiPrompt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BulkMessageRecipient {
+  conversationId: string;
+  phone: string;
+  customerName: string;
+  status: "pending" | "sent" | "failed";
+  sentAt?: string;
+  error?: string;
+}
+
+export interface CreateBulkMessageData {
+  title: string;
+  message: string;
+  recipients: string[]; // Array of conversation IDs or 'all'
+  scheduledDate?: string;
+  isAIGenerated?: boolean;
+  aiPrompt?: string;
+}
+
+export interface BulkMessageResponse {
+  success: boolean;
+  data: BulkMessage[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+// Bulk Message API Functions
+export const bulkMessageAPI = {
+  // Generate AI message
+  generateAIMessage: async (
+    prompt: string,
+    messageType: string = "promotional"
+  ) => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/bulk-messages/generate-ai`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ prompt, messageType }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Get recent bulk messages (top 5)
+  getRecentBulkMessages: async (): Promise<BulkMessageResponse> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/bulk-messages/recent`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Get all bulk messages with pagination
+  getAllBulkMessages: async (
+    page: number = 1,
+    limit: number = 10
+  ): Promise<BulkMessageResponse> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(
+      `${API_BASE_URL}/bulk-messages?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Create bulk message
+  createBulkMessage: async (
+    data: CreateBulkMessageData
+  ): Promise<{ success: boolean; data: BulkMessage }> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/bulk-messages`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Get bulk message by ID
+  getBulkMessageById: async (
+    id: string
+  ): Promise<{ success: boolean; data: BulkMessage }> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/bulk-messages/${id}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Delete bulk message
+  deleteBulkMessage: async (
+    id: string
+  ): Promise<{ success: boolean; message: string }> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/bulk-messages/${id}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
   },
 };
 
