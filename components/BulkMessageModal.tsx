@@ -431,9 +431,11 @@ export default function BulkMessageModal({
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 truncate">
-                            {conversation.lastMessage}
-                          </p>
+                            <p className="text-sm text-gray-500 truncate">
+                            {conversation.lastMessage && conversation.lastMessage.length > 80
+                              ? conversation.lastMessage.slice(0, 80) + "..."
+                              : conversation.lastMessage}
+                            </p>
                         </div>
                         <UserCheck
                           className={`h-4 w-4 ${
