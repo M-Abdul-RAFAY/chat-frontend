@@ -1,12 +1,11 @@
 "use client";
 
 import { ReviewsDashboard } from "@/components/ReviewsDashboard";
-import { mockReviews, mockInvitedUsers } from "@/lib/mockData";
 
-export default function Home() {
+export default function ReviewsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <ReviewsDashboard reviews={mockReviews} invitedUsers={mockInvitedUsers} />
+      <ReviewsDashboard />
     </div>
   );
 }
