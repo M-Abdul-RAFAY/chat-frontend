@@ -275,20 +275,6 @@ export default function BulkMessageModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Title Field */}
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium">
-              Message Title
-            </Label>
-            <Input
-              id="title"
-              placeholder="Enter message title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-
           {/* Recipients Field */}
           <div className="space-y-4">
             <Label className="text-sm font-medium">Recipients</Label>
@@ -426,11 +412,12 @@ export default function BulkMessageModal({
                               </Badge>
                             )}
                           </div>
-                            <p className="text-sm text-gray-500 truncate">
-                            {conversation.lastMessage && conversation.lastMessage.length > 80
-                              ? conversation.lastMessage.slice(0, 80) + "..."
+                          <p className="text-sm text-gray-500 truncate">
+                            {conversation.lastMessage &&
+                            conversation.lastMessage.length > 80
+                              ? conversation.lastMessage.slice(0, 70) + "..."
                               : conversation.lastMessage}
-                            </p>
+                          </p>
                         </div>
                         <UserCheck
                           className={`h-4 w-4 ${
@@ -500,6 +487,20 @@ export default function BulkMessageModal({
 
           <Separator />
 
+          {/* Title Field */}
+          <div className="space-y-2">
+            <Label htmlFor="title" className="text-sm font-medium">
+              Message Title
+            </Label>
+            <Input
+              id="title"
+              placeholder="Enter message title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
           {/* Message Input */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -545,8 +546,8 @@ export default function BulkMessageModal({
           <div className="bg-gray-50 p-3 rounded-md">
             <p className="text-xs text-gray-600">
               <span className="inline-block w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
-              Bulk messages will be sent to all specified recipients. Make sure
-              you have permission to contact them.
+              Pro tip: Put a meaningful title to make most out of AI generated
+              message feature.
             </p>
           </div>
 
