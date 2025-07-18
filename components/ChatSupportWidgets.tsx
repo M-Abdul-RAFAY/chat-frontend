@@ -75,14 +75,48 @@ export default function ChatSupportWidget({
     }
   };
 
+  // Function to clean phone number for backend (remove formatting)
+  function cleanPhoneNumber(phone: string): string {
+    // Remove extension part first (x123, ext123, extension123)
+    const phoneWithoutExt = phone.replace(/\s*(x|ext|extension)\s*\d+.*$/i, "");
+
+    // Remove all non-digit characters
+    const cleaned = phoneWithoutExt.replace(/\D/g, "");
+
+    // If starts with 1 and has 11 digits, remove the 1 (US country code)
+    if (cleaned.length === 11 && cleaned.startsWith("1")) {
+      return cleaned.substring(1);
+    }
+
+    return cleaned;
+  }
+
   function validateField(fieldName: keyof typeof form, value: string) {
     let error: string | undefined = undefined;
     if (fieldName === "name" && !value.trim()) {
       error = "Name is required";
     } else if (fieldName === "phone") {
       if (!value.trim()) error = "Mobile Phone is required";
-      else if (!/^\+?\d{7,15}$/.test(value.trim()))
-        error = "Enter a valid phone number (7-15 digits, optional +)";
+      else {
+        // Comprehensive US phone validation - accepts all common formats
+        // Remove all non-digits first to check if we have the right amount of numbers
+        const digitsOnly = value.replace(/\D/g, "");
+
+        // Should have 10 digits (US) or 11 digits (with country code +1)
+        if (digitsOnly.length === 10) {
+          // Check if first digit of area code is 2-9
+          if (!/^[2-9]/.test(digitsOnly)) {
+            error = "Area code must start with 2-9";
+          }
+        } else if (digitsOnly.length === 11) {
+          // Check if starts with 1 (US country code) and area code is valid
+          if (!digitsOnly.startsWith("1") || !/^1[2-9]/.test(digitsOnly)) {
+            error = "Invalid US phone number with country code";
+          }
+        } else {
+          error = "Enter a valid US phone number";
+        }
+      }
     } else if (fieldName === "message" && !value.trim()) {
       error = "Message is required";
     }
@@ -127,7 +161,10 @@ export default function ChatSupportWidget({
     }
 
     if (!widgetId) {
-      console.log("Submitting form:", form);
+      console.log("Submitting form:", {
+        ...form,
+        phone: cleanPhoneNumber(form.phone), // Clean phone number for backend
+      });
       setStep("optIn");
       return;
     }
@@ -137,7 +174,7 @@ export default function ChatSupportWidget({
       const response = await widgetAPI.createConversation(widgetId, {
         name: form.name,
         email: "", // Not collected in this form
-        phone: form.phone,
+        phone: cleanPhoneNumber(form.phone), // Clean phone number for backend
         message: form.message,
       });
 
