@@ -195,12 +195,12 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
   const syncReviews = async (googleToken?: string) => {
     try {
       setLoading(true);
-      
+
       const headers = await getAuthHeaders();
       if (googleToken) {
         headers["x-gbp-token"] = googleToken;
       }
-      
+
       const response = await fetch(`${API_BASE}/reviews/sync`, {
         method: "POST",
         headers,

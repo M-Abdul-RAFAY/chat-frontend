@@ -166,15 +166,9 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
           {!googleToken && (
-            <GoogleBusinessProfileAuth 
-              onTokenReceived={setGoogleToken}
-            />
+            <GoogleBusinessProfileAuth onTokenReceived={setGoogleToken} />
           )}
-          <Button
-            onClick={handleSync}
-            disabled={isSyncing}
-            variant="outline"
-          >
+          <Button onClick={handleSync} disabled={isSyncing} variant="outline">
             {isSyncing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -216,7 +210,7 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
               {reviews.length === 0 && (
                 <div className="space-y-4">
                   {!googleToken ? (
-                    <GoogleBusinessProfileAuth 
+                    <GoogleBusinessProfileAuth
                       onTokenReceived={setGoogleToken}
                       className="flex justify-center"
                     />

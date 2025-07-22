@@ -10,15 +10,16 @@ interface GoogleBusinessProfileAuthProps {
   className?: string;
 }
 
-export function GoogleBusinessProfileAuth({ 
-  onTokenReceived, 
-  className = "" 
+export function GoogleBusinessProfileAuth({
+  onTokenReceived,
+  className = "",
 }: GoogleBusinessProfileAuthProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
   const handleConnectGoogle = async () => {
     try {
@@ -26,12 +27,17 @@ export function GoogleBusinessProfileAuth({
       setError(null);
 
       // Step 1: Get the Google OAuth URL from backend
-      const response = await fetch(`${API_BASE}/gbp-locations/auth/google-url`, {
-        headers: await getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE}/gbp-locations/auth/google-url`,
+        {
+          headers: await getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to get Google OAuth URL: ${response.statusText}`);
+        throw new Error(
+          `Failed to get Google OAuth URL: ${response.statusText}`
+        );
       }
 
       const { authUrl } = await response.json();
@@ -44,7 +50,9 @@ export function GoogleBusinessProfileAuth({
       );
 
       if (!popup) {
-        throw new Error("Failed to open popup window. Please allow popups for this site.");
+        throw new Error(
+          "Failed to open popup window. Please allow popups for this site."
+        );
       }
 
       // Step 3: Listen for the OAuth callback
@@ -75,10 +83,11 @@ export function GoogleBusinessProfileAuth({
       };
 
       window.addEventListener("message", handleMessage);
-
     } catch (err) {
       console.error("Google Auth Error:", err);
-      setError(err instanceof Error ? err.message : "Failed to connect to Google");
+      setError(
+        err instanceof Error ? err.message : "Failed to connect to Google"
+      );
     } finally {
       setIsConnecting(false);
     }
@@ -88,7 +97,9 @@ export function GoogleBusinessProfileAuth({
     return (
       <div className={`flex items-center gap-2 text-green-600 ${className}`}>
         <CheckCircle className="h-4 w-4" />
-        <span className="text-sm font-medium">Connected to Google Business Profile</span>
+        <span className="text-sm font-medium">
+          Connected to Google Business Profile
+        </span>
       </div>
     );
   }
@@ -100,8 +111,8 @@ export function GoogleBusinessProfileAuth({
           <AlertCircle className="h-4 w-4" />
           <span className="text-sm">{error}</span>
         </div>
-        <Button 
-          onClick={handleConnectGoogle} 
+        <Button
+          onClick={handleConnectGoogle}
           disabled={isConnecting}
           variant="outline"
           size="sm"
@@ -117,8 +128,8 @@ export function GoogleBusinessProfileAuth({
       <p className="text-sm text-gray-600">
         To sync reviews, connect your Google Business Profile:
       </p>
-      <Button 
-        onClick={handleConnectGoogle} 
+      <Button
+        onClick={handleConnectGoogle}
         disabled={isConnecting}
         variant="outline"
         size="sm"
