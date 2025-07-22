@@ -1,5 +1,3 @@
-import { use } from "react";
-
 // API configuration
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
@@ -8,36 +6,23 @@ const API_BASE_URL =
 export const getAuthHeaders = async (): Promise<Record<string, string>> => {
   try {
     console.log("🔐 Getting auth headers...");
+
     // Check if we're on the client side
     if (typeof window !== "undefined") {
       console.log("🌐 Client side detected");
 
-      // Wait for Clerk to be loaded if it's not ready yet
-      let maxWaitTime = 5000; // 5 seconds max wait
-      let waitTime = 0;
-      const checkInterval = 100; // Check every 100ms
-
-      while (
-        waitTime < maxWaitTime &&
-        (!(window as any).Clerk || !(window as any).Clerk.loaded)
-      ) {
-        console.log("⏳ Waiting for Clerk to load...", waitTime);
-        await new Promise((resolve) => setTimeout(resolve, checkInterval));
-        waitTime += checkInterval;
-      }
-
-      // Try to get token from Clerk
-      console.log("🎫 Checking for Clerk...", {
-        hasClerk: !!(window as any).Clerk,
-        hasSession: !!(window as any).Clerk?.session,
-        clerkLoaded: (window as any).Clerk?.loaded,
-      });
-
-      if ((window as any).Clerk && (window as any).Clerk.session) {
+      // Check if Clerk is available
+      const clerk = (window as any).Clerk;
+      if (clerk && clerk.session) {
         console.log("🎫 Clerk session found");
         try {
-          const token = await (window as any).Clerk.session.getToken();
+          const token = await clerk.session.getToken();
           console.log("🔑 Got Clerk token:", token ? "YES" : "NO");
+          console.log(
+            "🔑 Token preview:",
+            token ? token.substring(0, 20) + "..." : "NONE"
+          );
+
           if (token) {
             const headers = {
               "Content-Type": "application/json",
@@ -51,6 +36,11 @@ export const getAuthHeaders = async (): Promise<Record<string, string>> => {
         }
       } else {
         console.log("❌ No Clerk session found");
+        console.log("🔍 Clerk status:", {
+          hasClerk: !!clerk,
+          hasSession: !!clerk?.session,
+          clerkLoaded: clerk?.loaded,
+        });
       }
     } else {
       console.log("🖥️ Server side detected");

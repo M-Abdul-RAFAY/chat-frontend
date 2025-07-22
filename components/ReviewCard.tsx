@@ -5,7 +5,7 @@ import { Review, ReplyDraft, User } from "@/types/review";
 import { Avatar } from "./Avatar";
 import { StarRating } from "./StarRating";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Zap } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ReviewCardProps {

@@ -9,6 +9,7 @@ import { RefreshCw, Loader2 } from "lucide-react";
 import { useReviews } from "@/hooks/useReviews";
 import { useToast } from "@/hooks/useToast";
 import { ToastContainer } from "./Toast";
+import { GoogleBusinessProfileAuth } from "./GoogleBusinessProfileAuth";
 
 interface ReviewsDashboardProps {
   invitedUsers?: User[];
@@ -51,6 +52,7 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
   } = useReviews(apiFilters);
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((review) => {
@@ -109,7 +111,7 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      await syncReviews();
+      await syncReviews(googleToken || undefined);
       showToast({
         type: "success",
         title: "Reviews synced",
@@ -162,24 +164,30 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
             </div>
           )}
         </div>
-        <Button
-          onClick={handleSync}
-          disabled={isSyncing}
-          variant="outline"
-          className="mt-4 sm:mt-0"
-        >
-          {isSyncing ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync Reviews
-            </>
+        <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+          {!googleToken && (
+            <GoogleBusinessProfileAuth 
+              onTokenReceived={setGoogleToken}
+            />
           )}
-        </Button>
+          <Button
+            onClick={handleSync}
+            disabled={isSyncing}
+            variant="outline"
+          >
+            {isSyncing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sync Reviews
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -202,23 +210,32 @@ export function ReviewsDashboard({ invitedUsers = [] }: ReviewsDashboardProps) {
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">
                 {reviews.length === 0
-                  ? "No reviews found. Try syncing with Google Business Profile to import your reviews."
+                  ? "No reviews found. Connect your Google Business Profile to import reviews."
                   : "No reviews found matching your criteria."}
               </p>
               {reviews.length === 0 && (
-                <Button onClick={handleSync} disabled={isSyncing}>
-                  {isSyncing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Syncing...
-                    </>
+                <div className="space-y-4">
+                  {!googleToken ? (
+                    <GoogleBusinessProfileAuth 
+                      onTokenReceived={setGoogleToken}
+                      className="flex justify-center"
+                    />
                   ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Sync Reviews
-                    </>
+                    <Button onClick={handleSync} disabled={isSyncing}>
+                      {isSyncing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Sync Reviews
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
               )}
             </div>
           ) : (

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Review, ReviewStatus } from "@/types/review";
+import { getAuthHeaders } from "@/lib/api";
 
 interface ReviewStats {
   overall: {
@@ -31,7 +32,7 @@ interface UseReviewsReturn {
   error: string | null;
   refetch: () => Promise<void>;
   replyToReview: (reviewId: string, replyText: string) => Promise<void>;
-  syncReviews: () => Promise<void>;
+  syncReviews: (googleToken?: string) => Promise<void>;
   updateReviewStatus: (reviewId: string, status: ReviewStatus) => Promise<void>;
 }
 
@@ -76,18 +77,9 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
-  const getAuthHeaders = async () => {
-    // Get auth token from Clerk
-    const token = window.Clerk?.session?.getToken
-      ? await window.Clerk.session.getToken()
-      : "";
-    return {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    };
-  };
+  // Use the same API base URL as other parts of the app
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -105,7 +97,7 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
       if (filters.sortBy) queryParams.append("sortBy", filters.sortBy);
       if (filters.sortOrder) queryParams.append("sortOrder", filters.sortOrder);
 
-      const url = `${API_BASE}/api/v1/reviews?${queryParams.toString()}`;
+      const url = `${API_BASE}/reviews?${queryParams.toString()}`;
 
       const response = await fetch(url, {
         headers: await getAuthHeaders(),
@@ -164,7 +156,7 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/v1/reviews/stats/summary`, {
+      const response = await fetch(`${API_BASE}/reviews/stats/summary`, {
         headers: await getAuthHeaders(),
       });
 
@@ -182,14 +174,11 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
 
   const replyToReview = async (reviewId: string, replyText: string) => {
     try {
-      const response = await fetch(
-        `${API_BASE}/api/v1/reviews/${reviewId}/reply`,
-        {
-          method: "POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ replyText }),
-        }
-      );
+      const response = await fetch(`${API_BASE}/reviews/${reviewId}/reply`, {
+        method: "POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ replyText }),
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to reply to review: ${response.statusText}`);
@@ -203,15 +192,29 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
     }
   };
 
-  const syncReviews = async () => {
+  const syncReviews = async (googleToken?: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/v1/reviews/sync`, {
+      
+      const headers = await getAuthHeaders();
+      if (googleToken) {
+        headers["x-gbp-token"] = googleToken;
+      }
+      
+      const response = await fetch(`${API_BASE}/reviews/sync`, {
         method: "POST",
-        headers: await getAuthHeaders(),
+        headers,
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        if (errorData.error === "MISSING_GBP_TOKEN") {
+          throw new Error(
+            "Google Business Profile connection required. Please connect your Google Business Profile first."
+          );
+        }
+
         throw new Error(`Failed to sync reviews: ${response.statusText}`);
       }
 
@@ -227,14 +230,11 @@ export function useReviews(filters: UseReviewsFilters = {}): UseReviewsReturn {
 
   const updateReviewStatus = async (reviewId: string, status: ReviewStatus) => {
     try {
-      const response = await fetch(
-        `${API_BASE}/api/v1/reviews/${reviewId}/status`,
-        {
-          method: "PUT",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ status }),
-        }
-      );
+      const response = await fetch(`${API_BASE}/reviews/${reviewId}/status`, {
+        method: "PUT",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ status }),
+      });
 
       if (!response.ok) {
         throw new Error(
