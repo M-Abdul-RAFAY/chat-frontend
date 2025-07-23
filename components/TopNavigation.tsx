@@ -97,7 +97,7 @@ export default function TopNavigation({
               enableShadows={true}
               enableOnHover={false} // Change this to false to see constant animation
             >
-              Hi_Chat
+              🗨️ Hi Chat
             </GlitchText>
           </div>
 
