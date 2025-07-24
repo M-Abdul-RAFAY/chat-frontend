@@ -28,7 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { toast } from "react-hot-toast";
+// Simple toast implementation
+const toast = {
+  success: (message: string) => alert(`✅ ${message}`),
+  error: (message: string) => alert(`❌ ${message}`),
+};
 import {
   Building,
   Plus,

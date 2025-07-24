@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import MainDashboard from "@/components/MainDashboard";
 
-export default function DashboardRedirect() {
-  redirect("/dashboard/inbox");
+export default function DashboardPage() {
+  return <MainDashboard />;
 }
