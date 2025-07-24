@@ -171,7 +171,7 @@ export default function TopNavigation({
           mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="px-4 py-2 space-y-1">
+        <div className="px-4 py-2 space-y-1 flex flex-col">
           {/* Mobile Navigation Items */}
           {navigationItems
             .filter((item) => item.id !== "dashboard")
@@ -183,7 +183,7 @@ export default function TopNavigation({
                   .replace(/\s+/g, "-")}`}
                 onClick={() => handleNavClick(item.id)}
                 className={cn(
-                  "w-full text-left px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
+                  "w-full text-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                   activeItem === item.id
                     ? "bg-blue-600 text-white"
                     : "text-gray-300 hover:bg-gray-700 hover:text-white"
