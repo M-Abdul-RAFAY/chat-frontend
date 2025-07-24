@@ -28,11 +28,7 @@ export default function TopNavigation({
   const navigationItems = [
     { id: "home", label: "Home" },
     { id: "inbox", label: "Inbox" },
-    { id: "contacts", label: "Contacts" },
     { id: "marketing", label: "Marketing" },
-    { id: "payments", label: "Payments" },
-    { id: "reporting", label: "Reporting" },
-    { id: "insights", label: "Insights" },
     { id: "widget", label: "Widget" },
   ];
 
@@ -100,42 +96,42 @@ export default function TopNavigation({
               🗨️ Hi Chat
             </GlitchText>
           </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center relative" ref={navRef}>
-            <div className="flex items-center space-x-1 relative">
-              {navigationItems
-                .filter((item) => item.id !== "dashboard")
-                .map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/dashboard/${item.label
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                    onClick={() => handleNavClick(item.id)}
-                    data-nav-id={item.id}
-                    className={cn(
-                      "px-4 py-2 text-sm font-medium transition-colors duration-200 relative z-10",
-                      activeItem === item.id
-                        ? "text-white"
-                        : "text-gray-300 hover:text-white"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-
-              {/* Sliding Underline */}
-              <div
-                className="absolute [top:2.875rem] [height:0.2rem] bg-blue-500 transition-all duration-300 ease-in-out"
-                style={{
-                  width: `${underlineStyle.width}px`,
-                  transform: `translateX(${underlineStyle.left}px)`,
-                }}
-              />
-            </div>
-          </nav>
         </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center relative" ref={navRef}>
+          <div className="flex items-center space-x-1 relative">
+            {navigationItems
+              .filter((item) => item.id !== "dashboard")
+              .map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/dashboard/${item.label
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                  onClick={() => handleNavClick(item.id)}
+                  data-nav-id={item.id}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium transition-colors duration-200 relative z-10",
+                    activeItem === item.id
+                      ? "text-white"
+                      : "text-gray-300 hover:text-white"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+            {/* Sliding Underline */}
+            <div
+              className="absolute [top:2.875rem] [height:0.2rem] bg-blue-500 transition-all duration-300 ease-in-out"
+              style={{
+                width: `${underlineStyle.width}px`,
+                transform: `translateX(${underlineStyle.left}px)`,
+              }}
+            />
+          </div>
+        </nav>
 
         {/* Right side - Search, Actions, Profile */}
         <div className="flex items-center space-x-2">
