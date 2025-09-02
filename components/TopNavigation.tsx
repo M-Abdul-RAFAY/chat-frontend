@@ -4,13 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlitchText from "./GlitchText";
-import {
-  UserButton,
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-} from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -150,8 +144,18 @@ export default function TopNavigation({
               <UserButton />
             </SignedIn>
             <SignedOut>
-              <SignInButton />
-              <SignUpButton />
+              <Link
+                href="/sign-in"
+                className="px-3 py-1.5 text-sm text-gray-300 hover:text-white transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Sign Up
+              </Link>
             </SignedOut>
           </div>
           {/* Mobile Menu Button */}

@@ -2,13 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { MessageCircle, Menu, X } from "lucide-react";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 
 interface HeaderProps {
@@ -62,12 +56,12 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
           {showAuthButtons && (
             <div className="hidden text-black md:flex items-center space-x-4">
               <SignedOut>
-                <Button variant="outline">
-                  <SignInButton />
-                </Button>
-                <Button variant="outline">
-                  <SignUpButton />
-                </Button>
+                <Link href="/sign-in">
+                  <Button variant="outline">Sign In</Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button variant="outline">Sign Up</Button>
+                </Link>
               </SignedOut>
               <SignedIn>
                 <div className="ml-33">
@@ -115,8 +109,16 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
               {showAuthButtons && (
                 <div className="flex flex-col space-y-3 pt-4 border-t border-gray-200">
                   <SignedOut>
-                    <SignInButton />
-                    <SignUpButton />
+                    <Link href="/sign-in">
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/sign-up">
+                      <Button variant="outline" className="w-full">
+                        Sign Up
+                      </Button>
+                    </Link>
                   </SignedOut>
                   <SignedIn>
                     <UserButton />

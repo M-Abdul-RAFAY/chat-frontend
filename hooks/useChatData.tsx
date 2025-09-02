@@ -261,7 +261,7 @@ export function useChatData(): ChatDataContext {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          window.location.href = "/sign-in";
           return;
         }
         throw new Error(
@@ -432,7 +432,7 @@ export function useChatData(): ChatDataContext {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      window.location.href = "/login";
+      window.location.href = "/sign-in";
       return;
     }
 
