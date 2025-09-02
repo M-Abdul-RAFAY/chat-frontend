@@ -48,31 +48,29 @@ export default function CustomSignIn() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <HiChatLogo size="lg" variant="dark" />
+          <div className="flex justify-center mb-6">
+            <HiChatLogo size="lg" variant="light" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            Welcome to HiChat
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your account to continue
+          <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+          <p className="text-gray-400 text-sm">
+            Sign in to continue to your dashboard
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md text-sm">
+              <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -80,7 +78,7 @@ export default function CustomSignIn() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Email Address
               </label>
@@ -90,7 +88,7 @@ export default function CustomSignIn() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -100,7 +98,7 @@ export default function CustomSignIn() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Password
               </label>
@@ -111,20 +109,20 @@ export default function CustomSignIn() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-gray-400 hover:text-white transition-colors" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-gray-400 hover:text-white transition-colors" />
                   )}
                 </button>
               </div>
@@ -136,11 +134,11 @@ export default function CustomSignIn() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-white focus:ring-white bg-gray-800 border-gray-600 rounded"
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
+                  className="ml-2 block text-sm text-gray-300"
                 >
                   Remember me
                 </label>
@@ -149,7 +147,7 @@ export default function CustomSignIn() {
               <div className="text-sm">
                 <Link
                   href="/forgot-password"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                  className="font-medium text-gray-300 hover:text-white transition-colors"
                 >
                   Forgot your password?
                 </Link>
@@ -160,11 +158,11 @@ export default function CustomSignIn() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-black bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                     Signing in...
                   </div>
                 ) : (
@@ -174,11 +172,11 @@ export default function CustomSignIn() {
             </div>
 
             <div className="text-center">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-400">
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/sign-up"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                  className="font-medium text-white hover:text-gray-300 transition-colors"
                 >
                   Sign up
                 </Link>
@@ -190,11 +188,17 @@ export default function CustomSignIn() {
         <div className="text-center">
           <p className="text-xs text-gray-500">
             By signing in, you agree to our{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
               Privacy Policy
             </a>
           </p>

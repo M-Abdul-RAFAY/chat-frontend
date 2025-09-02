@@ -79,34 +79,32 @@ export default function CustomSignUp() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
   }
 
   if (pendingVerification) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-black px-4">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="bg-green-600 p-3 rounded-full">
-                <Check className="w-8 h-8 text-white" />
+              <div className="bg-white p-3 rounded-full">
+                <Check className="w-8 h-8 text-black" />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              Verify Your Email
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <h2 className="text-3xl font-bold text-white">Verify Your Email</h2>
+            <p className="mt-2 text-sm text-gray-400">
               We&apos;ve sent a verification code to {email}
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
             <form className="space-y-6" onSubmit={handleVerify}>
               {error && (
-                <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md text-sm">
+                <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
@@ -114,7 +112,7 @@ export default function CustomSignUp() {
               <div>
                 <label
                   htmlFor="code"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   Verification Code
                 </label>
@@ -123,7 +121,7 @@ export default function CustomSignUp() {
                   name="code"
                   type="text"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-center text-lg tracking-widest"
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent text-center text-lg tracking-widest transition-all duration-200"
                   placeholder="Enter 6-digit code"
                   maxLength={6}
                   value={code}
@@ -135,11 +133,11 @@ export default function CustomSignUp() {
                 <button
                   type="submit"
                   disabled={loading || code.length !== 6}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-black bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {loading ? (
                     <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                       Verifying...
                     </div>
                   ) : (
@@ -151,7 +149,7 @@ export default function CustomSignUp() {
               <div className="text-center">
                 <button
                   type="button"
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
                   onClick={() => {
                     setPendingVerification(false);
                     setCode("");
@@ -169,22 +167,22 @@ export default function CustomSignUp() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <HiChatLogo size="lg" variant="dark" />
+          <div className="flex justify-center mb-6">
+            <HiChatLogo size="lg" variant="light" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Join HiChat</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-3xl font-bold text-white mb-2">Join HiChat</h2>
+          <p className="text-gray-400 text-sm">
             Create your account to get started
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md text-sm">
+              <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -193,7 +191,7 @@ export default function CustomSignUp() {
               <div>
                 <label
                   htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   First Name
                 </label>
@@ -203,7 +201,7 @@ export default function CustomSignUp() {
                   type="text"
                   autoComplete="given-name"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                   placeholder="First name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -213,7 +211,7 @@ export default function CustomSignUp() {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   Last Name
                 </label>
@@ -223,7 +221,7 @@ export default function CustomSignUp() {
                   type="text"
                   autoComplete="family-name"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -234,7 +232,7 @@ export default function CustomSignUp() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Email Address
               </label>
@@ -244,7 +242,7 @@ export default function CustomSignUp() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -254,7 +252,7 @@ export default function CustomSignUp() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Password
               </label>
@@ -265,24 +263,24 @@ export default function CustomSignUp() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200"
                   placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-gray-400 hover:text-white transition-colors" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-gray-400 hover:text-white transition-colors" />
                   )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-400">
                 Password must be at least 8 characters long
               </p>
             </div>
@@ -291,11 +289,11 @@ export default function CustomSignUp() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-black bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                     Creating account...
                   </div>
                 ) : (
@@ -305,11 +303,11 @@ export default function CustomSignUp() {
             </div>
 
             <div className="text-center">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-400">
                 Already have an account?{" "}
                 <Link
                   href="/sign-in"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                  className="font-medium text-white hover:text-gray-300 transition-colors"
                 >
                   Sign in
                 </Link>
