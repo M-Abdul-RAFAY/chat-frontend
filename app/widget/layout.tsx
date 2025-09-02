@@ -26,7 +26,7 @@ export default function WidgetLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-auto`}
         style={{ background: "transparent" }}
       >
         {children}

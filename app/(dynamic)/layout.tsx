@@ -10,13 +10,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <UserSyncProvider>
-        <div className="h-screen flex flex-col overflow-hidden">
+        <div className="min-h-screen flex flex-col">
           <div className="flex-shrink-0 fixed top-0 left-0 right-0 z-50">
             <TopNavigation />
           </div>
-          <main className="flex-1 min-h-0 flex flex-col mt-[3.8rem]">
-            {children}
-          </main>
+          <main className="flex-1 pt-[3.8rem]">{children}</main>
         </div>
       </UserSyncProvider>
     </ClerkProvider>
