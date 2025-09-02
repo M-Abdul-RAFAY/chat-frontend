@@ -55,19 +55,19 @@ export default function CustomSignIn() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12">
+      <div className="max-w-md w-full space-y-8 mt-8 mb-8">
         <div className="text-center">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-8">
             <HiChatLogo size="lg" variant="light" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Welcome Back</h2>
           <p className="text-gray-400 text-sm">
             Sign in to continue to your dashboard
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm mt-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -185,7 +185,7 @@ export default function CustomSignIn() {
           </form>
         </div>
 
-        <div className="text-center">
+        <div className="text-center mt-6">
           <p className="text-xs text-gray-500">
             By signing in, you agree to our{" "}
             <a

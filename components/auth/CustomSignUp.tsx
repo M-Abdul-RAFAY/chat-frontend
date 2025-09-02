@@ -87,21 +87,23 @@ export default function CustomSignUp() {
 
   if (pendingVerification) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4">
-        <div className="max-w-md w-full space-y-8">
+      <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12">
+        <div className="max-w-md w-full space-y-8 mt-8 mb-8">
           <div className="text-center">
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-6">
               <div className="bg-white p-3 rounded-full">
                 <Check className="w-8 h-8 text-black" />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-white">Verify Your Email</h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Verify Your Email
+            </h2>
+            <p className="text-sm text-gray-400">
               We&apos;ve sent a verification code to {email}
             </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm mt-8">
             <form className="space-y-6" onSubmit={handleVerify}>
               {error && (
                 <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -167,19 +169,19 @@ export default function CustomSignUp() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12">
+      <div className="max-w-md w-full space-y-8 mt-8 mb-8">
         <div className="text-center">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-8">
             <HiChatLogo size="lg" variant="light" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Join HiChat</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Join HiChat</h2>
           <p className="text-gray-400 text-sm">
             Create your account to get started
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-8 backdrop-blur-sm mt-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -316,14 +318,20 @@ export default function CustomSignUp() {
           </form>
         </div>
 
-        <div className="text-center">
+        <div className="text-center mt-6">
           <p className="text-xs text-gray-500">
             By creating an account, you agree to our{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
               Privacy Policy
             </a>
           </p>
