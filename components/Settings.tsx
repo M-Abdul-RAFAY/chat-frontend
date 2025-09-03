@@ -21,6 +21,7 @@ import {
   Bot,
   Sparkles,
   Save,
+  Trash2,
   AlertCircle,
   CheckCircle,
   Smartphone,
@@ -65,6 +66,7 @@ interface UserSettings {
 }
 
 interface AITrainingData {
+  _id?: string;
   customerScenario: string;
   desiredResponse: string;
   tone: "professional" | "friendly" | "casual" | "formal";
@@ -106,12 +108,28 @@ export default function Settings() {
 
   // Business brand guidelines
   const [brandGuidelines, setBrandGuidelines] = useState({
-    companyDescription: "",
-    brandVoice: "professional",
-    keyValues: "",
-    doNotMention: "",
-    preferredGreeting: "",
-    escalationTriggers: "",
+    brandVoice: {
+      tone: "professional",
+      style: "",
+      personality: "",
+    },
+    communicationStyle: {
+      formalityLevel: "",
+      responseLength: "",
+      useEmojis: false,
+      language: "English",
+    },
+    businessSpecific: {
+      keyMessages: [] as string[],
+      avoidTopics: [] as string[],
+      specialInstructions: "",
+    },
+    responseGuidelines: {
+      greetingStyle: "",
+      closingStyle: "",
+      escalationTriggers: [] as string[],
+      customResponses: [] as Array<{ trigger: string; response: string }>,
+    },
   });
 
   useEffect(() => {
@@ -162,7 +180,9 @@ export default function Settings() {
       const response = await fetch(`/api/ai-training?userId=${user.id}`);
       if (response.ok) {
         const data = await response.json();
-        setAiTrainingData(data.trainingData || []);
+        // Backend returns { success: true, data: aiTraining } or { trainingData: ... }
+        const trainingData = data.data?.trainingData || data.trainingData || [];
+        setAiTrainingData(trainingData);
       }
     } catch (error) {
       console.error("Error fetching AI training data:", error);
@@ -176,7 +196,11 @@ export default function Settings() {
       const response = await fetch(`/api/brand-guidelines?userId=${user.id}`);
       if (response.ok) {
         const data = await response.json();
-        setBrandGuidelines(data.guidelines || brandGuidelines);
+        // Backend returns { success: true, data: guidelines } or { guidelines: ... }
+        const guidelines = data.data?.guidelines || data.guidelines;
+        if (guidelines) {
+          setBrandGuidelines(guidelines);
+        }
       }
     } catch (error) {
       console.error("Error fetching brand guidelines:", error);
@@ -186,7 +210,15 @@ export default function Settings() {
   const saveUserSettings = async (settingKey: string, value: boolean) => {
     if (!user?.id) return;
 
-    const updatedSettings = { ...userSettings, [settingKey]: value };
+    let updatedSettings = { ...userSettings, [settingKey]: value };
+
+    // Handle mutual exclusivity between WhatsApp and SMS
+    if (settingKey === "whatsapp" && value === true) {
+      updatedSettings = { ...updatedSettings, sms: false };
+    } else if (settingKey === "sms" && value === true) {
+      updatedSettings = { ...updatedSettings, whatsapp: false };
+    }
+
     setUserSettings(updatedSettings);
 
     try {
@@ -306,7 +338,9 @@ export default function Settings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: user.id,
-          trainingData: newTrainingData,
+          question: newTrainingData.customerScenario,
+          answer: newTrainingData.desiredResponse,
+          category: newTrainingData.category,
         }),
       });
 
@@ -328,6 +362,43 @@ export default function Settings() {
     } catch (error) {
       console.error("Error saving training data:", error);
       setError("Failed to save training data");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteTrainingData = async (index: number) => {
+    if (!user?.id || !aiTrainingData[index]) return;
+
+    if (!confirm("Are you sure you want to delete this training data?")) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const dataToDelete = aiTrainingData[index];
+
+      const response = await fetch("/api/ai-training", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          trainingDataId: dataToDelete._id || index, // Use _id if available, otherwise use index
+        }),
+      });
+
+      if (response.ok) {
+        // Remove from local state immediately for better UX
+        setAiTrainingData((prev) => prev.filter((_, i) => i !== index));
+        setSuccess("Training data deleted successfully");
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        throw new Error("Failed to delete training data");
+      }
+    } catch (error) {
+      console.error("Error deleting training data:", error);
+      setError("Failed to delete training data");
       setTimeout(() => setError(null), 3000);
     } finally {
       setSaving(false);
@@ -363,28 +434,58 @@ export default function Settings() {
     }
   };
 
-  const deleteTrainingData = async (index: number) => {
+  const deleteBrandGuidelines = async () => {
     if (!user?.id) return;
 
-    try {
-      const updatedData = aiTrainingData.filter((_, i) => i !== index);
-      setAiTrainingData(updatedData);
+    if (
+      !confirm(
+        "Are you sure you want to delete all brand guidelines? This cannot be undone."
+      )
+    ) {
+      return;
+    }
 
-      await fetch("/api/ai-training", {
-        method: "PUT",
+    try {
+      setSaving(true);
+      const response = await fetch("/api/brand-guidelines", {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          trainingData: updatedData,
-        }),
+        body: JSON.stringify({ userId: user.id }),
       });
 
-      setSuccess("Training data removed");
-      setTimeout(() => setSuccess(null), 3000);
+      if (response.ok) {
+        // Reset to default values
+        setBrandGuidelines({
+          brandVoice: { tone: "professional", style: "", personality: "" },
+          communicationStyle: {
+            formalityLevel: "",
+            responseLength: "",
+            useEmojis: false,
+            language: "English",
+          },
+          businessSpecific: {
+            keyMessages: [] as string[],
+            avoidTopics: [] as string[],
+            specialInstructions: "",
+          },
+          responseGuidelines: {
+            greetingStyle: "",
+            closingStyle: "",
+            escalationTriggers: [] as string[],
+            customResponses: [] as Array<{ trigger: string; response: string }>,
+          },
+        });
+        setSuccess("Brand guidelines deleted successfully");
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        throw new Error("Failed to delete brand guidelines");
+      }
     } catch (error) {
-      console.error("Error deleting training data:", error);
-      setError("Failed to delete training data");
+      console.error("Error deleting brand guidelines:", error);
+      setError("Failed to delete brand guidelines");
       setTimeout(() => setError(null), 3000);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -840,11 +941,14 @@ export default function Settings() {
                     Company Description
                   </label>
                   <textarea
-                    value={brandGuidelines.companyDescription}
+                    value={brandGuidelines.businessSpecific.specialInstructions}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        companyDescription: e.target.value,
+                        businessSpecific: {
+                          ...brandGuidelines.businessSpecific,
+                          specialInstructions: e.target.value,
+                        },
                       })
                     }
                     rows={3}
@@ -855,14 +959,17 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-700">
-                    Brand Voice
+                    Brand Voice Tone
                   </label>
                   <select
-                    value={brandGuidelines.brandVoice}
+                    value={brandGuidelines.brandVoice.tone}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        brandVoice: e.target.value,
+                        brandVoice: {
+                          ...brandGuidelines.brandVoice,
+                          tone: e.target.value,
+                        },
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -880,16 +987,23 @@ export default function Settings() {
                     Key Values & Messages
                   </label>
                   <textarea
-                    value={brandGuidelines.keyValues}
+                    value={brandGuidelines.businessSpecific.keyMessages.join(
+                      "\n"
+                    )}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        keyValues: e.target.value,
+                        businessSpecific: {
+                          ...brandGuidelines.businessSpecific,
+                          keyMessages: e.target.value
+                            .split("\n")
+                            .filter((msg) => msg.trim()),
+                        },
                       })
                     }
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="List your key values and important messages to emphasize..."
+                    placeholder="List your key values and important messages (one per line)..."
                   />
                 </div>
               </div>
@@ -901,11 +1015,14 @@ export default function Settings() {
                   </label>
                   <input
                     type="text"
-                    value={brandGuidelines.preferredGreeting}
+                    value={brandGuidelines.responseGuidelines.greetingStyle}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        preferredGreeting: e.target.value,
+                        responseGuidelines: {
+                          ...brandGuidelines.responseGuidelines,
+                          greetingStyle: e.target.value,
+                        },
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -918,11 +1035,18 @@ export default function Settings() {
                     Do Not Mention
                   </label>
                   <textarea
-                    value={brandGuidelines.doNotMention}
+                    value={brandGuidelines.businessSpecific.avoidTopics.join(
+                      "\n"
+                    )}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        doNotMention: e.target.value,
+                        businessSpecific: {
+                          ...brandGuidelines.businessSpecific,
+                          avoidTopics: e.target.value
+                            .split("\n")
+                            .filter((topic) => topic.trim()),
+                        },
                       })
                     }
                     rows={2}
@@ -936,11 +1060,18 @@ export default function Settings() {
                     Escalation Triggers
                   </label>
                   <textarea
-                    value={brandGuidelines.escalationTriggers}
+                    value={brandGuidelines.responseGuidelines.escalationTriggers.join(
+                      "\n"
+                    )}
                     onChange={(e) =>
                       setBrandGuidelines({
                         ...brandGuidelines,
-                        escalationTriggers: e.target.value,
+                        responseGuidelines: {
+                          ...brandGuidelines.responseGuidelines,
+                          escalationTriggers: e.target.value
+                            .split("\n")
+                            .filter((trigger) => trigger.trim()),
+                        },
                       })
                     }
                     rows={2}
@@ -951,7 +1082,16 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-end gap-3">
+              <Button
+                onClick={deleteBrandGuidelines}
+                disabled={saving}
+                variant="outline"
+                className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 hover:scale-105 transition-all px-6 py-3"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete All
+              </Button>
               <Button
                 onClick={saveBrandGuidelines}
                 disabled={saving}

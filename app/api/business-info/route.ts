@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const token = await getToken();
 
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/v1/business-info/${userId}`,
+      `${process.env.BACKEND_URL}/api/v1/business-info`,
       {
         method: "GET",
         headers: {
@@ -27,7 +27,27 @@ export async function GET(request: NextRequest) {
 
     if (response.ok) {
       const data = await response.json();
-      return NextResponse.json(data);
+      // Backend returns an array, but we want the first (most recent) business info
+      let businessInfo = null;
+
+      if (Array.isArray(data) && data.length > 0) {
+        const backendData = data[0];
+        // Map backend data structure to frontend expected structure
+        businessInfo = {
+          place_id: backendData._id, // Use MongoDB ID as place_id
+          name: backendData.name,
+          formattedAddress: backendData.address,
+          phoneNumber: backendData.phone,
+          website: backendData.website,
+          rating: backendData.rating || null,
+          userRatingsTotal: backendData.userRatingsTotal || null,
+          types: backendData.industry ? [backendData.industry] : [],
+          photos: [], // Backend doesn't store photos currently
+          openingHours: null, // Backend doesn't store opening hours currently
+        };
+      }
+
+      return NextResponse.json({ businessInfo });
     } else {
       return NextResponse.json({ businessInfo: null });
     }
@@ -60,7 +80,7 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ userId, businessInfo }),
+        body: JSON.stringify(businessInfo),
       }
     );
 

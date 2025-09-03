@@ -388,7 +388,7 @@ export default function WidgetManager() {
 
         <div className="space-y-8">
           {/* Business Information Section */}
-          <Card className="p-8 transform hover:scale-[1.01] transition-all duration-300">
+          {/* <Card className="p-8 transform hover:scale-[1.01] transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -637,7 +637,7 @@ export default function WidgetManager() {
                 </Button>
               </div>
             )}
-          </Card>
+          </Card> */}
 
           {/* Widget Configuration */}
           <Card className="p-8 transform hover:scale-[1.01] transition-all duration-300">

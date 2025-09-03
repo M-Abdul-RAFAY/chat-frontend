@@ -39,11 +39,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, trainingData } = await request.json();
+    const { userId, question, answer, category } = await request.json();
 
-    if (!userId || !trainingData) {
+    if (!userId || !question || !answer) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        {
+          error:
+            "Missing required fields: userId, question, and answer are required",
+        },
         { status: 400 }
       );
     }
@@ -53,14 +56,14 @@ export async function POST(request: NextRequest) {
     const token = await getToken();
 
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/v1/ai-training`,
+      `${process.env.BACKEND_URL}/api/v1/ai-training/entry`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ userId, trainingData }),
+        body: JSON.stringify({ userId, question, answer, category }),
       }
     );
 
@@ -108,6 +111,48 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating AI training data:", error);
     return NextResponse.json(
       { error: "Failed to update AI training data" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId, trainingDataId } = await request.json();
+
+    if (!userId || !trainingDataId) {
+      return NextResponse.json(
+        { error: "User ID and training data ID are required" },
+        { status: 400 }
+      );
+    }
+
+    // Get auth info from Clerk
+    const { getToken } = await auth();
+    const token = await getToken();
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/api/v1/ai-training/entry/${trainingDataId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ userId }),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return NextResponse.json(data);
+    } else {
+      throw new Error("Failed to delete AI training data");
+    }
+  } catch (error) {
+    console.error("Error deleting AI training data:", error);
+    return NextResponse.json(
+      { error: "Failed to delete AI training data" },
       { status: 500 }
     );
   }
