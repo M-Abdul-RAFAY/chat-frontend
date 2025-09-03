@@ -304,7 +304,105 @@ export default function CustomSignUp() {
               </button>
             </div>
 
-            <div className="text-center">
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-gray-900 text-gray-400">
+                    Or sign up with
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    signUp.authenticateWithRedirect({
+                      strategy: "oauth_google",
+                      redirectUrl: "/sign-up",
+                      redirectUrlComplete: "/dashboard",
+                    })
+                  }
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 48 48"
+                    width="48px"
+                    height="48px"
+                  >
+                    <path
+                      fill="#FFC107"
+                      d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+                    ></path>
+                    <path
+                      fill="#FF3D00"
+                      d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+                    ></path>
+                    <path
+                      fill="#4CAF50"
+                      d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+                    ></path>
+                    <path
+                      fill="#1976D2"
+                      d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+                    ></path>
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    signUp.authenticateWithRedirect({
+                      strategy: "oauth_apple",
+                      redirectUrl: "/sign-up",
+                      redirectUrlComplete: "/dashboard",
+                    })
+                  }
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
+                >
+                  <svg
+                    className="h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    signUp.authenticateWithRedirect({
+                      strategy: "oauth_facebook",
+                      redirectUrl: "/sign-up",
+                      redirectUrlComplete: "/dashboard",
+                    })
+                  }
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
+                >
+                  <svg
+                    className="h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="#1877F2"
+                  >
+                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="text-center mt-6">
               <span className="text-sm text-gray-400">
                 Already have an account?{" "}
                 <Link
