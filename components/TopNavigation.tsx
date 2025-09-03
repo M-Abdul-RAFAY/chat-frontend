@@ -24,6 +24,7 @@ export default function TopNavigation({
     { id: "inbox", label: "Inbox" },
     { id: "marketing", label: "Marketing" },
     { id: "widget", label: "Widget" },
+    { id: "settings", label: "Settings" },
   ];
 
   const getInitialActiveItem = () => {
