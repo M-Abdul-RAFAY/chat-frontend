@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { MessageCircle, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface HeaderProps {
   showAuthButtons?: boolean;
@@ -18,10 +19,17 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <MessageCircle size={20} className="text-white" />
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/assets/logo-podium.png"
+                alt="Podium Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="text-xl font-bold text-gray-900">Podium Chat</span>
+            <span className="text-xl font-bold text-gray-900">Podium</span>
           </Link>
 
           {/* Desktop Navigation */}

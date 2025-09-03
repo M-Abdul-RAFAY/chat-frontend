@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import Image from "next/image";
 
 interface HiChatLogoProps {
   size?: "sm" | "md" | "lg";
@@ -14,9 +14,9 @@ export default function HiChatLogo({
   showText = true,
 }: HiChatLogoProps) {
   const sizeClasses = {
-    sm: "w-6 h-6",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
+    sm: 24,
+    md: 32,
+    lg: 48,
   };
 
   const textSizeClasses = {
@@ -25,18 +25,23 @@ export default function HiChatLogo({
     lg: "text-3xl",
   };
 
-  const iconColor = variant === "light" ? "text-white" : "text-blue-600";
   const textColor = variant === "light" ? "text-white" : "text-gray-900";
-  const bgColor = variant === "light" ? "bg-blue-600" : "bg-blue-50";
 
   return (
     <div className="flex items-center space-x-3">
-      <div className={`${bgColor} p-3 rounded-full`}>
-        <MessageSquare className={`${sizeClasses[size]} ${iconColor}`} />
+      <div className="flex-shrink-0">
+        <Image
+          src="/assets/logo-podium.png"
+          alt="Podium Logo"
+          width={sizeClasses[size]}
+          height={sizeClasses[size]}
+          className="object-contain"
+          priority
+        />
       </div>
       {showText && (
         <span className={`${textSizeClasses[size]} font-bold ${textColor}`}>
-          HiChat
+          Podium
         </span>
       )}
     </div>

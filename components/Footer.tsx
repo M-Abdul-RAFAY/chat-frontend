@@ -1,5 +1,5 @@
-import { MessageCircle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -8,10 +8,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left items-center md:items-start">
           <div className="col-span-1">
             <div className="flex items-center justify-center md:justify-start space-x-2 mb-6">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <MessageCircle size={20} className="text-white" />
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src="/assets/logo-podium.png"
+                  alt="Podium Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
               </div>
-              <span className="text-xl font-bold">Podium Chat</span>
+              <span className="text-xl font-bold">Podium</span>
             </div>
             <p className="text-gray-400 leading-relaxed mb-6">
               The modern messaging platform that helps businesses connect with
@@ -165,7 +171,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <p className="text-gray-400 text-sm">
-              © 2025 Podium Chat. All rights reserved.
+              © 2025 Podium. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center md:justify-start space-x-6 mt-4 md:mt-0">
               <a
