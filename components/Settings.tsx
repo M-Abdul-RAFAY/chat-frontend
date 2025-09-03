@@ -73,6 +73,15 @@ interface AITrainingData {
   category: string;
 }
 
+interface BackendTrainingData {
+  _id?: string;
+  question: string;
+  answer: string;
+  category: string;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
 export default function Settings() {
   const { user } = useUser();
   const [, setLoading] = useState(false);
@@ -181,8 +190,21 @@ export default function Settings() {
       if (response.ok) {
         const data = await response.json();
         // Backend returns { success: true, data: aiTraining } or { trainingData: ... }
-        const trainingData = data.data?.trainingData || data.trainingData || [];
-        setAiTrainingData(trainingData);
+        const backendTrainingData =
+          data.data?.trainingData || data.trainingData || [];
+
+        // Map backend data structure to frontend structure
+        const mappedTrainingData = backendTrainingData.map(
+          (item: BackendTrainingData) => ({
+            customerScenario: item.question || "",
+            desiredResponse: item.answer || "",
+            category: item.category || "general",
+            tone: "professional" as const, // Default tone since backend doesn't store this
+            _id: item._id,
+          })
+        );
+
+        setAiTrainingData(mappedTrainingData);
       }
     } catch (error) {
       console.error("Error fetching AI training data:", error);
