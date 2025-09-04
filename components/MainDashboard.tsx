@@ -15,7 +15,7 @@ export default function MainDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Podium Dashboard
+            hichat Dashboard
           </h1>
           <p className="text-lg text-gray-600">
             Manage your business reviews and customer communications

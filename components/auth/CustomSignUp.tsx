@@ -175,7 +175,7 @@ export default function CustomSignUp() {
           <div className="flex justify-center mb-8">
             <HiChatLogo size="lg" variant="light" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Join Podium</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Join hichat</h2>
           <p className="text-gray-400 text-sm">
             Create your account to get started
           </p>

@@ -31,8 +31,8 @@ export default function HiChatLogo({
     <div className="flex items-center space-x-3">
       <div className="flex-shrink-0">
         <Image
-          src="/assets/logo-podium.png"
-          alt="Podium Logo"
+          src="/assets/logo-hichat.png"
+          alt="hichat Logo"
           width={sizeClasses[size]}
           height={sizeClasses[size]}
           className="object-contain"
@@ -41,7 +41,7 @@ export default function HiChatLogo({
       </div>
       {showText && (
         <span className={`${textSizeClasses[size]} font-bold ${textColor}`}>
-          Podium
+          hichat
         </span>
       )}
     </div>

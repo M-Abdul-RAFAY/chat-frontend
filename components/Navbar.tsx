@@ -21,15 +21,15 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 flex items-center justify-center">
               <Image
-                src="/assets/logo-podium.png"
-                alt="Podium Logo"
+                src="/assets/logo-hichat.png"
+                alt="hichat Logo"
                 width={32}
                 height={32}
                 className="object-contain"
                 priority
               />
             </div>
-            <span className="text-xl font-bold text-gray-900">Podium</span>
+            <span className="text-xl font-bold text-gray-900">hichat</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -84,8 +84,8 @@ export default function TopNavigation({
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
             <Image
-              src="/assets/logo-podium.png"
-              alt="Podium Logo"
+              src="/assets/logo-hichat.png"
+              alt="hichat Logo"
               width={20}
               height={20}
             />
