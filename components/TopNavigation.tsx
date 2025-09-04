@@ -7,6 +7,7 @@ import GlitchText from "./GlitchText";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 interface TopNavigationProps {
   onNavChange?: (id: string) => void;
@@ -82,13 +83,19 @@ export default function TopNavigation({
         {/* Left side - Logo and Navigation */}
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
+            <Image
+              src="/assets/logo-podium.png"
+              alt="Podium Logo"
+              width={20}
+              height={20}
+            />
             <GlitchText
               className="text-sm md:text-xl lg:text-2xl font-bold"
               speed={0.5}
               enableShadows={true}
               enableOnHover={false} // Change this to false to see constant animation
             >
-              🗨️ Hi Chat
+              Hi Chat
             </GlitchText>
           </div>
         </div>
