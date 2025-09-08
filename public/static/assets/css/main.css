@@ -392,7 +392,7 @@
   transform: translatey(20px);
   opacity: 0;
   visibility: hidden;
-  min-width: 205px;
+  min-width: 250px;
   border-radius: 6px;
 }
 .site-menu-main .sub-menu:before {
@@ -413,12 +413,12 @@
   content: none;
 }
 
-/*@media (min-width: 992px) {
+@media (min-width: 992px) {
   .site-menu-main .sub-menu {
-    min-width: 235px;
-    max-width: 235px;
+    min-width: 280px;
+    max-width: 280px;
   }
-}*/
+}
 
 @media (min-width: 992px) {
   .site-menu-main .sub-menu .sub-menu {
