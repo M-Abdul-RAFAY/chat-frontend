@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Check } from "lucide-react";
 import HiChatLogo from "@/components/ui/HiChatLogo";
+import { showToast } from "@/lib/toast";
 
 export default function CustomSignUp() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -75,6 +76,33 @@ export default function CustomSignUp() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    const isComingSoon = process.env.NEXT_PUBLIC_IS_COMMING_SOON === "True";
+
+    if (isComingSoon) {
+      showToast.info("This feature will come soon");
+      return;
+    }
+
+    // Proceed with social login if feature is enabled
+    if (!signUp) return;
+
+    const strategyMap = {
+      google: "oauth_google" as const,
+      apple: "oauth_apple" as const,
+      facebook: "oauth_facebook" as const,
+    };
+
+    const strategy = strategyMap[provider as keyof typeof strategyMap];
+    if (!strategy) return;
+
+    signUp.authenticateWithRedirect({
+      strategy,
+      redirectUrl: window.location.origin + "/sign-in",
+      redirectUrlComplete: "/dashboard",
+    });
   };
 
   if (!isLoaded) {
@@ -319,13 +347,7 @@ export default function CustomSignUp() {
               <div className="mt-6 grid grid-cols-3 gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    signUp.authenticateWithRedirect({
-                      strategy: "oauth_google",
-                      redirectUrl: window.location.origin + "/sign-in",
-                      redirectUrlComplete: "/dashboard",
-                    })
-                  }
+                  onClick={() => handleSocialLogin("google")}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
                 >
                   <svg
@@ -356,13 +378,7 @@ export default function CustomSignUp() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    signUp.authenticateWithRedirect({
-                      strategy: "oauth_apple",
-                      redirectUrl: window.location.origin + "/sign-in",
-                      redirectUrlComplete: "/dashboard",
-                    })
-                  }
+                  onClick={() => handleSocialLogin("apple")}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
                 >
                   <svg
@@ -377,13 +393,7 @@ export default function CustomSignUp() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    signUp.authenticateWithRedirect({
-                      strategy: "oauth_facebook",
-                      redirectUrl: window.location.origin + "/sign-in",
-                      redirectUrlComplete: "/dashboard",
-                    })
-                  }
+                  onClick={() => handleSocialLogin("facebook")}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200"
                 >
                   <svg
