@@ -79,7 +79,7 @@ export default function CustomSignUp() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    const isComingSoon = process.env.NEXT_PUBLIC_IS_COMMING_SOON === "True";
+    const isComingSoon = process.env.NEXT_PUBLIC_IS_COMMING_SOON === "true";
 
     if (isComingSoon) {
       showToast.info("This feature will come soon");
