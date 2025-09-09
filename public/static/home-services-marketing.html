@@ -44,7 +44,11 @@
       </div>
     </div>
 
-    <header class="site-header zubuz-header-section" id="sticky-menu">
+  <header
+      class="site-header zubuz-header-section"
+      id="sticky-menu"
+      style="background-color: white"
+    >
       <div class="container">
         <nav class="navbar site-navbar">
           <!-- Brand Logo-->
@@ -57,7 +61,15 @@
               />
             </a>
           </div>
-          <div class="menu-block-wrapper">
+          <div
+            class="menu-block-wrapper"
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              flex: 1;
+            "
+          >
             <div class="menu-overlay"></div>
             <nav class="menu-block" id="append-menu-header">
               <div class="mobile-menu-head">
@@ -75,29 +87,51 @@
                   <ul class="sub-menu" id="submenu-1">
                     <li class="sub-menu--item nav-item-has-children">
                       <a href="auto-overview-service.html">
-                        <span class="menu-item-text">Auto</span>
+                        <span class="menu-item-text">Auto </span>
                       </a>
+                      <!-- <ul class="sub-menu shape-none" id="submenu-3">
+                        <li class="sub-menu--item">
+                          <a href="blog.html">
+                            <span class="menu-item-text">Overview</span>
+                          </a>
+                        </li>
+                        <li class="sub-menu--item">
+                          <a href="blog-column-one.html">
+                            <span class="menu-item-text">Auto OEM</span>
+                          </a>
+                        </li>
+                        <li class="sub-menu--item">
+                          <a href="blog-column-two.html">
+                            <span class="menu-item-text">Used Auto</span>
+                          </a>
+                        </li>
+                        <li class="sub-menu--item">
+                          <a href="single-blog.html">
+                            <span class="menu-item-text">Auto Body Shops</span>
+                          </a>
+                        </li>
+                      </ul> -->
                     </li>
                     <li class="sub-menu--item nav-item-has-children">
                       <a href="wellness-service.html">
                         <span class="menu-item-text"
-                          >Aesthetics & Wellness</span
-                        >
+                          >Aesthetics & Wellness
+                        </span>
                       </a>
                     </li>
                     <li class="sub-menu--item nav-item-has-children">
                       <a href="home-services-marketing.html">
-                        <span class="menu-item-text">Home Services</span>
+                        <span class="menu-item-text">Home Services </span>
                       </a>
                     </li>
                     <li class="sub-menu--item nav-item-has-children">
-                      <a href="index-03.html">
-                        <span class="menu-item-text">Retail</span>
+                      <a href="retail-marketing-v2.html">
+                        <span class="menu-item-text">Retail </span>
                       </a>
                     </li>
                     <li class="sub-menu--item nav-item-has-children">
-                      <a href="index-03.html">
-                        <span class="menu-item-text">Enterprise</span>
+                      <a href="enterprise-platform.html">
+                        <span class="menu-item-text">Enterprise </span>
                       </a>
                     </li>
                   </ul>
@@ -107,28 +141,36 @@
                     >Solutions <i class="fas fa-angle-down"></i
                   ></a>
                   <ul class="sub-menu" id="submenu-2">
-                    <li class="sub-menu--item">
-                      <a href="about-us.html">
-                        <span class="menu-item-text">AI Employee</span>
+                    <li class="sub-menu--item nav-item-has-children">
+                      <a href="ai-employee.html">
+                        <span class="menu-item-text">AI Employee </span>
                       </a>
                     </li>
-                    <li class="sub-menu--item">
-                      <a href="pricing.html">
-                        <span class="menu-item-text">Review Management</span>
+                    <li class="sub-menu--item nav-item-has-children">
+                      <a href="review-management.html">
+                        <span class="menu-item-text">Review Management </span>
                       </a>
                     </li>
-                    <li class="sub-menu--item">
-                      <a href="service.html">
+                    <li class="sub-menu--item nav-item-has-children">
+                      <a href="lead-management.html">
                         <span class="menu-item-text">Get Leads</span>
                       </a>
                     </li>
-                    <li class="sub-menu--item">
-                      <a href="service.html">
+                    <li class="sub-menu--item nav-item-has-children">
+                      <a
+                        href="convert-leads.html"
+                        data-menu-get="h3"
+                        class="drop-trigger"
+                      >
                         <span class="menu-item-text">Convert Leads</span>
                       </a>
                     </li>
-                    <li class="sub-menu--item">
-                      <a href="team.html">
+                    <li class="sub-menu--item nav-item-has-children">
+                      <a
+                        href="drive-repeat-business.html"
+                        data-menu-get="h3"
+                        class="drop-trigger"
+                      >
                         <span class="menu-item-text"
                           >Drive Repeat Business</span
                         >
@@ -136,59 +178,44 @@
                     </li>
                   </ul>
                 </li>
+                <li class="nav-item">
+                  <a href="pricing.html" class="nav-link-item">Pricing</a>
+                </li>
                 <li class="nav-item nav-item-has-children">
                   <a href="#" class="nav-link-item drop-trigger"
-                    >Resources & Support <i class="fas fa-angle-down"></i
+                    >Support <i class="fas fa-angle-down"></i
                   ></a>
-                  <ul class="sub-menu" id="submenu-3">
-                    <li class="sub-menu--item">
-                      <a href="pricing.html">
-                        <span class="menu-item-text">Pricing</span>
-                      </a>
-                    </li>
-                    <li class="sub-menu--item">
-                      <a href="blog.html">
-                        <span class="menu-item-text">Resource Center</span>
-                      </a>
-                    </li>
-                    <li class="sub-menu--item">
-                      <a href="blog.html">
-                        <span class="menu-item-text">Our Blog</span>
-                      </a>
-                    </li>
-                    <li class="sub-menu--item">
+                  <ul class="sub-menu" id="submenu-10">
+                    <li class="sub-menu--item nav-item-has-children">
                       <a href="faq.html">
-                        <span class="menu-item-text">FAQs</span>
+                        <span class="menu-item-text">FAQS </span>
                       </a>
                     </li>
-                    <li class="sub-menu--item">
+                    <li class="sub-menu--item nav-item-has-children"></li>
+                    <li class="sub-menu--item nav-item-has-children">
                       <a href="contact-us.html">
                         <span class="menu-item-text">Contact Us</span>
-                      </a>
-                    </li>
-                    <li class="sub-menu--item">
-                      <a href="integrations.html">
-                        <span class="menu-item-text">Integrations</span>
                       </a>
                     </li>
                   </ul>
                 </li>
               </ul>
             </nav>
-
-            <div
-              class="header-btn header-btn-l1 ms-auto d-none d-xs-inline-flex"
-            >
-              <a class="zubuz-default-btn" href="contact-us.html">
-                <span>Start Free Trial</span>
-              </a>
-            </div>
-            <!-- mobile menu trigger -->
-            <div class="mobile-menu-trigger light">
-              <span></span>
-            </div>
-            <!--/.Mobile Menu Hamburger Ends-->
           </div>
+
+          <div class="header-btn header-btn-l1 ms-auto d-none d-xs-inline-flex">
+            <a
+              class="zubuz-default-btn zubuz-header-btn pill"
+              href="/dashboard"
+            >
+              <span>Get Started</span>
+            </a>
+          </div>
+          <!-- mobile menu trigger -->
+          <div class="mobile-menu-trigger light">
+            <span></span>
+          </div>
+          <!--/.Mobile Menu Hamburger Ends-->
         </nav>
       </div>
     </header>
