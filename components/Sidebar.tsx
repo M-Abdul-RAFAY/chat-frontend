@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { chatAPI, Conversation } from "@/lib/api";
+import { showToast } from "@/lib/toast";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -58,6 +59,24 @@ export default function Sidebar({
   const [showConversations, setShowConversations] = useState(true);
   const [showActivity, setShowActivity] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
+
+  // Helper function to handle coming soon features
+  const handleComingSoonFeature = (
+    featureName: string,
+    originalAction?: () => void
+  ) => {
+    const isComingSoon = process.env.NEXT_PUBLIC_IS_COMMING_SOON === "true";
+
+    if (isComingSoon) {
+      showToast.info("This feature will come soon");
+      return;
+    }
+
+    // If feature is enabled, execute the original action
+    if (originalAction) {
+      originalAction();
+    }
+  };
 
   const conversationFilters = [
     {
@@ -263,18 +282,20 @@ export default function Sidebar({
                           key={item.id}
                           className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
                           onClick={() => {
-                            if (onReviewClick) {
-                              onReviewClick();
-                            } else {
-                              window.location.href = "/dashboard/review";
-                            }
-                            // Auto-collapse sidebar on small screens when review is clicked
-                            if (
-                              typeof window !== "undefined" &&
-                              window.innerWidth < 768
-                            ) {
-                              onToggle();
-                            }
+                            handleComingSoonFeature("Reviews", () => {
+                              if (onReviewClick) {
+                                onReviewClick();
+                              } else {
+                                window.location.href = "/dashboard/review";
+                              }
+                              // Auto-collapse sidebar on small screens when review is clicked
+                              if (
+                                typeof window !== "undefined" &&
+                                window.innerWidth < 768
+                              ) {
+                                onToggle();
+                              }
+                            });
                           }}
                         >
                           <item.icon size={16} className="flex-shrink-0" />
@@ -285,13 +306,15 @@ export default function Sidebar({
                           key={item.id}
                           className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
                           onClick={() => {
-                            // Auto-collapse sidebar on small screens when activity item is clicked
-                            if (
-                              typeof window !== "undefined" &&
-                              window.innerWidth < 768
-                            ) {
-                              onToggle();
-                            }
+                            handleComingSoonFeature("Calls", () => {
+                              // Auto-collapse sidebar on small screens when activity item is clicked
+                              if (
+                                typeof window !== "undefined" &&
+                                window.innerWidth < 768
+                              ) {
+                                onToggle();
+                              }
+                            });
                           }}
                         >
                           <item.icon size={16} className="flex-shrink-0" />
