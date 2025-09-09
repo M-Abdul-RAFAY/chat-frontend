@@ -22,8 +22,6 @@ import {
   Sparkles,
   Save,
   Trash2,
-  AlertCircle,
-  CheckCircle,
   Smartphone,
   MessageCircle,
   Lightbulb,
@@ -31,6 +29,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { googlePlacesAPI } from "@/lib/googlePlaces";
+import { showToast } from "@/lib/toast";
 
 interface BusinessInfo {
   place_id: string;
@@ -86,8 +85,6 @@ export default function Settings() {
   const { user } = useUser();
   const [, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Business Information State
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
@@ -254,13 +251,11 @@ export default function Settings() {
       });
 
       if (response.ok) {
-        setSuccess("Settings saved successfully");
-        setTimeout(() => setSuccess(null), 3000);
+        showToast.success("Settings saved successfully");
       }
     } catch (error) {
       console.error("Error saving user settings:", error);
-      setError("Failed to save settings");
-      setTimeout(() => setError(null), 3000);
+      showToast.error("Failed to save settings");
     }
   };
 
@@ -332,7 +327,7 @@ export default function Settings() {
       }
     } catch (error) {
       console.error("Error selecting business:", error);
-      setError("Failed to save business information");
+      showToast.error("Failed to save business information");
     } finally {
       setLoading(false);
     }
@@ -349,7 +344,9 @@ export default function Settings() {
       !newTrainingData.customerScenario ||
       !newTrainingData.desiredResponse
     ) {
-      setError("Please fill in both customer scenario and desired response");
+      showToast.error(
+        "Please fill in both customer scenario and desired response"
+      );
       return;
     }
 
@@ -376,15 +373,13 @@ export default function Settings() {
           category: "general",
         });
         setShowTrainingForm(false);
-        setSuccess("Training data added successfully");
-        setTimeout(() => setSuccess(null), 3000);
+        showToast.success("Training data added successfully");
       } else {
         throw new Error("Failed to save training data");
       }
     } catch (error) {
       console.error("Error saving training data:", error);
-      setError("Failed to save training data");
-      setTimeout(() => setError(null), 3000);
+      showToast.error("Failed to save training data");
     } finally {
       setSaving(false);
     }
@@ -413,15 +408,13 @@ export default function Settings() {
       if (response.ok) {
         // Remove from local state immediately for better UX
         setAiTrainingData((prev) => prev.filter((_, i) => i !== index));
-        setSuccess("Training data deleted successfully");
-        setTimeout(() => setSuccess(null), 3000);
+        showToast.success("Training data deleted successfully");
       } else {
         throw new Error("Failed to delete training data");
       }
     } catch (error) {
       console.error("Error deleting training data:", error);
-      setError("Failed to delete training data");
-      setTimeout(() => setError(null), 3000);
+      showToast.error("Failed to delete training data");
     } finally {
       setSaving(false);
     }
@@ -442,15 +435,13 @@ export default function Settings() {
       });
 
       if (response.ok) {
-        setSuccess("Brand guidelines saved successfully");
-        setTimeout(() => setSuccess(null), 3000);
+        showToast.success("Brand guidelines saved successfully");
       } else {
         throw new Error("Failed to save brand guidelines");
       }
     } catch (error) {
       console.error("Error saving brand guidelines:", error);
-      setError("Failed to save brand guidelines");
-      setTimeout(() => setError(null), 3000);
+      showToast.error("Failed to save brand guidelines");
     } finally {
       setSaving(false);
     }
@@ -497,15 +488,13 @@ export default function Settings() {
             customResponses: [] as Array<{ trigger: string; response: string }>,
           },
         });
-        setSuccess("Brand guidelines deleted successfully");
-        setTimeout(() => setSuccess(null), 3000);
+        showToast.success("Brand guidelines deleted successfully");
       } else {
         throw new Error("Failed to delete brand guidelines");
       }
     } catch (error) {
       console.error("Error deleting brand guidelines:", error);
-      setError("Failed to delete brand guidelines");
-      setTimeout(() => setError(null), 3000);
+      showToast.error("Failed to delete brand guidelines");
     } finally {
       setSaving(false);
     }
@@ -513,34 +502,6 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Success/Error Toast */}
-      {(success || error) && (
-        <div
-          className={`fixed top-4 right-4 z-50 transform transition-all duration-500 ${
-            success || error
-              ? "translate-x-0 opacity-100"
-              : "translate-x-full opacity-0"
-          }`}
-        >
-          <div
-            className={`px-4 py-3 rounded-lg shadow-lg border ${
-              success
-                ? "bg-green-50 border-green-200 text-green-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {success ? (
-                <CheckCircle className="w-4 h-4" />
-              ) : (
-                <AlertCircle className="w-4 h-4" />
-              )}
-              <span className="text-sm font-medium">{success || error}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">

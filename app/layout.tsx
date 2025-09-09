@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import SplashCursor from "@/components/SplashCursor";
 
 const geistSans = Geist({
@@ -23,6 +25,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Check if toasters should be shown
+  const shouldShowToasters = process.env.NEXT_PUBLIC_SHOW_TOASTERS === "on";
+
   return (
     <html lang="en">
       <body
@@ -31,6 +36,23 @@ export default function RootLayout({
         {/* <SplashCursor /> */}
 
         {children}
+
+        {/* Conditionally render ToastContainer based on environment variable */}
+        {shouldShowToasters && (
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            aria-label="Notifications"
+          />
+        )}
       </body>
     </html>
   );
