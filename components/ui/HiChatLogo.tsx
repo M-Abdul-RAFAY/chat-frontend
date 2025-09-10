@@ -11,12 +11,12 @@ interface HiChatLogoProps {
 export default function HiChatLogo({
   size = "md",
   variant = "light",
-  showText = true,
+  showText = false,
 }: HiChatLogoProps) {
   const sizeClasses = {
-    sm: 24,
-    md: 32,
-    lg: 48,
+    sm: 40,
+    md: 56,
+    lg: 80,
   };
 
   const textSizeClasses = {
@@ -28,7 +28,7 @@ export default function HiChatLogo({
   const textColor = variant === "light" ? "text-white" : "text-gray-900";
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center">
       <div className="flex-shrink-0">
         <Image
           src="/assets/hichat-logo.png"
@@ -40,7 +40,9 @@ export default function HiChatLogo({
         />
       </div>
       {showText && (
-        <span className={`${textSizeClasses[size]} font-bold ${textColor}`}>
+        <span
+          className={`${textSizeClasses[size]} font-bold ${textColor} ml-3`}
+        >
           Hi Chat
         </span>
       )}

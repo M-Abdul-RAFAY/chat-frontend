@@ -20,7 +20,8 @@ export default function Footer() {
               <span className="text-xl font-bold">Hi Chat</span>
             </div>
             <p className="text-gray-400 leading-relaxed mb-6">
-              Comprehensive SaaS platform that transforms how startups and growing businesses operate in today&apos;s competitive landscape.
+              Comprehensive SaaS platform that transforms how startups and
+              growing businesses operate in today&apos;s competitive landscape.
             </p>
             <div className="flex justify-center md:justify-start space-x-4">
               <a
