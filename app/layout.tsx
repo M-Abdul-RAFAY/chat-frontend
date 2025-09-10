@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hichat.com"),
   title: "Hi Chat - Transform Your Business Communication",
   description:
     "Comprehensive SaaS platform for startups and growing businesses. Streamline operations with integrated Customer Support, Project Management, Email Marketing, HR, Accounting & Finance, and Cyber Security.",
