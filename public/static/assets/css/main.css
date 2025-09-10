@@ -1,3 +1,29 @@
+/* Make text slightly smaller across all pages */
+html {
+  font-size: 14px;
+}
+
+body {
+  font-size: 0.9em;
+}
+
+/* Adjust specific text elements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 0.95em;
+}
+
+p,
+span,
+div,
+a {
+  font-size: 1.2rem;
+}
+
 /*Header Css StaRT*/
 .site-navbar {
   display: flex;
