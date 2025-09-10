@@ -7,21 +7,21 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left items-center md:items-start">
           <div className="col-span-1">
-            <div className="flex items-center justify-center md:justify-start space-x-2 mb-6">
-              <div className="w-8 h-8 flex items-center justify-center">
+            <div className="flex items-center justify-center md:justify-start space-x-3 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center">
                 <Image
-                  src="/assets/logo-hichat.png"
-                  alt="hichat Logo"
-                  width={32}
-                  height={32}
+                  src="/assets/hichat-logo.png"
+                  alt="Hi Chat Logo"
+                  width={40}
+                  height={40}
                   className="object-contain"
                 />
               </div>
-              <span className="text-xl font-bold">hichat</span>
+              <span className="text-xl font-bold">Hi Chat</span>
             </div>
             <p className="text-gray-400 leading-relaxed mb-6">
-              The modern messaging platform that helps businesses connect with
-              customers and grow faster.
+              Comprehensive SaaS platform that transforms how startups and
+              growing businesses operate in today&apos;s competitive landscape.
             </p>
             <div className="flex justify-center md:justify-start space-x-4">
               <a

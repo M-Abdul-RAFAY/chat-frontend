@@ -18,18 +18,18 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 flex items-center justify-center">
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 flex items-center justify-center">
               <Image
-                src="/assets/logo-hichat.png"
-                alt="hichat Logo"
-                width={32}
-                height={32}
+                src="/assets/hichat-logo.png"
+                alt="Hi Chat Logo"
+                width={40}
+                height={40}
                 className="object-contain"
                 priority
               />
             </div>
-            <span className="text-xl font-bold text-gray-900">hichat</span>
+            <span className="text-xl font-bold text-gray-900">Hi Chat</span>
           </Link>
 
           {/* Desktop Navigation */}

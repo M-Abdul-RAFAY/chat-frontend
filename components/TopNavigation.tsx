@@ -84,10 +84,10 @@ export default function TopNavigation({
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
             <Image
-              src="/assets/logo-hichat.png"
-              alt="hichat Logo"
-              width={20}
-              height={20}
+              src="/assets/hichat-logo.png"
+              alt="Hi Chat Logo"
+              width={24}
+              height={24}
             />
             <GlitchText
               className="text-sm md:text-xl lg:text-2xl font-bold"
