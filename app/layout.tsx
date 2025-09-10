@@ -17,18 +17,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Hi Chat - Transform Your Business Communication",
-  description:
-    "Comprehensive SaaS platform for startups and growing businesses. Streamline operations with integrated Customer Support, Project Management, Email Marketing, HR, Accounting & Finance, and Cyber Security.",
-  keywords:
-    "SaaS platform, business communication, CRM, project management, customer support, email marketing, startup tools",
+  description: "Comprehensive SaaS platform for startups and growing businesses. Streamline operations with integrated Customer Support, Project Management, Email Marketing, HR, Accounting & Finance, and Cyber Security.",
+  keywords: "SaaS platform, business communication, CRM, project management, customer support, email marketing, startup tools",
   authors: [{ name: "Hi Chat Team" }],
   creator: "Hi Chat",
   publisher: "Hi Chat",
   robots: "index, follow",
   openGraph: {
     title: "Hi Chat - Transform Your Business Communication",
-    description:
-      "Comprehensive SaaS platform for startups and growing businesses",
+    description: "Comprehensive SaaS platform for startups and growing businesses",
     url: "https://hichat.com",
     siteName: "Hi Chat",
     images: [
@@ -45,25 +42,13 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Hi Chat - Transform Your Business Communication",
-    description:
-      "Comprehensive SaaS platform for startups and growing businesses",
+    description: "Comprehensive SaaS platform for startups and growing businesses",
     images: ["/assets/hichat-logo.png"],
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "16x16 32x32", type: "image/x-icon" },
-      { url: "/icon.ico", sizes: "16x16 32x32", type: "image/x-icon" },
-    ],
-    shortcut: ["/favicon.ico"],
-    apple: [{ url: "/favicon.ico", sizes: "180x180", type: "image/x-icon" }],
-    other: [
-      {
-        rel: "icon",
-        url: "/favicon.ico",
-        type: "image/x-icon",
-        sizes: "16x16 32x32",
-      },
-    ],
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
@@ -77,12 +62,6 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/favicon.ico" />
-        <meta name="theme-color" content="#667eea" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50 overflow-auto`}
       >
