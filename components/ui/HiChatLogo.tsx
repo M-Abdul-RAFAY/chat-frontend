@@ -3,7 +3,7 @@
 import Image from "next/image";
 
 interface HiChatLogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   variant?: "light" | "dark";
   showText?: boolean;
 }
@@ -17,12 +17,14 @@ export default function HiChatLogo({
     sm: 40,
     md: 56,
     lg: 80,
+    xl: 120,
   };
 
   const textSizeClasses = {
     sm: "text-lg",
     md: "text-xl",
     lg: "text-3xl",
+    xl: "text-5xl",
   };
 
   const textColor = variant === "light" ? "text-white" : "text-gray-900";

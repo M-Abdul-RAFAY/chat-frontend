@@ -86,17 +86,17 @@ export default function TopNavigation({
             <Image
               src="/assets/hichat-logo.png"
               alt="Hi Chat Logo"
-              width={24}
-              height={24}
+              width={100}
+              height={100}
             />
-            <GlitchText
+            {/* <GlitchText
               className="text-sm md:text-xl lg:text-2xl font-bold"
               speed={0.5}
               enableShadows={true}
               enableOnHover={false} // Change this to false to see constant animation
             >
               Hi Chat
-            </GlitchText>
+            </GlitchText> */}
           </div>
         </div>
 

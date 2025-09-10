@@ -50,9 +50,19 @@ export const metadata: Metadata = {
     images: ["/assets/hichat-logo.png"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
+    other: [
+      {
+        rel: "icon",
+        type: "image/x-icon",
+        url: "/favicon.ico",
+      },
+    ],
   },
 };
 
