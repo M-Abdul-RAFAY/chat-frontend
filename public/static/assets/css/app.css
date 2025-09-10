@@ -4362,6 +4362,7 @@ span.zubuz-title-shape {
 }
 .zubuz-cta-content {
   max-width: 700px;
+  color: var(--white-color);
   margin: 0 auto;
 }
 .zubuz-cta-content h2 {
