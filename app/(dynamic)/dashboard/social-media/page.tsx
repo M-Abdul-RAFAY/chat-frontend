@@ -251,44 +251,6 @@ const SocialMediaPage = () => {
         </div>
       )}
 
-      {/* Connected Status Header */}
-      <div className="bg-green-50 border-b border-green-200 p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <span className="text-green-600 mr-2">✅</span>
-              <span className="font-medium text-green-800">
-                Facebook Connected
-              </span>
-              {status.page_id && (
-                <span className="ml-2 text-sm text-green-600">
-                  (Page ID: {status.page_id})
-                </span>
-              )}
-            </div>
-            {status.instagram_connected && (
-              <div className="flex items-center">
-                <span className="text-green-600 mr-2">✅</span>
-                <span className="font-medium text-green-800">
-                  Instagram Connected
-                </span>
-                {status.instagram_account_id && (
-                  <span className="ml-2 text-sm text-green-600">
-                    (ID: {status.instagram_account_id})
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={checkStatus}
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            🔄 Refresh
-          </button>
-        </div>
-      </div>
-
       <MessagingApp />
     </div>
   );
