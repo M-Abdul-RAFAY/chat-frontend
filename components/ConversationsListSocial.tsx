@@ -150,6 +150,7 @@ export default function ConversationsListSocial({
     FacebookConversation[]
   >([]);
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
+  const [instagramMessages, setInstagramMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contentType, setContentType] = useState<"messages" | "posts">(
@@ -201,16 +202,34 @@ export default function ConversationsListSocial({
             }
           }
         } else if (platform === "instagram") {
-          // Instagram always shows posts/comments for now
-          const response = await fetch(
-            "http://localhost:4000/api/v1/meta/instagram/comments"
-          );
-          const data = await response.json();
+          if (contentType === "messages") {
+            // Try to fetch Instagram messages/DMs
+            const response = await fetch(
+              "http://localhost:4000/api/v1/meta/instagram/messages"
+            );
+            const data = await response.json();
 
-          if (data.error) {
-            setError(data.error);
+            if (data.error) {
+              setError(data.error);
+            } else {
+              setInstagramMessages(data.data || []);
+              // If limited access, show helpful message
+              if (data.limited_access) {
+                setError(data.message);
+              }
+            }
           } else {
-            setInstagramPosts(data.data || []);
+            // Fetch Instagram posts/comments
+            const response = await fetch(
+              "http://localhost:4000/api/v1/meta/instagram/comments"
+            );
+            const data = await response.json();
+
+            if (data.error) {
+              setError(data.error);
+            } else {
+              setInstagramPosts(data.data || []);
+            }
           }
         }
       } catch (err) {
@@ -251,29 +270,43 @@ export default function ConversationsListSocial({
         online: false,
       }));
     } else if (platform === "instagram") {
-      return instagramPosts.map((post) => ({
-        id: post.id,
-        name:
-          contentType === "messages"
-            ? `DM ${post.id.substring(0, 8)}...`
-            : post.caption
+      if (contentType === "messages") {
+        // Show Instagram DMs if available
+        return instagramMessages.map((dm) => ({
+          id: dm.id,
+          name: `DM ${dm.id.substring(0, 8)}...`,
+          avatar:
+            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+          lastMessage: dm.messages?.data?.[0]?.message || "Direct message",
+          timestamp: dm.messages?.data?.[0]?.created_time
+            ? new Date(dm.messages?.data?.[0]?.created_time).toLocaleTimeString(
+                [],
+                { hour: "2-digit", minute: "2-digit" }
+              )
+            : "",
+          unread: 0,
+          online: false,
+        }));
+      } else {
+        // Show Instagram posts and comments
+        return instagramPosts.map((post) => ({
+          id: post.id,
+          name: post.caption
             ? `${post.caption.substring(0, 20)}...`
             : "No caption",
-        avatar:
-          "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-        lastMessage:
-          contentType === "messages"
-            ? "Direct message"
-            : post.comments?.[0]?.text || "No comments",
-        timestamp: post.comments?.[0]?.timestamp
-          ? new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "",
-        unread: contentType === "posts" ? post.comments_count : 0,
-        online: false,
-      }));
+          avatar:
+            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+          lastMessage: post.comments?.[0]?.text || "No comments",
+          timestamp: post.comments?.[0]?.timestamp
+            ? new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+          unread: post.comments_count,
+          online: false,
+        }));
+      }
     }
     return [];
   };
