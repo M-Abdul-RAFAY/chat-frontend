@@ -23,10 +23,10 @@ interface MessageInboxProps {
 interface FacebookMessage {
   id: string;
   message: string;
-  from: { 
-    name: string; 
-    id: string; 
-    profilePicture?: string; 
+  from: {
+    name: string;
+    id: string;
+    profilePicture?: string;
   };
   created_time: string;
 }
@@ -182,22 +182,24 @@ export default function MessageInbox({
               const customerMessage = conversation.messages.data.find(
                 (msg: FacebookMessage) => msg.from.id !== pageId
               );
-              
+
               if (customerMessage) {
                 setConversationParticipant({
                   name: customerMessage.from.name,
-                  avatar: customerMessage.from.profilePicture || 
+                  avatar:
+                    customerMessage.from.profilePicture ||
                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-                  status: "Active on Facebook"
+                  status: "Active on Facebook",
                 });
               }
 
               const formattedMessages = conversation.messages.data
                 .map((msg: FacebookMessage, index: number) => {
                   // Extract profile picture and name for the sender
-                  let senderAvatar = "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop";
+                  let senderAvatar =
+                    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop";
                   let senderName = "Unknown";
-                  
+
                   if (msg.from?.profilePicture) {
                     senderAvatar = msg.from.profilePicture;
                   }
@@ -210,10 +212,13 @@ export default function MessageInbox({
                     text: msg.message,
                     // Determine sender: if from.id equals pageId, it's from business (me), otherwise customer (other)
                     sender: msg.from.id === pageId ? "me" : "other",
-                    timestamp: new Date(msg.created_time).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
+                    timestamp: new Date(msg.created_time).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    ),
                     avatar: senderAvatar,
                     senderName: senderName,
                   };
