@@ -1,13 +1,26 @@
 "use client";
 
 import { ArrowLeft, Phone, Video, MoreVertical, Smile, Paperclip, Send, Mic } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface MessageInboxProps {
   platform: 'facebook' | 'instagram' | 'whatsapp';
   conversationId: string | null;
   onBack: () => void;
   isMobile?: boolean;
+}
+
+interface FacebookMessage {
+  id: string;
+  message: string;
+  from: { name: string; id: string };
+  created_time: string;
+}
+
+interface InstagramComment {
+  text: string;
+  username: string;
+  timestamp: string;
 }
 
 // Mock messages data
@@ -89,6 +102,69 @@ const conversationDetails: Record<string, any> = {
 
 export default function MessageInbox({ platform, conversationId, onBack, isMobile }: MessageInboxProps) {
   const [newMessage, setNewMessage] = useState('');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (conversationId && platform !== "whatsapp") {
+      fetchMessages();
+    }
+  }, [conversationId, platform]);
+
+  const fetchMessages = async () => {
+    if (!conversationId) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      if (platform === "facebook") {
+        const response = await fetch("http://localhost:4000/facebook/messages");
+        const data = await response.json();
+        
+        if (data.error) {
+          setError(data.error);
+        } else {
+          const conversation = data.data?.find((conv: any) => conv.id === conversationId);
+          if (conversation?.messages?.data) {
+            const formattedMessages = conversation.messages.data.map((msg: FacebookMessage, index: number) => ({
+              id: index,
+              text: msg.message,
+              sender: 'other',
+              timestamp: new Date(msg.created_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+              avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop',
+            }));
+            setMessages(formattedMessages);
+          }
+        }
+      } else if (platform === "instagram") {
+        const response = await fetch("http://localhost:4000/instagram/comments");
+        const data = await response.json();
+        
+        if (data.error) {
+          setError(data.error);
+        } else {
+          const post = data.data?.find((p: any) => p.id === conversationId);
+          if (post?.comments) {
+            const formattedMessages = post.comments.map((comment: InstagramComment, index: number) => ({
+              id: index,
+              text: comment.text,
+              sender: 'other',
+              timestamp: new Date(comment.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+              avatar: 'https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop',
+            }));
+            setMessages(formattedMessages);
+          }
+        }
+      }
+    } catch (err) {
+      setError("Failed to fetch messages");
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   if (!conversationId) {
     return (
@@ -104,8 +180,15 @@ export default function MessageInbox({ platform, conversationId, onBack, isMobil
     );
   }
 
-  const conversation = conversationDetails[conversationId];
-  const messages = mockMessages[conversationId] || [];
+  // Use real data or fallback to mock data for WhatsApp
+  const displayMessages = platform === "whatsapp" ? (mockMessages[conversationId] || []) : messages;
+  const conversation = platform === "whatsapp" ? conversationDetails[conversationId] : {
+    name: platform === "facebook" ? `Facebook Conversation` : `Instagram Post`,
+    avatar: platform === "facebook" ? 
+      'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop' :
+      'https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop',
+    status: platform === "facebook" ? 'Facebook Page' : 'Instagram Business',
+  };
 
   const getPlatformColor = (platform: string) => {
     switch (platform) {
@@ -164,7 +247,7 @@ export default function MessageInbox({ platform, conversationId, onBack, isMobil
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        {messages.map((message) => (
+        {displayMessages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
