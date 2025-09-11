@@ -69,12 +69,12 @@ export default function PlatformSwitcher({
                     <Image
                       src="/whatsapp.png"
                       alt="WhatsApp"
-                      width={24}
-                      height={24}
+                      width={50}
+                      height={50}
                       className="object-contain"
                     />
                   ) : Icon ? (
-                    <Icon size={24} />
+                    <Icon size={25} />
                   ) : null}
                 </div>
                 <div className="text-left">
@@ -114,12 +114,12 @@ export default function PlatformSwitcher({
                 <Image
                   src="/whatsapp.png"
                   alt="WhatsApp"
-                  width={20}
-                  height={20}
+                  width={30}
+                  height={30}
                   className="object-contain"
                 />
               ) : Icon ? (
-                <Icon size={20} />
+                <Icon size={24} />
               ) : null}
             </button>
 
