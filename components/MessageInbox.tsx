@@ -23,7 +23,11 @@ interface MessageInboxProps {
 interface FacebookMessage {
   id: string;
   message: string;
-  from: { name: string; id: string };
+  from: { 
+    name: string; 
+    id: string; 
+    profilePicture?: string; 
+  };
   created_time: string;
 }
 
@@ -129,6 +133,11 @@ export default function MessageInbox({
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conversationParticipant, setConversationParticipant] = useState<{
+    name: string;
+    avatar: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     if (conversationId && platform !== "whatsapp") {
@@ -169,19 +178,46 @@ export default function MessageInbox({
               (conv: any) => conv.id === conversationId
             );
             if (conversation?.messages?.data) {
+              // Extract participant info from the first customer message
+              const customerMessage = conversation.messages.data.find(
+                (msg: FacebookMessage) => msg.from.id !== pageId
+              );
+              
+              if (customerMessage) {
+                setConversationParticipant({
+                  name: customerMessage.from.name,
+                  avatar: customerMessage.from.profilePicture || 
+                    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
+                  status: "Active on Facebook"
+                });
+              }
+
               const formattedMessages = conversation.messages.data
-                .map((msg: FacebookMessage, index: number) => ({
-                  id: index,
-                  text: msg.message,
-                  // Determine sender: if from.id equals pageId, it's from business (me), otherwise customer (other)
-                  sender: msg.from.id === pageId ? "me" : "other",
-                  timestamp: new Date(msg.created_time).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  avatar:
-                    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-                }))
+                .map((msg: FacebookMessage, index: number) => {
+                  // Extract profile picture and name for the sender
+                  let senderAvatar = "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop";
+                  let senderName = "Unknown";
+                  
+                  if (msg.from?.profilePicture) {
+                    senderAvatar = msg.from.profilePicture;
+                  }
+                  if (msg.from?.name) {
+                    senderName = msg.from.name;
+                  }
+
+                  return {
+                    id: index,
+                    text: msg.message,
+                    // Determine sender: if from.id equals pageId, it's from business (me), otherwise customer (other)
+                    sender: msg.from.id === pageId ? "me" : "other",
+                    timestamp: new Date(msg.created_time).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
+                    avatar: senderAvatar,
+                    senderName: senderName,
+                  };
+                })
                 // Reverse the order to show oldest messages first (chronological order)
                 .reverse();
               setMessages(formattedMessages);
@@ -280,6 +316,8 @@ export default function MessageInbox({
   const conversation =
     platform === "whatsapp"
       ? conversationDetails[conversationId]
+      : platform === "facebook" && conversationParticipant
+      ? conversationParticipant
       : {
           name:
             platform === "facebook"
