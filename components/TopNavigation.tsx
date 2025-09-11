@@ -26,6 +26,7 @@ export default function TopNavigation({
     { id: "marketing", label: "Marketing" },
     { id: "widget", label: "Widget" },
     { id: "settings", label: "Settings" },
+    { id: "social media", label: "Social Media" },
   ];
 
   const getInitialActiveItem = () => {
