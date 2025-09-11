@@ -28,10 +28,10 @@ const SocialMediaPage = () => {
     const errorMessage = urlParams.get("message");
 
     if (connected === "true") {
-      setMessage(
-        "Successfully connected to Meta! You can now manage your Facebook and Instagram messages."
-      );
-      setMessageType("success");
+      // setMessage(
+      //   "Successfully connected to Meta! You can now manage your Facebook and Instagram messages."
+      // );
+      // setMessageType("success");
       // Clean up URL
       window.history.replaceState({}, "", "/dashboard/social-media");
     } else if (error) {
