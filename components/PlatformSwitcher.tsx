@@ -156,7 +156,7 @@ export default function PlatformSwitcher({
   }
 
   return (
-    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
+    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center py-6">
       {/* Connected Page Logo */}
       {pageDetails && (
         <div className="mb-2">
@@ -177,45 +177,42 @@ export default function PlatformSwitcher({
         </div>
       )}
 
-      {/* Platform Buttons */}
-      {platforms.map((platform) => {
-        const Icon = platform.icon;
-        const isSelected = selectedPlatform === platform.id;
+      {/* Vertically centered platform buttons */}
+      <div className="flex flex-col flex-grow justify-center items-center space-y-4 w-full">
+        {platforms.map((platform) => {
+          const Icon = platform.icon;
+          const isSelected = selectedPlatform === platform.id;
 
-        return (
-          <div key={platform.id} className="relative group">
-            <button
-              onClick={() => onPlatformChange(platform.id)}
-              className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all duration-200 ${
-                isSelected ? "scale-110" : "hover:scale-105"
-              } ${platform.color}`}
-              title={platform.name}
-            >
-              {platform.id === "whatsapp" ? (
-                <Image
-                  src="/whatsapp.png"
-                  alt="WhatsApp"
-                  width={30}
-                  height={30}
-                  className="object-contain"
-                />
-              ) : Icon ? (
-                <Icon size={24} />
-              ) : null}
-            </button>
+          return (
+            <div key={platform.id} className="relative group">
+              <button
+                onClick={() => onPlatformChange(platform.id)}
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all duration-200 ${
+                  isSelected ? "scale-110" : "hover:scale-105"
+                } ${platform.color}`}
+                title={platform.name}
+              >
+                {platform.id === "whatsapp" ? (
+                  <Image
+                    src="/whatsapp.png"
+                    alt="WhatsApp"
+                    width={30}
+                    height={30}
+                    className="object-contain"
+                  />
+                ) : Icon ? (
+                  <Icon size={24} />
+                ) : null}
+              </button>
 
-            {/* Tooltip */}
-            {/* <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-              {platform.name}
-            </div> */}
-
-            {/* Active indicator */}
-            {isSelected && (
-              <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white rounded"></div>
-            )}
-          </div>
-        );
-      })}
+              {/* Active indicator */}
+              {isSelected && (
+                <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white rounded"></div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
