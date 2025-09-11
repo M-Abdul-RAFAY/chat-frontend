@@ -57,9 +57,11 @@ export default function PlatformSwitcher({
     const fetchPageDetails = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:4000/api/v1/meta/page-details");
+        const response = await fetch(
+          "http://localhost:4000/api/v1/meta/page-details"
+        );
         const data = await response.json();
-        
+
         if (data.success && data.data) {
           setPageDetails(data.data);
         }
@@ -93,13 +95,15 @@ export default function PlatformSwitcher({
                 </div>
               )}
               <div>
-                <h3 className="font-semibold text-gray-900">{pageDetails.name}</h3>
+                <h3 className="font-semibold text-gray-900">
+                  {pageDetails.name}
+                </h3>
                 <p className="text-sm text-gray-500">{pageDetails.category}</p>
               </div>
             </div>
           </div>
         )}
-        
+
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Select Platform
         </h2>
@@ -172,7 +176,7 @@ export default function PlatformSwitcher({
           )}
         </div>
       )}
-      
+
       {/* Platform Buttons */}
       {platforms.map((platform) => {
         const Icon = platform.icon;
