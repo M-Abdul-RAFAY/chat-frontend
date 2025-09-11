@@ -96,7 +96,7 @@ export default function PlatformSwitcher({
   }
 
   return (
-    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
+    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center justify-center py-6 space-y-4">
       {platforms.map((platform) => {
         const Icon = platform.icon;
         const isSelected = selectedPlatform === platform.id;
