@@ -2,7 +2,7 @@ import MessagingApp from "@/components/messagingApp";
 
 const page = () => {
   return (
-    <div className="w-full min-h-full overflow-hidden">
+    <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full">
       <MessagingApp />
     </div>
   );

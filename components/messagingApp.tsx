@@ -17,7 +17,7 @@ export default function MessagingApp() {
   >("conversations");
 
   return (
-    <div className="h-screen flex bg-gray-50 overflow-hidden">
+    <div className="h-full flex bg-gray-50 overflow-hidden">
       {/* Platform Switcher - Desktop */}
       <div className="hidden md:flex">
         <PlatformSwitcher
@@ -46,9 +46,9 @@ export default function MessagingApp() {
       </div>
 
       {/* Mobile Layout */}
-      <div className="flex flex-col w-full md:hidden">
+      <div className="flex flex-col w-full h-full md:hidden">
         {/* Mobile Header */}
-        <div className="flex bg-white border-b border-gray-200 p-4">
+        <div className="flex bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
           <div className="flex space-x-2">
             <button
               onClick={() => setMobileView("platforms")}
@@ -86,7 +86,7 @@ export default function MessagingApp() {
         </div>
 
         {/* Mobile Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           {mobileView === "platforms" && (
             <PlatformSwitcher
               selectedPlatform={selectedPlatform}
