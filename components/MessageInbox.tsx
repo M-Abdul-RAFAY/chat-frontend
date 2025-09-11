@@ -144,7 +144,9 @@ export default function MessageInbox({
 
     try {
       // First get the connection status to know the page ID
-      const statusResponse = await fetch("http://localhost:4000/api/v1/meta/status");
+      const statusResponse = await fetch(
+        "http://localhost:4000/api/v1/meta/status"
+      );
       const statusData = await statusResponse.json();
       const pageId = statusData.page_id;
 
