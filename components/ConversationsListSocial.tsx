@@ -251,26 +251,27 @@ export default function ConversationsListSocial({
       return facebookMessages.map((conv) => {
         // Extract the participant name (customer name) from the conversation
         let participantName = "Unknown Contact";
-        
+
         if (conv.messages?.data && conv.messages.data.length > 0) {
           // Get the page ID from the status (we'll use a known page ID for now)
           const pageId = "732727859927862"; // Hive Metrics page ID
-          
+
           // Find a message from someone who is NOT the page (i.e., the customer)
-          const customerMessage = conv.messages.data.find(msg => 
-            msg.from?.id !== pageId
+          const customerMessage = conv.messages.data.find(
+            (msg) => msg.from?.id !== pageId
           );
-          
+
           if (customerMessage && customerMessage.from?.name) {
             participantName = customerMessage.from.name;
           }
         }
-        
+
         return {
           id: conv.id,
-          name: contentType === "messages" 
-            ? participantName 
-            : `Post ${conv.id.substring(0, 8)}...`,
+          name:
+            contentType === "messages"
+              ? participantName
+              : `Post ${conv.id.substring(0, 8)}...`,
           avatar:
             "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
           lastMessage:
@@ -278,10 +279,9 @@ export default function ConversationsListSocial({
               ? conv.messages?.data?.[0]?.message || "No messages"
               : conv.messages?.data?.[0]?.message || "No comments",
           timestamp: conv.messages?.data?.[0]?.created_time
-            ? new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString(
-                [],
-                { hour: "2-digit", minute: "2-digit" }
-              )
+            ? new Date(
+                conv.messages?.data?.[0]?.created_time
+              ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "",
           unread: 0,
           online: false,
