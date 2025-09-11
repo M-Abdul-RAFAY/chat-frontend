@@ -96,7 +96,7 @@ export default function PlatformSwitcher({
   }
 
   return (
-    <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
+    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
       {platforms.map((platform) => {
         const Icon = platform.icon;
         const isSelected = selectedPlatform === platform.id;
@@ -130,7 +130,7 @@ export default function PlatformSwitcher({
 
             {/* Active indicator */}
             {isSelected && (
-              <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-gray-900 rounded-r"></div>
+              <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white rounded"></div>
             )}
           </div>
         );
