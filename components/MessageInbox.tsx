@@ -143,6 +143,11 @@ export default function MessageInbox({
     setError(null);
 
     try {
+      // First get the connection status to know the page ID
+      const statusResponse = await fetch("http://localhost:4000/api/v1/meta/status");
+      const statusData = await statusResponse.json();
+      const pageId = statusData.page_id;
+
       if (platform === "facebook") {
         // Choose endpoint based on contentType
         const endpoint =
@@ -162,30 +167,33 @@ export default function MessageInbox({
               (conv: any) => conv.id === conversationId
             );
             if (conversation?.messages?.data) {
-              const formattedMessages = conversation.messages.data.map(
-                (msg: FacebookMessage, index: number) => ({
+              const formattedMessages = conversation.messages.data
+                .map((msg: FacebookMessage, index: number) => ({
                   id: index,
                   text: msg.message,
-                  sender: "other",
+                  // Determine sender: if from.id equals pageId, it's from business (me), otherwise customer (other)
+                  sender: msg.from.id === pageId ? "me" : "other",
                   timestamp: new Date(msg.created_time).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   }),
                   avatar:
                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-                })
-              );
+                }))
+                // Reverse the order to show oldest messages first (chronological order)
+                .reverse();
               setMessages(formattedMessages);
             }
           } else {
             // Handle Facebook posts/comments
             const post = data.data?.find((p: any) => p.id === conversationId);
             if (post?.comments?.data) {
-              const formattedMessages = post.comments.data.map(
-                (comment: any, index: number) => ({
+              const formattedMessages = post.comments.data
+                .map((comment: any, index: number) => ({
                   id: index,
                   text: comment.message,
-                  sender: "other",
+                  // For comments, check if comment author is the page
+                  sender: comment.from?.id === pageId ? "me" : "other",
                   timestamp: new Date(comment.created_time).toLocaleTimeString(
                     [],
                     {
@@ -195,17 +203,21 @@ export default function MessageInbox({
                   ),
                   avatar:
                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-                })
-              );
+                }))
+                // Reverse the order to show oldest comments first
+                .reverse();
               setMessages(formattedMessages);
             }
           }
         }
       } else if (platform === "instagram") {
-        // Instagram always shows posts/comments for now
-        const response = await fetch(
-          "http://localhost:4000/api/v1/meta/instagram/comments"
-        );
+        // Choose endpoint based on contentType
+        const endpoint =
+          contentType === "messages"
+            ? "http://localhost:4000/api/v1/meta/instagram/messages"
+            : "http://localhost:4000/api/v1/meta/instagram/comments";
+
+        const response = await fetch(endpoint);
         const data = await response.json();
 
         if (data.error) {
@@ -213,10 +225,13 @@ export default function MessageInbox({
         } else {
           const post = data.data?.find((p: any) => p.id === conversationId);
           if (post?.comments) {
-            const formattedMessages = post.comments.map(
-              (comment: InstagramComment, index: number) => ({
+            const formattedMessages = post.comments
+              .map((comment: InstagramComment, index: number) => ({
                 id: index,
                 text: comment.text,
+                // For Instagram comments, we need to determine if it's from the business
+                // This is trickier since we don't have the business username easily accessible
+                // For now, we'll assume all are from others unless we can implement better logic
                 sender: "other",
                 timestamp: new Date(comment.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -224,8 +239,9 @@ export default function MessageInbox({
                 }),
                 avatar:
                   "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-              })
-            );
+              }))
+              // Reverse the order to show oldest comments first
+              .reverse();
             setMessages(formattedMessages);
           }
         }
