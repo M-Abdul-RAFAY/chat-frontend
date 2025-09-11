@@ -150,8 +150,11 @@ export default function ConversationsListSocial({
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contentType, setContentType] = useState<"messages" | "posts">(
+    "messages"
+  );
 
-  // Fetch data when platform changes
+  // Fetch data when platform or contentType changes
   useEffect(() => {
     const fetchData = async () => {
       if (platform === "whatsapp") {
@@ -163,17 +166,40 @@ export default function ConversationsListSocial({
 
       try {
         if (platform === "facebook") {
-          const response = await fetch(
-            "http://localhost:4000/api/v1/meta/facebook/messages"
-          );
-          const data = await response.json();
+          if (contentType === "messages") {
+            const response = await fetch(
+              "http://localhost:4000/api/v1/meta/facebook/messages"
+            );
+            const data = await response.json();
 
-          if (data.error) {
-            setError(data.error);
+            if (data.error) {
+              setError(data.error);
+            } else {
+              setFacebookMessages(data.data || []);
+            }
           } else {
-            setFacebookMessages(data.data || []);
+            // Fetch Facebook posts/comments
+            const response = await fetch(
+              "http://localhost:4000/api/v1/meta/facebook/comments"
+            );
+            const data = await response.json();
+
+            if (data.error) {
+              setError(data.error);
+            } else {
+              // Convert posts to conversation format for display
+              const postConversations =
+                data.data?.map((post: any) => ({
+                  id: post.id,
+                  messages: {
+                    data: post.comments?.data || [],
+                  },
+                })) || [];
+              setFacebookMessages(postConversations);
+            }
           }
         } else if (platform === "instagram") {
+          // Instagram always shows posts/comments for now
           const response = await fetch(
             "http://localhost:4000/api/v1/meta/instagram/comments"
           );
@@ -194,47 +220,7 @@ export default function ConversationsListSocial({
     };
 
     fetchData();
-  }, [platform]);
-
-  const fetchData = async () => {
-    if (platform === "whatsapp") {
-      return; // WhatsApp not implemented yet
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (platform === "facebook") {
-        const response = await fetch(
-          "http://localhost:4000/api/v1/meta/facebook/messages"
-        );
-        const data = await response.json();
-
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setFacebookMessages(data.data || []);
-        }
-      } else if (platform === "instagram") {
-        const response = await fetch(
-          "http://localhost:4000/api/v1/meta/instagram/comments"
-        );
-        const data = await response.json();
-
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setInstagramPosts(data.data || []);
-        }
-      }
-    } catch (err) {
-      setError("Failed to fetch data");
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [platform, contentType]);
 
   // Convert real data to match the existing UI structure
   const getConversations = () => {
@@ -243,10 +229,16 @@ export default function ConversationsListSocial({
     } else if (platform === "facebook") {
       return facebookMessages.map((conv) => ({
         id: conv.id,
-        name: `Conversation ${conv.id.substring(0, 8)}...`,
+        name:
+          contentType === "messages"
+            ? `Conversation ${conv.id.substring(0, 8)}...`
+            : `Post ${conv.id.substring(0, 8)}...`,
         avatar:
           "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-        lastMessage: conv.messages?.data?.[0]?.message || "No messages",
+        lastMessage:
+          contentType === "messages"
+            ? conv.messages?.data?.[0]?.message || "No messages"
+            : conv.messages?.data?.[0]?.message || "No comments",
         timestamp: conv.messages?.data?.[0]?.created_time
           ? new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString(
               [],
@@ -259,19 +251,25 @@ export default function ConversationsListSocial({
     } else if (platform === "instagram") {
       return instagramPosts.map((post) => ({
         id: post.id,
-        name: post.caption
-          ? `${post.caption.substring(0, 20)}...`
-          : "No caption",
+        name:
+          contentType === "messages"
+            ? `DM ${post.id.substring(0, 8)}...`
+            : post.caption
+            ? `${post.caption.substring(0, 20)}...`
+            : "No caption",
         avatar:
           "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-        lastMessage: post.comments?.[0]?.text || "No comments",
+        lastMessage:
+          contentType === "messages"
+            ? "Direct message"
+            : post.comments?.[0]?.text || "No comments",
         timestamp: post.comments?.[0]?.timestamp
           ? new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             })
           : "",
-        unread: post.comments_count,
+        unread: contentType === "posts" ? post.comments_count : 0,
         online: false,
       }));
     }
@@ -331,6 +329,32 @@ export default function ConversationsListSocial({
             className="w-full pl-10 pr-4 py-2 bg-white/20 text-white placeholder-white/70 rounded-full focus:outline-none focus:bg-white/30 transition-colors"
           />
         </div>
+
+        {/* Content Type Filter Buttons - Only for Facebook and Instagram */}
+        {platform !== "whatsapp" && (
+          <div className="mt-3 flex space-x-2">
+            <button
+              onClick={() => setContentType("messages")}
+              className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
+                contentType === "messages"
+                  ? "bg-white text-blue-600"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              💬 {platform === "facebook" ? "Messages" : "DMs"}
+            </button>
+            <button
+              onClick={() => setContentType("posts")}
+              className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
+                contentType === "posts"
+                  ? "bg-white text-blue-600"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              📱 {platform === "facebook" ? "Posts" : "Posts"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Conversations */}
