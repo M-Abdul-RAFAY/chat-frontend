@@ -14,15 +14,39 @@ const SocialMediaPage = () => {
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"success" | "error">(
+    "success"
+  );
 
-  // Check connection status on load
+  // Check connection status on load and handle URL parameters
   useEffect(() => {
+    // Check for URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const connected = urlParams.get("connected");
+    const error = urlParams.get("error");
+    const errorMessage = urlParams.get("message");
+
+    if (connected === "true") {
+      setMessage(
+        "Successfully connected to Meta! You can now manage your Facebook and Instagram messages."
+      );
+      setMessageType("success");
+      // Clean up URL
+      window.history.replaceState({}, "", "/dashboard/social-media");
+    } else if (error) {
+      setMessage(errorMessage || "Connection failed. Please try again.");
+      setMessageType("error");
+      // Clean up URL
+      window.history.replaceState({}, "", "/dashboard/social-media");
+    }
+
     checkStatus();
   }, []);
 
   const checkStatus = async () => {
     try {
-      const response = await fetch("http://localhost:4000/status");
+      const response = await fetch("http://localhost:4000/api/v1/meta/status");
       const data = await response.json();
       setStatus(data);
     } catch (err) {
@@ -37,7 +61,7 @@ const SocialMediaPage = () => {
     const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID || "1442659767055424";
     const redirectUri =
       process.env.NEXT_PUBLIC_FB_REDIRECT_URI ||
-      "http://localhost:4000/auth/callback";
+      "http://localhost:4000/api/v1/meta/auth/callback";
     const scope = [
       "pages_manage_posts",
       "pages_read_engagement",
@@ -71,6 +95,24 @@ const SocialMediaPage = () => {
     return (
       <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full">
         <div className="max-w-4xl mx-auto p-8">
+          {/* Success/Error Message */}
+          {message && (
+            <div
+              className={`mb-6 p-4 rounded-lg ${
+                messageType === "success"
+                  ? "bg-green-50 border border-green-200 text-green-800"
+                  : "bg-red-50 border border-red-200 text-red-800"
+              }`}
+            >
+              <div className="flex items-center">
+                <span className="mr-2">
+                  {messageType === "success" ? "✅" : "❌"}
+                </span>
+                {message}
+              </div>
+            </div>
+          )}
+
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Social Media Dashboard
@@ -191,6 +233,24 @@ const SocialMediaPage = () => {
   // If connected, show the messaging app
   return (
     <div className="h-[calc(100vh-3.8rem)] overflow-y-auto w-full">
+      {/* Success/Error Message */}
+      {message && (
+        <div
+          className={`mx-8 mt-4 mb-2 p-4 rounded-lg ${
+            messageType === "success"
+              ? "bg-green-50 border border-green-200 text-green-800"
+              : "bg-red-50 border border-red-200 text-red-800"
+          }`}
+        >
+          <div className="flex items-center">
+            <span className="mr-2">
+              {messageType === "success" ? "✅" : "❌"}
+            </span>
+            {message}
+          </div>
+        </div>
+      )}
+
       {/* Connected Status Header */}
       <div className="bg-green-50 border-b border-green-200 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

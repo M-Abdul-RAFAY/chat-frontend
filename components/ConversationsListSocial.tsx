@@ -164,7 +164,7 @@ export default function ConversationsListSocial({
       try {
         if (platform === "facebook") {
           const response = await fetch(
-            "http://localhost:4000/facebook/messages"
+            "http://localhost:4000/api/v1/meta/facebook/messages"
           );
           const data = await response.json();
 
@@ -175,7 +175,7 @@ export default function ConversationsListSocial({
           }
         } else if (platform === "instagram") {
           const response = await fetch(
-            "http://localhost:4000/instagram/comments"
+            "http://localhost:4000/api/v1/meta/instagram/comments"
           );
           const data = await response.json();
 
@@ -206,7 +206,9 @@ export default function ConversationsListSocial({
 
     try {
       if (platform === "facebook") {
-        const response = await fetch("http://localhost:4000/facebook/messages");
+        const response = await fetch(
+          "http://localhost:4000/api/v1/meta/facebook/messages"
+        );
         const data = await response.json();
 
         if (data.error) {
@@ -216,7 +218,7 @@ export default function ConversationsListSocial({
         }
       } else if (platform === "instagram") {
         const response = await fetch(
-          "http://localhost:4000/instagram/comments"
+          "http://localhost:4000/api/v1/meta/instagram/comments"
         );
         const data = await response.json();
 
