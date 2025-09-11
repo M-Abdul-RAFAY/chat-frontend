@@ -8,6 +8,7 @@ interface ConversationsListProps {
   selectedConversation: string | null;
   onConversationSelect: (id: string) => void;
   onMobileViewChange: (view: "platforms" | "conversations" | "inbox") => void;
+  onContentTypeChange?: (contentType: "messages" | "posts") => void;
   isMobile?: boolean;
 }
 
@@ -141,6 +142,7 @@ export default function ConversationsListSocial({
   selectedConversation,
   onConversationSelect,
   onMobileViewChange,
+  onContentTypeChange,
   isMobile,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -334,7 +336,10 @@ export default function ConversationsListSocial({
         {platform !== "whatsapp" && (
           <div className="mt-3 flex space-x-2">
             <button
-              onClick={() => setContentType("messages")}
+              onClick={() => {
+                setContentType("messages");
+                onContentTypeChange?.("messages");
+              }}
               className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
                 contentType === "messages"
                   ? "bg-white text-blue-600"
@@ -344,7 +349,10 @@ export default function ConversationsListSocial({
               💬 {platform === "facebook" ? "Messages" : "DMs"}
             </button>
             <button
-              onClick={() => setContentType("posts")}
+              onClick={() => {
+                setContentType("posts");
+                onContentTypeChange?.("posts");
+              }}
               className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
                 contentType === "posts"
                   ? "bg-white text-blue-600"

@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 interface MessageInboxProps {
   platform: "facebook" | "instagram" | "whatsapp";
   conversationId: string | null;
+  contentType?: "messages" | "posts";
   onBack: () => void;
   isMobile?: boolean;
 }
@@ -120,6 +121,7 @@ const conversationDetails: Record<string, any> = {
 export default function MessageInbox({
   platform,
   conversationId,
+  contentType = "messages",
   onBack,
   isMobile,
 }: MessageInboxProps) {
@@ -132,7 +134,7 @@ export default function MessageInbox({
     if (conversationId && platform !== "whatsapp") {
       fetchMessages();
     }
-  }, [conversationId, platform]);
+  }, [conversationId, platform, contentType]);
 
   const fetchMessages = async () => {
     if (!conversationId) return;
@@ -142,35 +144,65 @@ export default function MessageInbox({
 
     try {
       if (platform === "facebook") {
-        const response = await fetch(
-          "http://localhost:4000/api/v1/meta/facebook/messages"
-        );
+        // Choose endpoint based on contentType
+        const endpoint =
+          contentType === "messages"
+            ? "http://localhost:4000/api/v1/meta/facebook/messages"
+            : "http://localhost:4000/api/v1/meta/facebook/comments";
+
+        const response = await fetch(endpoint);
         const data = await response.json();
 
         if (data.error) {
           setError(data.error);
         } else {
-          const conversation = data.data?.find(
-            (conv: any) => conv.id === conversationId
-          );
-          if (conversation?.messages?.data) {
-            const formattedMessages = conversation.messages.data.map(
-              (msg: FacebookMessage, index: number) => ({
-                id: index,
-                text: msg.message,
-                sender: "other",
-                timestamp: new Date(msg.created_time).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                avatar:
-                  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-              })
+          if (contentType === "messages") {
+            // Handle Facebook messages
+            const conversation = data.data?.find(
+              (conv: any) => conv.id === conversationId
             );
-            setMessages(formattedMessages);
+            if (conversation?.messages?.data) {
+              const formattedMessages = conversation.messages.data.map(
+                (msg: FacebookMessage, index: number) => ({
+                  id: index,
+                  text: msg.message,
+                  sender: "other",
+                  timestamp: new Date(msg.created_time).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  avatar:
+                    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
+                })
+              );
+              setMessages(formattedMessages);
+            }
+          } else {
+            // Handle Facebook posts/comments
+            const post = data.data?.find((p: any) => p.id === conversationId);
+            if (post?.comments?.data) {
+              const formattedMessages = post.comments.data.map(
+                (comment: any, index: number) => ({
+                  id: index,
+                  text: comment.message,
+                  sender: "other",
+                  timestamp: new Date(comment.created_time).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  ),
+                  avatar:
+                    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
+                })
+              );
+              setMessages(formattedMessages);
+            }
           }
         }
       } else if (platform === "instagram") {
+        // Instagram always shows posts/comments for now
         const response = await fetch(
           "http://localhost:4000/api/v1/meta/instagram/comments"
         );
@@ -256,10 +288,74 @@ export default function MessageInbox({
     }
   };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      // In a real app, you would send the message to your backend
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !conversationId) return;
+
+    try {
+      // Add the message to local state immediately for better UX
+      const tempMessage = {
+        id: Date.now(),
+        text: newMessage,
+        sender: "me",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        avatar: "", // No avatar for sent messages
+      };
+
+      setMessages((prev) => [...prev, tempMessage]);
+      const messageToSend = newMessage;
       setNewMessage("");
+
+      // Send to backend
+      if (platform === "facebook") {
+        const endpoint =
+          contentType === "messages"
+            ? `http://localhost:4000/api/v1/meta/facebook/send-message`
+            : `http://localhost:4000/api/v1/meta/facebook/send-comment`;
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            conversationId,
+            message: messageToSend,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to send message");
+        }
+      } else if (platform === "instagram") {
+        const endpoint =
+          contentType === "messages"
+            ? `http://localhost:4000/api/v1/meta/instagram/send-message`
+            : `http://localhost:4000/api/v1/meta/instagram/send-comment`;
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            conversationId,
+            message: messageToSend,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to send message");
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // Remove the temporary message if sending failed
+      setMessages((prev) => prev.filter((msg) => msg.id !== Date.now()));
+      // Optionally show error to user
+      alert("Failed to send message. Please try again.");
     }
   };
 

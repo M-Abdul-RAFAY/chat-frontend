@@ -12,6 +12,9 @@ export default function MessagingApp() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
+  const [contentType, setContentType] = useState<"messages" | "posts">(
+    "messages"
+  );
   const [mobileView, setMobileView] = useState<
     "platforms" | "conversations" | "inbox"
   >("conversations");
@@ -33,6 +36,7 @@ export default function MessagingApp() {
           selectedConversation={selectedConversation}
           onConversationSelect={setSelectedConversation}
           onMobileViewChange={setMobileView}
+          onContentTypeChange={setContentType}
         />
       </div>
 
@@ -41,6 +45,7 @@ export default function MessagingApp() {
         <MessageInbox
           platform={selectedPlatform}
           conversationId={selectedConversation}
+          contentType={contentType}
           onBack={() => setSelectedConversation(null)}
         />
       </div>
@@ -106,6 +111,7 @@ export default function MessagingApp() {
                 setMobileView("inbox");
               }}
               onMobileViewChange={setMobileView}
+              onContentTypeChange={setContentType}
               isMobile={true}
             />
           )}
@@ -113,6 +119,7 @@ export default function MessagingApp() {
             <MessageInbox
               platform={selectedPlatform}
               conversationId={selectedConversation}
+              contentType={contentType}
               onBack={() => setMobileView("conversations")}
               isMobile={true}
             />
