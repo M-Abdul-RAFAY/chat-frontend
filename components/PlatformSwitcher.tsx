@@ -2,11 +2,19 @@
 
 import { Instagram, Facebook } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 interface PlatformSwitcherProps {
   selectedPlatform: "facebook" | "instagram" | "whatsapp";
   onPlatformChange: (platform: "facebook" | "instagram" | "whatsapp") => void;
   isMobile?: boolean;
+}
+
+interface PageDetails {
+  id: string;
+  name: string;
+  picture: string | null;
+  category: string;
 }
 
 const platforms = [
@@ -41,9 +49,57 @@ export default function PlatformSwitcher({
   onPlatformChange,
   isMobile,
 }: PlatformSwitcherProps) {
+  const [pageDetails, setPageDetails] = useState<PageDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch page details when component mounts
+  useEffect(() => {
+    const fetchPageDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:4000/api/v1/meta/page-details");
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          setPageDetails(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch page details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPageDetails();
+  }, []);
   if (isMobile) {
     return (
       <div className="p-4 bg-white">
+        {/* Connected Page Info */}
+        {pageDetails && (
+          <div className="mb-6 p-3 bg-gray-50 rounded-lg border">
+            <div className="flex items-center space-x-3">
+              {pageDetails.picture ? (
+                <Image
+                  src={pageDetails.picture}
+                  alt={pageDetails.name}
+                  width={48}
+                  height={48}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Facebook size={24} className="text-white" />
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-gray-900">{pageDetails.name}</h3>
+                <p className="text-sm text-gray-500">{pageDetails.category}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Select Platform
         </h2>
@@ -96,7 +152,28 @@ export default function PlatformSwitcher({
   }
 
   return (
-    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center justify-center py-6 space-y-4">
+    <div className="w-20 bg-zinc-900 border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
+      {/* Connected Page Logo */}
+      {pageDetails && (
+        <div className="mb-2">
+          {pageDetails.picture ? (
+            <Image
+              src={pageDetails.picture}
+              alt={pageDetails.name}
+              width={40}
+              height={40}
+              className="rounded-full object-cover border-2 border-gray-700"
+              title={`Connected as: ${pageDetails.name}`}
+            />
+          ) : (
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center border-2 border-gray-700">
+              <Facebook size={20} className="text-white" />
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Platform Buttons */}
       {platforms.map((platform) => {
         const Icon = platform.icon;
         const isSelected = selectedPlatform === platform.id;

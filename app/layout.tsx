@@ -85,6 +85,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50 overflow-auto`}
+        suppressHydrationWarning={true}
       >
         {/* <SplashCursor /> */}
 
