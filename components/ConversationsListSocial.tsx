@@ -144,7 +144,9 @@ export default function ConversationsListSocial({
   isMobile,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [facebookMessages, setFacebookMessages] = useState<FacebookConversation[]>([]);
+  const [facebookMessages, setFacebookMessages] = useState<
+    FacebookConversation[]
+  >([]);
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,21 +160,25 @@ export default function ConversationsListSocial({
 
       setLoading(true);
       setError(null);
-      
+
       try {
         if (platform === "facebook") {
-          const response = await fetch("http://localhost:4000/facebook/messages");
+          const response = await fetch(
+            "http://localhost:4000/facebook/messages"
+          );
           const data = await response.json();
-          
+
           if (data.error) {
             setError(data.error);
           } else {
             setFacebookMessages(data.data || []);
           }
         } else if (platform === "instagram") {
-          const response = await fetch("http://localhost:4000/instagram/comments");
+          const response = await fetch(
+            "http://localhost:4000/instagram/comments"
+          );
           const data = await response.json();
-          
+
           if (data.error) {
             setError(data.error);
           } else {
@@ -197,21 +203,23 @@ export default function ConversationsListSocial({
 
     setLoading(true);
     setError(null);
-    
+
     try {
       if (platform === "facebook") {
         const response = await fetch("http://localhost:4000/facebook/messages");
         const data = await response.json();
-        
+
         if (data.error) {
           setError(data.error);
         } else {
           setFacebookMessages(data.data || []);
         }
       } else if (platform === "instagram") {
-        const response = await fetch("http://localhost:4000/instagram/comments");
+        const response = await fetch(
+          "http://localhost:4000/instagram/comments"
+        );
         const data = await response.json();
-        
+
         if (data.error) {
           setError(data.error);
         } else {
@@ -231,26 +239,36 @@ export default function ConversationsListSocial({
     if (platform === "whatsapp") {
       return mockConversations.whatsapp; // Keep mock data for WhatsApp
     } else if (platform === "facebook") {
-      return facebookMessages.map(conv => ({
+      return facebookMessages.map((conv) => ({
         id: conv.id,
         name: `Conversation ${conv.id.substring(0, 8)}...`,
-        avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+        avatar:
+          "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
         lastMessage: conv.messages?.data?.[0]?.message || "No messages",
-        timestamp: conv.messages?.data?.[0]?.created_time ? 
-          new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-          "",
+        timestamp: conv.messages?.data?.[0]?.created_time
+          ? new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString(
+              [],
+              { hour: "2-digit", minute: "2-digit" }
+            )
+          : "",
         unread: 0,
         online: false,
       }));
     } else if (platform === "instagram") {
-      return instagramPosts.map(post => ({
+      return instagramPosts.map((post) => ({
         id: post.id,
-        name: post.caption ? `${post.caption.substring(0, 20)}...` : "No caption",
-        avatar: "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+        name: post.caption
+          ? `${post.caption.substring(0, 20)}...`
+          : "No caption",
+        avatar:
+          "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
         lastMessage: post.comments?.[0]?.text || "No comments",
-        timestamp: post.comments?.[0]?.timestamp ? 
-          new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-          "",
+        timestamp: post.comments?.[0]?.timestamp
+          ? new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
         unread: post.comments_count,
         online: false,
       }));
@@ -322,7 +340,7 @@ export default function ConversationsListSocial({
         ) : error ? (
           <div className="p-4 text-center text-red-500">
             <div className="mb-2">⚠️ {error}</div>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="text-blue-600 hover:text-blue-800 underline"
             >
@@ -331,75 +349,79 @@ export default function ConversationsListSocial({
           </div>
         ) : filteredConversations.length === 0 && platform !== "whatsapp" ? (
           <div className="p-4 text-center text-gray-500">
-            <div className="mb-2">
-              {platform === "facebook" ? "📘" : "📷"}
+            <div className="mb-2">{platform === "facebook" ? "📘" : "📷"}</div>
+            <div>
+              No {platform}{" "}
+              {platform === "facebook" ? "conversations" : "posts"} found
             </div>
-            <div>No {platform} {platform === "facebook" ? "conversations" : "posts"} found</div>
           </div>
         ) : (
           filteredConversations.map((conversation) => (
-          <button
-            key={conversation.id}
-            onClick={() => onConversationSelect(conversation.id)}
-            className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors border-l-4 ${
-              selectedConversation === conversation.id
-                ? `bg-gray-50 border-l-4 ${
-                    platform === "whatsapp"
-                      ? "border-green-500"
-                      : platform === "facebook"
-                      ? "border-blue-600"
-                      : "border-pink-500"
-                  }`
-                : "border-transparent"
-            }`}
-          >
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <img
-                src={conversation.avatar}
-                alt={conversation.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              {conversation.online && (
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 text-left overflow-hidden">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="font-medium text-gray-900 truncate">
-                  {conversation.name}
-                  {conversation.isGroup && (
-                    <span className="ml-1 text-xs text-gray-500">(Group)</span>
-                  )}
-                </h3>
-                <span className="text-xs text-gray-500 flex-shrink-0">
-                  {conversation.timestamp}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600 truncate">
-                  {conversation.lastMessage}
-                </p>
-                {conversation.unread > 0 && (
-                  <span
-                    className={`ml-2 px-2 py-1 text-xs text-white rounded-full flex-shrink-0 ${
+            <button
+              key={conversation.id}
+              onClick={() => onConversationSelect(conversation.id)}
+              className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors border-l-4 ${
+                selectedConversation === conversation.id
+                  ? `bg-gray-50 border-l-4 ${
                       platform === "whatsapp"
-                        ? "bg-green-500"
+                        ? "border-green-500"
                         : platform === "facebook"
-                        ? "bg-blue-600"
-                        : "bg-pink-500"
-                    }`}
-                  >
-                    {conversation.unread}
-                  </span>
+                        ? "border-blue-600"
+                        : "border-pink-500"
+                    }`
+                  : "border-transparent"
+              }`}
+            >
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <img
+                  src={conversation.avatar}
+                  alt={conversation.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                {conversation.online && (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 )}
               </div>
-            </div>
-          </button>
-        )))}
+
+              {/* Content */}
+              <div className="flex-1 text-left overflow-hidden">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-medium text-gray-900 truncate">
+                    {conversation.name}
+                    {conversation.isGroup && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        (Group)
+                      </span>
+                    )}
+                  </h3>
+                  <span className="text-xs text-gray-500 flex-shrink-0">
+                    {conversation.timestamp}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600 truncate">
+                    {conversation.lastMessage}
+                  </p>
+                  {conversation.unread > 0 && (
+                    <span
+                      className={`ml-2 px-2 py-1 text-xs text-white rounded-full flex-shrink-0 ${
+                        platform === "whatsapp"
+                          ? "bg-green-500"
+                          : platform === "facebook"
+                          ? "bg-blue-600"
+                          : "bg-pink-500"
+                      }`}
+                    >
+                      {conversation.unread}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))
+        )}
       </div>
     </div>
   );
