@@ -326,8 +326,10 @@ export default function MessageInbox({
           }),
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-          throw new Error("Failed to send message");
+          throw new Error(responseData.error || "Failed to send message");
         }
       } else if (platform === "instagram") {
         const endpoint =
@@ -346,16 +348,22 @@ export default function MessageInbox({
           }),
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-          throw new Error("Failed to send message");
+          throw new Error(responseData.error || "Failed to send message");
         }
       }
     } catch (error) {
       console.error("Error sending message:", error);
       // Remove the temporary message if sending failed
       setMessages((prev) => prev.filter((msg) => msg.id !== Date.now()));
-      // Optionally show error to user
-      alert("Failed to send message. Please try again.");
+      // Show specific error message to user
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again.";
+      alert(errorMessage);
     }
   };
 
