@@ -296,7 +296,7 @@ export default function MessageInbox({
   const getPlatformColor = (platform: string) => {
     switch (platform) {
       case "whatsapp":
-        return "bg-green-500";
+        return "bg-[#31a122]";
       case "facebook":
         return "bg-blue-600";
       case "instagram":
@@ -455,7 +455,7 @@ export default function MessageInbox({
                   message.sender === "me"
                     ? `text-white ${
                         platform === "whatsapp"
-                          ? "bg-green-500"
+                          ? "bg-[#31a122]"
                           : platform === "facebook"
                           ? "bg-blue-600"
                           : "bg-pink-500"
@@ -513,7 +513,7 @@ export default function MessageInbox({
               onClick={handleSendMessage}
               className={`p-3 rounded-full text-white transition-colors ${
                 platform === "whatsapp"
-                  ? "bg-green-500 hover:bg-green-600"
+                  ? "bg-[#31a122] hover:bg-[#2a8f1e]"
                   : platform === "facebook"
                   ? "bg-blue-600 hover:bg-blue-700"
                   : "bg-pink-500 hover:bg-pink-600"

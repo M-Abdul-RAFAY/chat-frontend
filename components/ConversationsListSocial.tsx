@@ -321,7 +321,7 @@ export default function ConversationsListSocial({
   const getPlatformColor = (platform: string) => {
     switch (platform) {
       case "whatsapp":
-        return "bg-green-500";
+        return "bg-[#31a122]";
       case "facebook":
         return "bg-blue-600";
       case "instagram":
@@ -431,7 +431,7 @@ export default function ConversationsListSocial({
                 selectedConversation === conversation.id
                   ? `bg-gray-50 border-l-4 ${
                       platform === "whatsapp"
-                        ? "border-green-500"
+                        ? "border-[#31a122]"
                         : platform === "facebook"
                         ? "border-blue-600"
                         : "border-pink-500"
@@ -447,7 +447,7 @@ export default function ConversationsListSocial({
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 {conversation.online && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#31a122] rounded-full border-2 border-white"></div>
                 )}
               </div>
 
@@ -475,7 +475,7 @@ export default function ConversationsListSocial({
                     <span
                       className={`ml-2 px-2 py-1 text-xs text-white rounded-full flex-shrink-0 ${
                         platform === "whatsapp"
-                          ? "bg-green-500"
+                          ? "bg-[#31a122]"
                           : platform === "facebook"
                           ? "bg-blue-600"
                           : "bg-pink-500"
