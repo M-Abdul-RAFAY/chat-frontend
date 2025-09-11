@@ -249,8 +249,10 @@ export default function ConversationsListSocial({
       return mockConversations.whatsapp; // Keep mock data for WhatsApp
     } else if (platform === "facebook") {
       return facebookMessages.map((conv) => {
-        // Extract the participant name (customer name) from the conversation
+        // Extract the participant name and profile picture (customer) from the conversation
         let participantName = "Unknown Contact";
+        let participantAvatar =
+          "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
 
         if (conv.messages?.data && conv.messages.data.length > 0) {
           // Get the page ID from the status (we'll use a known page ID for now)
@@ -263,6 +265,10 @@ export default function ConversationsListSocial({
 
           if (customerMessage && customerMessage.from?.name) {
             participantName = customerMessage.from.name;
+            // Use the profile picture if available
+            if (customerMessage.from.profilePicture) {
+              participantAvatar = customerMessage.from.profilePicture;
+            }
           }
         }
 
@@ -272,8 +278,7 @@ export default function ConversationsListSocial({
             contentType === "messages"
               ? participantName
               : `Post ${conv.id.substring(0, 8)}...`,
-          avatar:
-            "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+          avatar: participantAvatar,
           lastMessage:
             contentType === "messages"
               ? conv.messages?.data?.[0]?.message || "No messages"
