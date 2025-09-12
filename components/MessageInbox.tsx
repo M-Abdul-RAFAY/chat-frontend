@@ -912,11 +912,7 @@ export default function MessageInbox({
             >
               <Send size={18} />
             </button>
-          ) : (
-            <button className="text-gray-400 hover:text-gray-600 transition-colors p-3">
-              <Mic size={18} />
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
