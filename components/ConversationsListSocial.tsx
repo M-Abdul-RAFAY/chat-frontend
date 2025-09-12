@@ -27,7 +27,12 @@ interface FacebookConversation {
     data: Array<{
       id: string;
       message: string;
-      from: { name?: string; id: string; username?: string; profilePicture?: string };
+      from: {
+        name?: string;
+        id: string;
+        username?: string;
+        profilePicture?: string;
+      };
       to?: {
         data: Array<{
           id: string;
@@ -326,7 +331,8 @@ export default function ConversationsListSocial({
             (p) => p.username !== "hivemetrics12" // Your business username
           );
           const customerName = customer?.username || "Instagram User";
-          const customerAvatar = customer?.profilePicture || 
+          const customerAvatar =
+            customer?.profilePicture ||
             "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
 
           return {
@@ -335,10 +341,9 @@ export default function ConversationsListSocial({
             avatar: customerAvatar,
             lastMessage: conv.messages?.data?.[0]?.message || "No messages",
             timestamp: conv.messages?.data?.[0]?.created_time
-              ? new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString(
-                  [],
-                  { hour: "2-digit", minute: "2-digit" }
-                )
+              ? new Date(
+                  conv.messages?.data?.[0]?.created_time
+                ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               : "",
             unread: 0,
             online: false,

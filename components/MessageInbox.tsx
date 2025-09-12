@@ -345,7 +345,7 @@ export default function MessageInbox({
             const customer = participants.find(
               (p: any) => p.username !== "hivemetrics12" // Your business username
             );
-            
+
             if (customer) {
               setConversationParticipant({
                 name: customer.username || "Instagram User",
@@ -376,14 +376,12 @@ export default function MessageInbox({
                   id: index,
                   text: msg.message,
                   // Determine sender: if from.username equals business username, it's from business (me), otherwise customer (other)
-                  sender: msg.from.username === "hivemetrics12" ? "me" : "other",
-                  timestamp: new Date(msg.created_time).toLocaleTimeString(
-                    [],
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }
-                  ),
+                  sender:
+                    msg.from.username === "hivemetrics12" ? "me" : "other",
+                  timestamp: new Date(msg.created_time).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
                   avatar: senderAvatar,
                   senderName: senderName,
                 };
