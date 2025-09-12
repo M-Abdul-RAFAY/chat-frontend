@@ -155,14 +155,17 @@ export default function MessageInbox({
   // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
         setShowEmojiPicker(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -372,24 +375,150 @@ export default function MessageInbox({
 
   // Emoji picker functionality
   const emojis = [
-    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
-    '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
-    '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
-    '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-    '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
-    '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
-    '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯',
-    '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-    '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈',
-    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
-    '👆', '👇', '☝️', '✋', '🤚', '🖐️', '🖖', '👋', '🤏', '💪',
-    '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁',
-    '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '❤️', '🧡',
-    '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕'
+    "😀",
+    "😃",
+    "😄",
+    "😁",
+    "😆",
+    "😅",
+    "😂",
+    "🤣",
+    "😊",
+    "😇",
+    "🙂",
+    "🙃",
+    "😉",
+    "😌",
+    "😍",
+    "🥰",
+    "😘",
+    "😗",
+    "😙",
+    "😚",
+    "😋",
+    "😛",
+    "😝",
+    "😜",
+    "🤪",
+    "🤨",
+    "🧐",
+    "🤓",
+    "😎",
+    "🤩",
+    "🥳",
+    "😏",
+    "😒",
+    "😞",
+    "😔",
+    "😟",
+    "😕",
+    "🙁",
+    "☹️",
+    "😣",
+    "😖",
+    "😫",
+    "😩",
+    "🥺",
+    "😢",
+    "😭",
+    "😤",
+    "😠",
+    "😡",
+    "🤬",
+    "🤯",
+    "😳",
+    "🥵",
+    "🥶",
+    "😱",
+    "😨",
+    "😰",
+    "😥",
+    "😓",
+    "🤗",
+    "🤔",
+    "🤭",
+    "🤫",
+    "🤥",
+    "😶",
+    "😐",
+    "😑",
+    "😬",
+    "🙄",
+    "😯",
+    "😦",
+    "😧",
+    "😮",
+    "😲",
+    "🥱",
+    "😴",
+    "🤤",
+    "😪",
+    "😵",
+    "🤐",
+    "🥴",
+    "🤢",
+    "🤮",
+    "🤧",
+    "😷",
+    "🤒",
+    "🤕",
+    "🤑",
+    "🤠",
+    "😈",
+    "👍",
+    "👎",
+    "👌",
+    "✌️",
+    "🤞",
+    "🤟",
+    "🤘",
+    "🤙",
+    "👈",
+    "👉",
+    "👆",
+    "👇",
+    "☝️",
+    "✋",
+    "🤚",
+    "🖐️",
+    "🖖",
+    "👋",
+    "🤏",
+    "💪",
+    "🦾",
+    "🦿",
+    "🦵",
+    "🦶",
+    "👂",
+    "🦻",
+    "👃",
+    "🧠",
+    "🫀",
+    "🫁",
+    "🦷",
+    "🦴",
+    "👀",
+    "👁️",
+    "👅",
+    "👄",
+    "💋",
+    "🩸",
+    "❤️",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🖤",
+    "🤍",
+    "🤎",
+    "💔",
+    "❣️",
+    "💕",
   ];
 
   const handleEmojiSelect = (emoji: string) => {
-    setNewMessage(prev => prev + emoji);
+    setNewMessage((prev) => prev + emoji);
     setShowEmojiPicker(false);
   };
 
@@ -397,16 +526,17 @@ export default function MessageInbox({
     const files = event.target.files;
     if (files) {
       const newFiles = Array.from(files);
-      setAttachedFiles(prev => [...prev, ...newFiles]);
+      setAttachedFiles((prev) => [...prev, ...newFiles]);
     }
   };
 
   const removeAttachedFile = (index: number) => {
-    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId) return;
+    if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId)
+      return;
 
     try {
       // Add the message to local state immediately for better UX
@@ -419,12 +549,12 @@ export default function MessageInbox({
           minute: "2-digit",
         }),
         avatar: "", // No avatar for sent messages
-        attachments: attachedFiles.map(file => ({
+        attachments: attachedFiles.map((file) => ({
           name: file.name,
           type: file.type,
           size: file.size,
-          url: URL.createObjectURL(file) // Create preview URL
-        }))
+          url: URL.createObjectURL(file), // Create preview URL
+        })),
       };
 
       setMessages((prev) => [...prev, tempMessage]);
@@ -442,13 +572,20 @@ export default function MessageInbox({
 
         // If there are files, we need to handle file upload differently
         if (filesToSend.length > 0) {
-          console.log("Sending files:", filesToSend.map(f => ({ name: f.name, type: f.type, size: f.size })));
+          console.log(
+            "Sending files:",
+            filesToSend.map((f) => ({
+              name: f.name,
+              type: f.type,
+              size: f.size,
+            }))
+          );
           console.log("Sending to conversationId:", conversationId);
           console.log("Message text:", messageToSend);
-          
+
           const formData = new FormData();
-          formData.append('conversationId', conversationId);
-          formData.append('message', messageToSend);
+          formData.append("conversationId", conversationId);
+          formData.append("message", messageToSend);
           filesToSend.forEach((file) => {
             formData.append(`files`, file);
           });
@@ -467,7 +604,9 @@ export default function MessageInbox({
           console.log("Backend response:", responseData);
 
           if (!response.ok) {
-            throw new Error(responseData.error || "Failed to send message with attachments");
+            throw new Error(
+              responseData.error || "Failed to send message with attachments"
+            );
           }
         } else {
           const response = await fetch(endpoint, {
@@ -604,33 +743,52 @@ export default function MessageInbox({
                 {/* Display file attachments if any */}
                 {message.attachments && message.attachments.length > 0 && (
                   <div className="mb-2 space-y-2">
-                    {message.attachments.map((attachment: any, index: number) => (
-                      <div key={index} className="flex items-center space-x-2 p-2 bg-black/10 rounded-lg">
-                        {attachment.type.startsWith('image/') ? (
-                          <div className="flex items-center space-x-2">
-                            <ImageIcon size={16} className={message.sender === "me" ? "text-white/70" : "text-blue-500"} />
-                            <img 
-                              src={attachment.url} 
-                              alt={attachment.name}
-                              className="max-w-48 max-h-32 rounded object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <File size={16} className={message.sender === "me" ? "text-white/70" : "text-gray-500"} />
-                            <span className="text-sm truncate max-w-32">
-                              {attachment.name}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {message.attachments.map(
+                      (attachment: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center space-x-2 p-2 bg-black/10 rounded-lg"
+                        >
+                          {attachment.type.startsWith("image/") ? (
+                            <div className="flex items-center space-x-2">
+                              <ImageIcon
+                                size={16}
+                                className={
+                                  message.sender === "me"
+                                    ? "text-white/70"
+                                    : "text-blue-500"
+                                }
+                              />
+                              <img
+                                src={attachment.url}
+                                alt={attachment.name}
+                                className="max-w-48 max-h-32 rounded object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <File
+                                size={16}
+                                className={
+                                  message.sender === "me"
+                                    ? "text-white/70"
+                                    : "text-gray-500"
+                                }
+                              />
+                              <span className="text-sm truncate max-w-32">
+                                {attachment.name}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
-                
+
                 {/* Display text message if any */}
                 {message.text && <p className="text-sm">{message.text}</p>}
-                
+
                 <div
                   className={`flex items-center justify-end mt-1 space-x-1 ${
                     message.sender === "me" ? "text-white/70" : "text-gray-500"
@@ -660,9 +818,12 @@ export default function MessageInbox({
         {attachedFiles.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {attachedFiles.map((file, index) => (
-              <div key={index} className="flex items-center bg-gray-100 rounded-lg p-2 space-x-2">
+              <div
+                key={index}
+                className="flex items-center bg-gray-100 rounded-lg p-2 space-x-2"
+              >
                 <div className="flex items-center space-x-2">
-                  {file.type.startsWith('image/') ? (
+                  {file.type.startsWith("image/") ? (
                     <ImageIcon size={16} className="text-blue-500" />
                   ) : (
                     <File size={16} className="text-gray-500" />
@@ -671,7 +832,7 @@ export default function MessageInbox({
                     {file.name}
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={() => removeAttachedFile(index)}
                   className="text-gray-400 hover:text-red-500 transition-colors"
                 >
@@ -691,8 +852,8 @@ export default function MessageInbox({
             className="hidden"
             accept="image/*,application/pdf,.doc,.docx,.txt"
           />
-          
-          <button 
+
+          <button
             onClick={() => fileInputRef.current?.click()}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
@@ -709,16 +870,16 @@ export default function MessageInbox({
               className="w-full px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all pr-12"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <button 
+              <button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <Smile size={18} />
               </button>
-              
+
               {/* Emoji Picker */}
               {showEmojiPicker && (
-                <div 
+                <div
                   ref={emojiPickerRef}
                   className="absolute bottom-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64 h-48 overflow-y-auto z-50"
                 >
