@@ -145,6 +145,7 @@ export default function MessageInbox({
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (conversationId && platform !== "whatsapp") {
@@ -168,6 +169,15 @@ export default function MessageInbox({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const fetchMessages = async () => {
     if (!conversationId) return;
@@ -810,6 +820,8 @@ export default function MessageInbox({
             </div>
           </div>
         ))}
+        {/* Invisible div to scroll to */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
