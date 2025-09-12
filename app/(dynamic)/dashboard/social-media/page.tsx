@@ -159,12 +159,12 @@ const SocialMediaPage = () => {
                 </div>
               </div>
 
-              <button
+              {/* <button
                 onClick={checkStatus}
                 className="mt-4 px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
               >
                 🔄 Refresh Status
-              </button>
+              </button> */}
             </div>
           </FadeContent>
 
@@ -183,7 +183,7 @@ const SocialMediaPage = () => {
               ) : (
                 <>
                   <span className="mr-2">🔗</span>
-                  Connect Facebook & Instagram
+                  Connect To Meta
                 </>
               )}
             </button>
