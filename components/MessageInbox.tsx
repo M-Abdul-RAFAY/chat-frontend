@@ -347,30 +347,54 @@ export default function MessageInbox({
             );
 
             if (customer) {
+              console.log("📸 Customer profile data:", customer);
+              const avatarUrl =
+                customer.profilePicture ||
+                `https://via.placeholder.com/50x50/E1306C/ffffff?text=${(
+                  customer.username || "IG"
+                )
+                  .charAt(0)
+                  .toUpperCase()}`;
+
               setConversationParticipant({
                 name: customer.username || "Instagram User",
-                avatar:
-                  customer.profilePicture ||
-                  "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
+                avatar: avatarUrl,
                 status: "Active on Instagram",
+              });
+
+              console.log("✅ Set conversation participant:", {
+                name: customer.username || "Instagram User",
+                avatar: avatarUrl,
               });
             }
 
             const formattedMessages = conversation.messages.data
               .map((msg: any, index: number) => {
                 // Extract profile picture and username for the sender
-                let senderAvatar =
-                  "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop";
+                let senderAvatar = `https://via.placeholder.com/40x40/E1306C/ffffff?text=IG`;
                 let senderName = "Unknown";
 
                 if (msg.from?.profilePicture) {
                   senderAvatar = msg.from.profilePicture;
+                } else if (msg.from?.username) {
+                  // Create a custom avatar with first letter of username
+                  senderAvatar = `https://via.placeholder.com/40x40/E1306C/ffffff?text=${msg.from.username
+                    .charAt(0)
+                    .toUpperCase()}`;
                 }
+
                 if (msg.from?.username) {
                   senderName = msg.from.username;
                 } else if (msg.from?.name) {
                   senderName = msg.from.name;
                 }
+
+                console.log(
+                  "💬 Message avatar for",
+                  senderName,
+                  ":",
+                  senderAvatar
+                );
 
                 return {
                   id: index,
