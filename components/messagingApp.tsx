@@ -13,9 +13,10 @@ export default function MessagingApp() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
-  const [contentType, setContentType] = useState<"messages" | "posts">(
-    "messages"
-  );
+
+  // Fixed content type to "messages" since switching is disabled
+  const contentType = "messages";
+
   const [mobileView, setMobileView] = useState<
     "platforms" | "conversations" | "inbox"
   >("conversations");
@@ -76,7 +77,7 @@ export default function MessagingApp() {
           selectedConversation={selectedConversation}
           onConversationSelect={setSelectedConversation}
           onMobileViewChange={setMobileView}
-          onContentTypeChange={setContentType}
+          // onContentTypeChange={setContentType} // Commented out since switching is disabled
         />
       </div>
 
@@ -151,7 +152,7 @@ export default function MessagingApp() {
                 setMobileView("inbox");
               }}
               onMobileViewChange={setMobileView}
-              onContentTypeChange={setContentType}
+              // onContentTypeChange={setContentType} // Commented out since switching is disabled
               isMobile={true}
             />
           )}

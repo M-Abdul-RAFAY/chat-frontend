@@ -8,7 +8,7 @@ interface ConversationsListProps {
   selectedConversation: string | null;
   onConversationSelect: (id: string) => void;
   onMobileViewChange: (view: "platforms" | "conversations" | "inbox") => void;
-  onContentTypeChange?: (contentType: "messages" | "posts") => void;
+  // onContentTypeChange?: (contentType: "messages" | "posts") => void; // Commented out since switching is disabled
   isMobile?: boolean;
 }
 
@@ -143,7 +143,7 @@ export default function ConversationsListSocial({
   selectedConversation,
   onConversationSelect,
   onMobileViewChange,
-  onContentTypeChange,
+  // onContentTypeChange, // Commented out since switching is disabled
   isMobile,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -151,12 +151,14 @@ export default function ConversationsListSocial({
     FacebookConversation[]
   >([]);
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
-  const [instagramMessages, setInstagramMessages] = useState<any[]>([]);
+  const [instagramMessages, setInstagramMessages] = useState<
+    FacebookConversation[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [contentType, setContentType] = useState<"messages" | "posts">(
-    "messages"
-  );
+
+  // Fixed content type to "messages" since switching is disabled
+  const contentType = "messages";
 
   // Fetch data when platform or contentType changes
   useEffect(() => {
@@ -397,7 +399,8 @@ export default function ConversationsListSocial({
         </div>
 
         {/* Content Type Filter Buttons - Only for Facebook and Instagram */}
-        {platform !== "whatsapp" && (
+        {/* COMMENTED OUT: DMs and Posts switching buttons */}
+        {/* {platform !== "whatsapp" && (
           <div className="mt-3 flex space-x-2">
             <button
               onClick={() => {
@@ -426,7 +429,7 @@ export default function ConversationsListSocial({
               📱 {platform === "facebook" ? "Posts" : "Posts"}
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Conversations */}
