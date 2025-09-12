@@ -14,6 +14,7 @@ interface ConversationsListProps {
 
 interface FacebookConversation {
   id: string;
+  message?: string; // For posts, this contains the post content
   messages?: {
     data: Array<{
       id: string;
@@ -194,6 +195,7 @@ export default function ConversationsListSocial({
               const postConversations =
                 data.data?.map((post: any) => ({
                   id: post.id,
+                  message: post.message, // Keep the original post message
                   messages: {
                     data: post.comments?.data || [],
                   },
@@ -277,7 +279,11 @@ export default function ConversationsListSocial({
           name:
             contentType === "messages"
               ? participantName
-              : `Post ${conv.id.substring(0, 8)}...`,
+              : conv.message
+              ? `${conv.message.substring(0, 30)}${
+                  conv.message.length > 30 ? "..." : ""
+                }`
+              : "Post without caption",
           avatar: participantAvatar,
           lastMessage:
             contentType === "messages"
@@ -315,8 +321,10 @@ export default function ConversationsListSocial({
         return instagramPosts.map((post) => ({
           id: post.id,
           name: post.caption
-            ? `${post.caption.substring(0, 20)}...`
-            : "No caption",
+            ? `${post.caption.substring(0, 30)}${
+                post.caption.length > 30 ? "..." : ""
+              }`
+            : "Post without caption",
           avatar:
             "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
           lastMessage: post.comments?.[0]?.text || "No comments",
