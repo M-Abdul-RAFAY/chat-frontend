@@ -424,19 +424,28 @@ export default function MessageInbox({
   const conversation =
     platform === "whatsapp"
       ? conversationDetails[conversationId]
-      : platform === "facebook" && conversationParticipant
+      : (platform === "facebook" || platform === "instagram") &&
+        conversationParticipant
       ? conversationParticipant
       : {
           name:
             platform === "facebook"
               ? `Facebook Conversation`
-              : `Instagram Post`,
+              : platform === "instagram"
+              ? `Instagram User`
+              : `Conversation`,
           avatar:
             platform === "facebook"
               ? "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop"
-              : "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
+              : platform === "instagram"
+              ? "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop"
+              : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
           status:
-            platform === "facebook" ? "Facebook Page" : "Instagram Business",
+            platform === "facebook"
+              ? "Active on Facebook"
+              : platform === "instagram"
+              ? "Active on Instagram"
+              : "Online",
         };
 
   const getPlatformColor = (platform: string) => {
