@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { PrimeReactProvider } from "primereact/api";
 // import SplashCursor from "@/components/SplashCursor";
 
 const geistSans = Geist({
@@ -88,25 +89,25 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         {/* <SplashCursor /> */}
-
-        {children}
-
-        {/* Conditionally render ToastContainer based on environment variable */}
-        {shouldShowToasters && (
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-            aria-label="Notifications"
-          />
-        )}
+        <PrimeReactProvider>
+          {children}
+          {/* Conditionally render ToastContainer based on environment variable */}
+          {shouldShowToasters && (
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+              aria-label="Notifications"
+            />
+          )}
+        </PrimeReactProvider>
       </body>
     </html>
   );
