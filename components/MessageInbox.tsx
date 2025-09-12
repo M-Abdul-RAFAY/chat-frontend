@@ -326,37 +326,70 @@ export default function MessageInbox({
           }
         }
       } else if (platform === "instagram") {
-        // Choose endpoint based on contentType
-        const endpoint =
-          contentType === "messages"
-            ? "http://localhost:4000/api/v1/meta/instagram/messages"
-            : "http://localhost:4000/api/v1/meta/instagram/comments";
-
-        const response = await fetch(endpoint);
+        // Fetch Instagram DMs
+        const response = await fetch(
+          "http://localhost:4000/api/v1/meta/instagram/messages"
+        );
         const data = await response.json();
 
         if (data.error) {
           setError(data.error);
         } else {
-          const post = data.data?.find((p: any) => p.id === conversationId);
-          if (post?.comments) {
-            const formattedMessages = post.comments
-              .map((comment: InstagramComment, index: number) => ({
-                id: index,
-                text: comment.text,
-                // For Instagram comments, we need to determine if it's from the business
-                // This is trickier since we don't have the business username easily accessible
-                // For now, we'll assume all are from others unless we can implement better logic
-                sender: "other",
-                timestamp: new Date(comment.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
+          // Find the specific conversation
+          const conversation = data.data?.find(
+            (conv: any) => conv.id === conversationId
+          );
+          if (conversation?.messages?.data) {
+            // Extract participant info - find the customer (non-business) participant
+            const participants = conversation.participants?.data || [];
+            const customer = participants.find(
+              (p: any) => p.username !== "hivemetrics12" // Your business username
+            );
+            
+            if (customer) {
+              setConversationParticipant({
+                name: customer.username || "Instagram User",
                 avatar:
-                  "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop",
-              }))
-              // Reverse the order to show oldest comments first
-              .reverse();
+                  customer.profilePicture ||
+                  "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
+                status: "Active on Instagram",
+              });
+            }
+
+            const formattedMessages = conversation.messages.data
+              .map((msg: any, index: number) => {
+                // Extract profile picture and username for the sender
+                let senderAvatar =
+                  "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop";
+                let senderName = "Unknown";
+
+                if (msg.from?.profilePicture) {
+                  senderAvatar = msg.from.profilePicture;
+                }
+                if (msg.from?.username) {
+                  senderName = msg.from.username;
+                } else if (msg.from?.name) {
+                  senderName = msg.from.name;
+                }
+
+                return {
+                  id: index,
+                  text: msg.message,
+                  // Determine sender: if from.username equals business username, it's from business (me), otherwise customer (other)
+                  sender: msg.from.username === "hivemetrics12" ? "me" : "other",
+                  timestamp: new Date(msg.created_time).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  ),
+                  avatar: senderAvatar,
+                  senderName: senderName,
+                };
+              })
+              .reverse(); // Show newest messages at the bottom
+
             setMessages(formattedMessages);
           }
         }

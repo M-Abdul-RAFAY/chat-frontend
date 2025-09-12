@@ -15,11 +15,27 @@ interface ConversationsListProps {
 interface FacebookConversation {
   id: string;
   message?: string; // For posts, this contains the post content
+  participants?: {
+    data: Array<{
+      id: string;
+      username?: string;
+      name?: string;
+      profilePicture?: string;
+    }>;
+  };
   messages?: {
     data: Array<{
       id: string;
       message: string;
-      from: { name: string; id: string };
+      from: { name?: string; id: string; username?: string; profilePicture?: string };
+      to?: {
+        data: Array<{
+          id: string;
+          name?: string;
+          username?: string;
+          profilePicture?: string;
+        }>;
+      };
       created_time: string;
     }>;
   };
@@ -302,22 +318,32 @@ export default function ConversationsListSocial({
       });
     } else if (platform === "instagram") {
       if (contentType === "messages") {
-        // Show Instagram DMs if available
-        return instagramMessages.map((dm) => ({
-          id: dm.id,
-          name: `DM ${dm.id.substring(0, 8)}...`,
-          avatar:
-            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-          lastMessage: dm.messages?.data?.[0]?.message || "Direct message",
-          timestamp: dm.messages?.data?.[0]?.created_time
-            ? new Date(dm.messages?.data?.[0]?.created_time).toLocaleTimeString(
-                [],
-                { hour: "2-digit", minute: "2-digit" }
-              )
-            : "",
-          unread: 0,
-          online: false,
-        }));
+        // Show Instagram DMs with proper participant data
+        return instagramMessages.map((conv) => {
+          // Find the customer (non-business) participant
+          const participants = conv.participants?.data || [];
+          const customer = participants.find(
+            (p) => p.username !== "hivemetrics12" // Your business username
+          );
+          const customerName = customer?.username || "Instagram User";
+          const customerAvatar = customer?.profilePicture || 
+            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
+
+          return {
+            id: conv.id,
+            name: customerName,
+            avatar: customerAvatar,
+            lastMessage: conv.messages?.data?.[0]?.message || "No messages",
+            timestamp: conv.messages?.data?.[0]?.created_time
+              ? new Date(conv.messages?.data?.[0]?.created_time).toLocaleTimeString(
+                  [],
+                  { hour: "2-digit", minute: "2-digit" }
+                )
+              : "",
+            unread: 0,
+            online: false,
+          };
+        });
       } else {
         // Show Instagram posts and comments
         return instagramPosts.map((post) => ({
