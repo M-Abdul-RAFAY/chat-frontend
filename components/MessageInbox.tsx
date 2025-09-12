@@ -14,6 +14,7 @@ import {
   File,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { socketEventHandlers, getSocket } from "@/lib/socket";
 
 interface MessageInboxProps {
   platform: "facebook" | "instagram" | "whatsapp";
@@ -174,6 +175,43 @@ export default function MessageInbox({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Listen for real-time Facebook messages
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || platform !== "facebook") return;
+
+    const handleNewFacebookMessage = (data: {
+      conversationId: string;
+      message: any;
+      platform: string;
+    }) => {
+      console.log("🔔 Received real-time Facebook message:", data);
+
+      // Check if this message is for the current conversation
+      if (data.conversationId === conversationId) {
+        console.log(
+          "✅ Message is for current conversation, adding to messages"
+        );
+        setMessages((prev) => [...prev, data.message]);
+      } else {
+        console.log(
+          "ℹ️ Message is for different conversation:",
+          data.conversationId,
+          "vs",
+          conversationId
+        );
+      }
+    };
+
+    // Set up the event listener
+    socketEventHandlers.onNewFacebookMessage(handleNewFacebookMessage);
+
+    // Cleanup
+    return () => {
+      socketEventHandlers.offNewFacebookMessage();
+    };
+  }, [conversationId, platform]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

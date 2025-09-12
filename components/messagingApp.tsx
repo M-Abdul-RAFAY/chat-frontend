@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PlatformSwitcher from "@/components/PlatformSwitcher";
 import ConversationsListSocial from "@/components/ConversationsListSocial";
 import MessageInbox from "@/components/MessageInbox";
+import { initializeSocket, getSocket } from "@/lib/socket";
 
 export default function MessagingApp() {
   const [selectedPlatform, setSelectedPlatform] = useState<
@@ -18,6 +19,45 @@ export default function MessagingApp() {
   const [mobileView, setMobileView] = useState<
     "platforms" | "conversations" | "inbox"
   >("conversations");
+
+  // Initialize socket connection when component mounts
+  useEffect(() => {
+    console.log("Initializing socket connection for messaging app...");
+
+    // Initialize socket
+    initializeSocket();
+
+    const socket = getSocket();
+    if (socket) {
+      // Connect to socket
+      socket.connect();
+
+      // Set up connection event listeners
+      const handleConnect = () => {
+        console.log("Socket connected successfully:", socket.id);
+      };
+
+      const handleDisconnect = (reason: string) => {
+        console.log("Socket disconnected:", reason);
+      };
+
+      const handleConnectError = (error: Error) => {
+        console.error("Socket connection error:", error);
+      };
+
+      socket.on("connect", handleConnect);
+      socket.on("disconnect", handleDisconnect);
+      socket.on("connect_error", handleConnectError);
+
+      // Cleanup on unmount
+      return () => {
+        socket.off("connect", handleConnect);
+        socket.off("disconnect", handleDisconnect);
+        socket.off("connect_error", handleConnectError);
+        socket.disconnect();
+      };
+    }
+  }, []);
 
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">

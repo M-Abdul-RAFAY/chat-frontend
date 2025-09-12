@@ -121,6 +121,20 @@ export const socketEventHandlers = {
     });
   },
 
+  onNewFacebookMessage: (
+    callback: (data: {
+      conversationId: string;
+      message: any;
+      platform: string;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up Facebook message event listener");
+    socket?.on("new_facebook_message", (data) => {
+      console.log("📘 Raw socket event: new_facebook_message", data);
+      callback(data);
+    });
+  },
+
   // Remove event listeners
   offConnect: () => {
     socket?.off("connect");
@@ -152,6 +166,10 @@ export const socketEventHandlers = {
 
   offPaymentStatusUpdate: () => {
     socket?.off("paymentStatusUpdate");
+  },
+
+  offNewFacebookMessage: () => {
+    socket?.off("new_facebook_message");
   },
 };
 
@@ -202,6 +220,23 @@ export const socketEmit = {
       socket.emit("typing:stop", { conversationId });
     }
   },
+};
+
+// Facebook message event handlers
+export const onNewFacebookMessage = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Setting up newFacebookMessage event listener");
+    socket.on("newFacebookMessage", (data) => {
+      console.log("🎯 Raw Facebook message event:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offNewFacebookMessage = (callback: (data: unknown) => void) => {
+  if (socket) {
+    socket.off("newFacebookMessage", callback);
+  }
 };
 
 export const genericSocketEmit = (event: string, data: unknown) => {
