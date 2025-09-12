@@ -121,7 +121,18 @@ export default function TopNavigation({
                       : "text-gray-300 hover:text-white"
                   )}
                 >
-                  {item.label}
+                  {activeItem === item.id ? (
+                    <GlitchText
+                      className="inline-block"
+                      speed={0.5}
+                      enableShadows={true}
+                      enableOnHover={false}
+                    >
+                      {item.label}
+                    </GlitchText>
+                  ) : (
+                    item.label
+                  )}
                 </Link>
               ))}
 
@@ -202,7 +213,18 @@ export default function TopNavigation({
                     : "text-gray-300 hover:bg-gray-700 hover:text-white"
                 )}
               >
-                {item.label}
+                {activeItem === item.id ? (
+                  <GlitchText
+                    className="inline-block"
+                    speed={0.5}
+                    enableShadows={true}
+                    enableOnHover={false}
+                  >
+                    {item.label}
+                  </GlitchText>
+                ) : (
+                  item.label
+                )}
               </Link>
             ))}
         </div>
