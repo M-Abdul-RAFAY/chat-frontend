@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MessagingApp from "@/components/messagingApp";
+import FadeContent from "@/components/FadeContent";
 
 interface ConnectionStatus {
   facebook_connected: boolean;
@@ -113,52 +114,59 @@ const SocialMediaPage = () => {
             </div>
           )}
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Social Media Dashboard
-            </h1>
-            <p className="text-lg text-gray-600">
-              Connect your Facebook Page & Instagram to manage messages and
-              comments
-            </p>
-          </div>
-
-          {/* Connection Status Card */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-2">📊</span>
-              Connection Status
-            </h3>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <span className="mr-3 text-2xl">📘</span>
-                  <span className="font-medium">Facebook</span>
-                </div>
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                  ❌ Not Connected
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <span className="mr-3 text-2xl">📷</span>
-                  <span className="font-medium">Instagram</span>
-                </div>
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                  ❌ Not Connected
-                </span>
-              </div>
+          <FadeContent
+            blur={true}
+            duration={1000}
+            easing="ease-out"
+            initialOpacity={0}
+          >
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Social Media Dashboard
+              </h1>
+              <p className="text-lg text-gray-600">
+                Connect your Facebook Page & Instagram to manage messages and
+                comments
+              </p>
             </div>
 
-            <button
-              onClick={checkStatus}
-              className="mt-4 px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-            >
-              🔄 Refresh Status
-            </button>
-          </div>
+            {/* Connection Status Card */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <span className="mr-2">📊</span>
+                Connection Status
+              </h3>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="mr-3 text-2xl">📘</span>
+                    <span className="font-medium">Facebook</span>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                    ❌ Not Connected
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="mr-3 text-2xl">📷</span>
+                    <span className="font-medium">Instagram</span>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                    ❌ Not Connected
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={checkStatus}
+                className="mt-4 px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                🔄 Refresh Status
+              </button>
+            </div>
+          </FadeContent>
 
           {/* Connect Button */}
           <div className="text-center mb-8">
