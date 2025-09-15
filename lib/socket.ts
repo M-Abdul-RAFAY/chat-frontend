@@ -176,7 +176,10 @@ export const socketEventHandlers = {
   onNewInstagramConversation: (callback: (conversation: any) => void) => {
     console.log("🔧 Setting up newInstagramConversation event listener");
     socket?.on("newInstagramConversation", (conversation) => {
-      console.log("📷 Raw socket event: newInstagramConversation", conversation);
+      console.log(
+        "📷 Raw socket event: newInstagramConversation",
+        conversation
+      );
       callback(conversation);
     });
   },

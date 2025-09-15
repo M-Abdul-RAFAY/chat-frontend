@@ -185,12 +185,16 @@ export default function ConversationsListSocial({
   useEffect(() => {
     if (platform === "instagram") {
       // Import socket functions when needed to avoid compilation errors
-      const handleNewInstagramConversation = (newConversation: FacebookConversation) => {
+      const handleNewInstagramConversation = (
+        newConversation: FacebookConversation
+      ) => {
         console.log("🆕 New Instagram conversation received:", newConversation);
-        
+
         // Add new conversation to the list if it's not already there
-        setInstagramMessages(prevMessages => {
-          const exists = prevMessages.find(msg => msg.id === newConversation.id);
+        setInstagramMessages((prevMessages) => {
+          const exists = prevMessages.find(
+            (msg) => msg.id === newConversation.id
+          );
           if (!exists) {
             console.log("📝 Adding new conversation to list");
             return [newConversation, ...prevMessages];
@@ -202,7 +206,9 @@ export default function ConversationsListSocial({
       // Set up socket event listener for new Instagram conversations
       import("@/lib/socket").then(({ socketEventHandlers, connectSocket }) => {
         connectSocket();
-        socketEventHandlers.onNewInstagramConversation(handleNewInstagramConversation);
+        socketEventHandlers.onNewInstagramConversation(
+          handleNewInstagramConversation
+        );
       });
 
       // Cleanup
