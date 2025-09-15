@@ -51,21 +51,7 @@ export const metadata: Metadata = {
       "Comprehensive SaaS platform for startups and growing businesses",
     images: ["/assets/hichat-logo.png"],
   },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.ico", type: "image/x-icon" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-    other: [
-      {
-        rel: "icon",
-        type: "image/x-icon",
-        url: "/favicon.ico",
-      },
-    ],
-  },
+  // Icons will be automatically served from app/favicon.ico
 };
 
 export default function RootLayout({
@@ -79,9 +65,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" href="/favicon.ico" />
         <meta name="theme-color" content="#667eea" />
       </head>
       <body
