@@ -171,6 +171,19 @@ export const socketEventHandlers = {
   offNewFacebookMessage: () => {
     socket?.off("new_facebook_message");
   },
+
+  // Instagram conversation events
+  onNewInstagramConversation: (callback: (conversation: any) => void) => {
+    console.log("🔧 Setting up newInstagramConversation event listener");
+    socket?.on("newInstagramConversation", (conversation) => {
+      console.log("📷 Raw socket event: newInstagramConversation", conversation);
+      callback(conversation);
+    });
+  },
+
+  offNewInstagramConversation: () => {
+    socket?.off("newInstagramConversation");
+  },
 };
 
 export const joinConversation = (conversationId: string) => {
