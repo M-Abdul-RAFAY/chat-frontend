@@ -62,6 +62,11 @@ interface UserSettings {
   aiGeneratedResponse: boolean;
   whatsapp: boolean;
   sms: boolean;
+  socialMediaAI: {
+    facebook: boolean;
+    instagram: boolean;
+    twitter: boolean;
+  };
 }
 
 interface AITrainingData {
@@ -100,6 +105,11 @@ export default function Settings() {
     aiGeneratedResponse: true,
     whatsapp: false,
     sms: true,
+    socialMediaAI: {
+      facebook: false,
+      instagram: false,
+      twitter: false,
+    },
   });
 
   // AI Training State
@@ -156,6 +166,11 @@ export default function Settings() {
           aiGeneratedResponse: settings.aiGeneratedResponse ?? true,
           whatsapp: settings.whatsapp ?? false,
           sms: settings.sms ?? true,
+          socialMediaAI: {
+            facebook: settings.socialMediaAI?.facebook ?? false,
+            instagram: settings.socialMediaAI?.instagram ?? false,
+            twitter: settings.socialMediaAI?.twitter ?? false,
+          },
         });
       }
     } catch (error) {
@@ -256,6 +271,42 @@ export default function Settings() {
     } catch (error) {
       console.error("Error saving user settings:", error);
       showToast.error("Failed to save settings");
+    }
+  };
+
+  const saveSocialMediaAISetting = async (platform: string, value: boolean) => {
+    if (!user?.id) return;
+
+    const updatedSettings = {
+      ...userSettings,
+      socialMediaAI: {
+        ...userSettings.socialMediaAI,
+        [platform]: value,
+      },
+    };
+
+    setUserSettings(updatedSettings);
+
+    try {
+      const response = await fetch("/api/user-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          ...updatedSettings,
+        }),
+      });
+
+      if (response.ok) {
+        showToast.success(
+          `${
+            platform.charAt(0).toUpperCase() + platform.slice(1)
+          } AI setting saved successfully`
+        );
+      }
+    } catch (error) {
+      console.error("Error saving social media AI settings:", error);
+      showToast.error("Failed to save AI settings");
     }
   };
 
@@ -893,6 +944,145 @@ export default function Settings() {
                       SMS: {userSettings.sms ? "Enabled" : "Disabled"}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Social Media AI Settings */}
+          <Card className="p-8 transform hover:scale-[1.01] transition-all duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Social Media AI Settings
+                </h2>
+                <p className="text-gray-600">
+                  Configure AI-generated responses for your social media
+                  platforms
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Facebook AI Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <MessageSquare className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Facebook AI</h3>
+                    <p className="text-sm text-gray-600">
+                      Auto-generate responses for Facebook messages
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={userSettings.socialMediaAI.facebook}
+                  onCheckedChange={(checked: boolean) =>
+                    saveSocialMediaAISetting("facebook", checked)
+                  }
+                />
+              </div>
+
+              {/* Instagram AI Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-pink-100 rounded-lg">
+                    <Bot className="w-5 h-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">
+                      Instagram AI
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Auto-generate responses for Instagram messages
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={userSettings.socialMediaAI.instagram}
+                  onCheckedChange={(checked: boolean) =>
+                    saveSocialMediaAISetting("instagram", checked)
+                  }
+                />
+              </div>
+
+              {/* Twitter AI Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-100 rounded-lg">
+                    <Lightbulb className="w-5 h-5 text-cyan-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Twitter AI</h3>
+                    <p className="text-sm text-gray-600">
+                      Auto-generate responses for Twitter messages
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={userSettings.socialMediaAI.twitter}
+                  onCheckedChange={(checked: boolean) =>
+                    saveSocialMediaAISetting("twitter", checked)
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Status Overview */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                Social Media AI Status
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      userSettings.socialMediaAI.facebook
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  <span className="text-gray-700">
+                    Facebook:{" "}
+                    {userSettings.socialMediaAI.facebook
+                      ? "Enabled"
+                      : "Disabled"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      userSettings.socialMediaAI.instagram
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  <span className="text-gray-700">
+                    Instagram:{" "}
+                    {userSettings.socialMediaAI.instagram
+                      ? "Enabled"
+                      : "Disabled"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      userSettings.socialMediaAI.twitter
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  <span className="text-gray-700">
+                    Twitter:{" "}
+                    {userSettings.socialMediaAI.twitter
+                      ? "Enabled"
+                      : "Disabled"}
+                  </span>
                 </div>
               </div>
             </div>

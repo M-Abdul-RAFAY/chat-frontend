@@ -34,6 +34,11 @@ export async function GET(request: NextRequest) {
         aiGeneratedResponse: true,
         whatsapp: false,
         sms: true,
+        socialMediaAI: {
+          facebook: false,
+          instagram: false,
+          twitter: false,
+        },
       });
     }
   } catch (error) {
@@ -42,6 +47,11 @@ export async function GET(request: NextRequest) {
       aiGeneratedResponse: true,
       whatsapp: false,
       sms: true,
+      socialMediaAI: {
+        facebook: false,
+        instagram: false,
+        twitter: false,
+      },
     });
   }
 }
