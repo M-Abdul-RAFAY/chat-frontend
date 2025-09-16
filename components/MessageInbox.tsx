@@ -213,6 +213,43 @@ export default function MessageInbox({
     };
   }, [conversationId, platform]);
 
+  // Listen for real-time Instagram messages
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || platform !== "instagram") return;
+
+    const handleNewInstagramMessage = (data: {
+      conversationId: string;
+      message: any;
+      platform: string;
+    }) => {
+      console.log("🔔 Received real-time Instagram message:", data);
+
+      // Check if this message is for the current conversation
+      if (data.conversationId === conversationId) {
+        console.log(
+          "✅ Instagram message is for current conversation, adding to messages"
+        );
+        setMessages((prev) => [...prev, data.message]);
+      } else {
+        console.log(
+          "ℹ️ Instagram message is for different conversation:",
+          data.conversationId,
+          "vs",
+          conversationId
+        );
+      }
+    };
+
+    // Set up the event listener
+    socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
+
+    // Cleanup
+    return () => {
+      socketEventHandlers.offNewInstagramMessage();
+    };
+  }, [conversationId, platform]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };

@@ -203,18 +203,48 @@ export default function ConversationsListSocial({
         });
       };
 
-      // Set up socket event listener for new Instagram conversations
+      // Handle real-time Instagram messages
+      const handleNewInstagramMessage = (data: {
+        conversationId: string;
+        message: any;
+        platform: string;
+      }) => {
+        console.log(
+          "📷 New Instagram message received in conversation list:",
+          data
+        );
+
+        // Update the conversation list to mark unread and update last message
+        setInstagramMessages((prevMessages) => {
+          return prevMessages.map((conversation) => {
+            if (conversation.id === data.conversationId) {
+              // Update the conversation with the new message info
+              return {
+                ...conversation,
+                lastMessage: data.message.text || "[Attachment]",
+                lastMessageTime: data.message.timestamp,
+                unread: true,
+              };
+            }
+            return conversation;
+          });
+        });
+      };
+
+      // Set up socket event listeners
       import("@/lib/socket").then(({ socketEventHandlers, connectSocket }) => {
         connectSocket();
         socketEventHandlers.onNewInstagramConversation(
           handleNewInstagramConversation
         );
+        socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
       });
 
       // Cleanup
       return () => {
         import("@/lib/socket").then(({ socketEventHandlers }) => {
           socketEventHandlers.offNewInstagramConversation();
+          socketEventHandlers.offNewInstagramMessage();
         });
       };
     }

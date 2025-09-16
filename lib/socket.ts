@@ -135,6 +135,20 @@ export const socketEventHandlers = {
     });
   },
 
+  onNewInstagramMessage: (
+    callback: (data: {
+      conversationId: string;
+      message: any;
+      platform: string;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up Instagram message event listener");
+    socket?.on("new_instagram_message", (data) => {
+      console.log("📷 Raw socket event: new_instagram_message", data);
+      callback(data);
+    });
+  },
+
   // Remove event listeners
   offConnect: () => {
     socket?.off("connect");
@@ -170,6 +184,10 @@ export const socketEventHandlers = {
 
   offNewFacebookMessage: () => {
     socket?.off("new_facebook_message");
+  },
+
+  offNewInstagramMessage: () => {
+    socket?.off("new_instagram_message");
   },
 
   // Instagram conversation events
