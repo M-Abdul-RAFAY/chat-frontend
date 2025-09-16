@@ -13,7 +13,7 @@ import {
   Image as ImageIcon,
   File,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { socketEventHandlers, getSocket } from "@/lib/socket";
 
 interface MessageInboxProps {
@@ -148,6 +148,7 @@ export default function MessageInbox({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (conversationId && platform !== "whatsapp") {
       fetchMessages();
@@ -220,13 +221,17 @@ export default function MessageInbox({
 
     const handleNewInstagramMessage = (data: {
       conversationId: string;
+      socialConversationId?: string;
       message: any;
       platform: string;
     }) => {
       console.log("🔔 Received real-time Instagram message:", data);
 
       // Check if this message is for the current conversation
-      if (data.conversationId === conversationId) {
+      if (
+        data.conversationId === conversationId ||
+        data.socialConversationId === conversationId
+      ) {
         console.log(
           "✅ Instagram message is for current conversation, adding to messages"
         );
@@ -241,20 +246,98 @@ export default function MessageInbox({
       }
     };
 
-    // Set up the event listener
+    // Handle new social media messages (universal event)
+    const handleNewSocialMessage = (data: {
+      conversationId: string;
+      messageId: string;
+      platform: string;
+      sender: string;
+      text: string;
+      timestamp: string;
+    }) => {
+      console.log("📱 Received new social media message:", data);
+
+      if (
+        data.platform === "instagram" &&
+        data.conversationId === conversationId
+      ) {
+        // Refetch messages to get the latest data
+        console.log("🔄 Refreshing messages due to new social message");
+        // You could trigger a refetch here or add the message directly
+        const newMessage = {
+          id: data.messageId,
+          text: data.text,
+          sender: "other",
+          timestamp: new Date(data.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          created_time: data.timestamp,
+          from: {
+            id: data.sender,
+            name: "Instagram User",
+          },
+        };
+        setMessages((prev) => [...prev, newMessage]);
+      }
+    };
+
+    // Handle messages sync completion
+    const handleMessagesSynced = (data: {
+      conversationId: string;
+      platform: string;
+      count: number;
+      timestamp: string;
+    }) => {
+      console.log("🔄 Messages synced:", data);
+
+      if (
+        data.platform === "instagram" &&
+        data.conversationId === conversationId
+      ) {
+        console.log("📱 Refreshing Instagram messages after sync");
+        // Optionally refetch messages after sync
+        // fetchMessages(); // You could implement this
+      }
+    };
+
+    // Set up event listeners
     socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
+
+    // Add listeners for new events
+    socket.on("new_social_message", handleNewSocialMessage);
+    socket.on("messages_synced", handleMessagesSynced);
+
+    // Listen for refresh events from webhooks
+    const handleChatRefresh = (data: {
+      platform: string;
+      timestamp: string;
+      reason: string;
+    }) => {
+      console.log("🔄 Chat refresh event received:", data);
+      // Refresh the current conversation messages directly
+      if (conversationId && platform !== "whatsapp") {
+        fetchMessages();
+      }
+    };
+
+    socket.on("refresh_chat", handleChatRefresh);
 
     // Cleanup
     return () => {
       socketEventHandlers.offNewInstagramMessage();
+      socket.off("new_social_message", handleNewSocialMessage);
+      socket.off("messages_synced", handleMessagesSynced);
+      socket.off("refresh_chat", handleChatRefresh);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, platform]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
 
     setLoading(true);
@@ -363,17 +446,79 @@ export default function MessageInbox({
           }
         }
       } else if (platform === "instagram") {
-        // Fetch Instagram DMs
-        const response = await fetch(
+        // Fetch Instagram DMs - try database first (fast), then fallback to API
+
+        // Try to get messages from database first (much faster)
+        try {
+          const dbResponse = await fetch(
+            `http://localhost:4000/api/v1/meta/social/messages/${conversationId}`
+          );
+          const dbData = await dbResponse.json();
+
+          if (dbData.success && dbData.messages.length > 0) {
+            console.log("⚡ Using fast database data for Instagram messages");
+
+            // Convert database format to expected format
+            const formattedMessages = dbData.messages.map((msg: any) => ({
+              id: msg.messageId,
+              message: msg.text || "[Attachment]",
+              created_time: msg.timestamp,
+              from: {
+                id: msg.senderId,
+                username: msg.senderName,
+                profilePicture: msg.senderProfilePicture,
+              },
+              to: {
+                data: [
+                  {
+                    id: msg.recipientId,
+                  },
+                ],
+              },
+              attachments: msg.attachments,
+            }));
+
+            setMessages(formattedMessages);
+
+            // Set conversation participant info from database
+            if (dbData.messages.length > 0) {
+              const firstMessage = dbData.messages[0];
+              const avatarUrl =
+                firstMessage.senderProfilePicture ||
+                `https://via.placeholder.com/50x50/E1306C/ffffff?text=${(
+                  firstMessage.senderName || "IG"
+                )
+                  .charAt(0)
+                  .toUpperCase()}`;
+
+              setConversationParticipant({
+                name: firstMessage.senderName || "Instagram User",
+                avatar: avatarUrl,
+                status: "Active on Instagram",
+              });
+            }
+
+            return; // Exit early if database data was successful
+          }
+        } catch (dbError) {
+          console.log(
+            "📱 Database message fetch failed, falling back to API:",
+            dbError
+          );
+        }
+
+        // Fallback to API if database doesn't have the data
+        console.log("📱 Falling back to API for Instagram messages");
+        const apiResponse = await fetch(
           "http://localhost:4000/api/v1/meta/instagram/messages"
         );
-        const data = await response.json();
+        const apiData = await apiResponse.json();
 
-        if (data.error) {
-          setError(data.error);
+        if (apiData.error) {
+          setError(apiData.error);
         } else {
           // Find the specific conversation
-          const conversation = data.data?.find(
+          const conversation = apiData.data?.find(
             (conv: any) => conv.id === conversationId
           );
           if (conversation?.messages?.data) {
@@ -459,7 +604,7 @@ export default function MessageInbox({
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId, platform, contentType]);
 
   if (!conversationId) {
     return (

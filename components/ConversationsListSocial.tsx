@@ -177,6 +177,7 @@ export default function ConversationsListSocial({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Fixed content type to "messages" since switching is disabled
   const contentType = "messages";
@@ -231,20 +232,98 @@ export default function ConversationsListSocial({
         });
       };
 
+      // Handle conversations sync completion
+      const handleConversationsSynced = (data: {
+        platform: string;
+        count: number;
+        timestamp: string;
+      }) => {
+        console.log("🔄 Conversations synced:", data);
+
+        if (data.platform === "instagram") {
+          console.log("📱 Instagram conversations updated, refreshing list");
+          // Optionally trigger a refresh of the conversation list
+          // You could refetch data here or show a notification
+        }
+      };
+
+      // Handle new social media messages (universal event)
+      const handleNewSocialMessage = (data: {
+        conversationId: string;
+        messageId: string;
+        platform: string;
+        sender: string;
+        text: string;
+        timestamp: string;
+      }) => {
+        console.log("📱 New social message in conversation list:", data);
+
+        if (data.platform === "instagram") {
+          // Update conversation list with new message
+          setInstagramMessages((prevMessages) => {
+            return prevMessages.map((conversation) => {
+              if (conversation.id === data.conversationId) {
+                return {
+                  ...conversation,
+                  lastMessage: data.text || "[Attachment]",
+                  lastMessageTime: data.timestamp,
+                  unread: true,
+                };
+              }
+              return conversation;
+            });
+          });
+        }
+      };
+
       // Set up socket event listeners
-      import("@/lib/socket").then(({ socketEventHandlers, connectSocket }) => {
-        connectSocket();
-        socketEventHandlers.onNewInstagramConversation(
-          handleNewInstagramConversation
-        );
-        socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
-      });
+      import("@/lib/socket").then(
+        ({ socketEventHandlers, connectSocket, getSocket }) => {
+          connectSocket();
+          socketEventHandlers.onNewInstagramConversation(
+            handleNewInstagramConversation
+          );
+          socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
+
+          // Add listeners for new sync events
+          const socket = getSocket();
+          if (socket) {
+            socket.on("conversations_synced", handleConversationsSynced);
+            socket.on("new_social_message", handleNewSocialMessage);
+
+            // Listen for refresh events from webhooks
+            socket.on(
+              "refresh_chat",
+              (data: {
+                platform: string;
+                timestamp: string;
+                reason: string;
+              }) => {
+                console.log(
+                  "🔄 Chat refresh event received in conversations list:",
+                  data
+                );
+                // Trigger a re-fetch by updating a timestamp state
+                setRefreshTrigger(Date.now());
+              }
+            );
+          }
+        }
+      );
 
       // Cleanup
       return () => {
-        import("@/lib/socket").then(({ socketEventHandlers }) => {
+        import("@/lib/socket").then(({ socketEventHandlers, getSocket }) => {
           socketEventHandlers.offNewInstagramConversation();
           socketEventHandlers.offNewInstagramMessage();
+
+          // Remove new event listeners
+          const socket = getSocket();
+          if (socket) {
+            socket.off("conversations_synced", handleConversationsSynced);
+            socket.off("new_social_message", handleNewSocialMessage);
+            socket.off("refresh_chat");
+          }
         });
       };
     }
@@ -297,19 +376,58 @@ export default function ConversationsListSocial({
           }
         } else if (platform === "instagram") {
           if (contentType === "messages") {
-            // Try to fetch Instagram messages/DMs
-            const response = await fetch(
-              "http://localhost:4000/api/v1/meta/instagram/messages"
-            );
-            const data = await response.json();
+            // Try to fetch Instagram messages/DMs from database first (fast)
+            try {
+              const dbResponse = await fetch(
+                "http://localhost:4000/api/v1/meta/social/conversations?platform=instagram"
+              );
+              const dbData = await dbResponse.json();
 
-            if (data.error) {
-              setError(data.error);
-            } else {
-              setInstagramMessages(data.data || []);
-              // If limited access, show helpful message
-              if (data.limited_access) {
-                setError(data.message);
+              if (dbData.success && dbData.conversations.length > 0) {
+                // Use database data (fast)
+                console.log(
+                  "📱 Using fast database data for Instagram conversations"
+                );
+                setInstagramMessages(dbData.conversations);
+              } else {
+                // Fallback to API data (slower)
+                console.log(
+                  "📱 Falling back to API data for Instagram conversations"
+                );
+                const response = await fetch(
+                  "http://localhost:4000/api/v1/meta/instagram/messages"
+                );
+                const data = await response.json();
+
+                if (data.error) {
+                  setError(data.error);
+                } else {
+                  setInstagramMessages(data.data || []);
+                  // If limited access, show helpful message
+                  if (data.limited_access) {
+                    setError(data.message);
+                  }
+                }
+              }
+            } catch (dbError) {
+              console.log(
+                "📱 Database fetch failed, falling back to API:",
+                dbError
+              );
+              // Fallback to API if database fails
+              const response = await fetch(
+                "http://localhost:4000/api/v1/meta/instagram/messages"
+              );
+              const data = await response.json();
+
+              if (data.error) {
+                setError(data.error);
+              } else {
+                setInstagramMessages(data.data || []);
+                // If limited access, show helpful message
+                if (data.limited_access) {
+                  setError(data.message);
+                }
               }
             }
           } else {
@@ -335,7 +453,7 @@ export default function ConversationsListSocial({
     };
 
     fetchData();
-  }, [platform, contentType]);
+  }, [platform, contentType, refreshTrigger]);
 
   // Convert real data to match the existing UI structure
   const getConversations = () => {
