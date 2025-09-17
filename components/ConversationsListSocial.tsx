@@ -291,22 +291,52 @@ export default function ConversationsListSocial({
             socket.on("conversations_synced", handleConversationsSynced);
             socket.on("new_social_message", handleNewSocialMessage);
 
-            // Listen for refresh events from webhooks
-            socket.on(
-              "refresh_chat",
-              (data: {
-                platform: string;
-                timestamp: string;
-                reason: string;
-              }) => {
-                console.log(
-                  "🔄 Chat refresh event received in conversations list:",
-                  data
-                );
-                // Trigger a re-fetch by updating a timestamp state
-                setRefreshTrigger(Date.now());
+            // Listen for platform-specific refresh events from webhooks
+            const handleChatRefresh = (data: {
+              platform: string;
+              timestamp: string;
+              reason: string;
+            }) => {
+              console.log(
+                "🔄 Chat refresh event received in conversations list:",
+                data
+              );
+              // Trigger a re-fetch by updating the refresh trigger
+              console.log("🔄 Triggering conversation list refresh");
+              setRefreshTrigger(Date.now());
+            };
+
+            // Listen for platform-specific refresh events
+            if (platform === "facebook") {
+              socket.on("refresh_facebook_chat", handleChatRefresh);
+            } else if (platform === "instagram") {
+              socket.on("refresh_instagram_chat", handleChatRefresh);
+            }
+
+            // Also listen for new message events to refresh conversation list
+            const handleNewMessage = (data: any) => {
+              console.log("🔔 New message event in conversation list:", data);
+              console.log("🔄 Refreshing conversation list due to new message");
+              setRefreshTrigger(Date.now());
+            };
+
+            socket.on("new_facebook_message", handleNewMessage);
+            socket.on("new_instagram_message", handleNewMessage);
+
+            // Store cleanup functions
+            (socket as any)._conversationListCleanup = () => {
+              socket.off("conversations_synced", handleConversationsSynced);
+              socket.off("new_social_message", handleNewSocialMessage);
+
+              if (platform === "facebook") {
+                socket.off("refresh_facebook_chat", handleChatRefresh);
+              } else if (platform === "instagram") {
+                socket.off("refresh_instagram_chat", handleChatRefresh);
               }
-            );
+
+              socket.off("new_facebook_message", handleNewMessage);
+              socket.off("new_instagram_message", handleNewMessage);
+            };
           }
         }
       );
@@ -319,10 +349,8 @@ export default function ConversationsListSocial({
 
           // Remove new event listeners
           const socket = getSocket();
-          if (socket) {
-            socket.off("conversations_synced", handleConversationsSynced);
-            socket.off("new_social_message", handleNewSocialMessage);
-            socket.off("refresh_chat");
+          if (socket && (socket as any)._conversationListCleanup) {
+            (socket as any)._conversationListCleanup();
           }
         });
       };

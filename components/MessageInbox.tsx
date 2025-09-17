@@ -314,21 +314,56 @@ export default function MessageInbox({
       timestamp: string;
       reason: string;
     }) => {
-      console.log("🔄 Chat refresh event received:", data);
+      console.log(
+        `🔄 ${
+          platform.charAt(0).toUpperCase() + platform.slice(1)
+        } chat refresh event received:`,
+        data
+      );
       // Refresh the current conversation messages directly
       if (conversationId && platform !== "whatsapp") {
+        console.log("🔄 Refreshing messages due to webhook event");
         fetchMessages();
       }
     };
 
-    socket.on("refresh_chat", handleChatRefresh);
+    // Listen for platform-specific refresh events
+    if (platform === "facebook") {
+      socket.on("refresh_facebook_chat", handleChatRefresh);
+    } else if (platform === "instagram") {
+      socket.on("refresh_instagram_chat", handleChatRefresh);
+    }
+
+    // Also listen for general new message events to trigger refresh
+    const handleNewMessage = (data: any) => {
+      console.log("🔔 New message event received:", data);
+      if (
+        data.conversationId === conversationId ||
+        data.sender === conversationId
+      ) {
+        console.log("✅ Message is for current conversation, refreshing...");
+        fetchMessages();
+      }
+    };
+
+    socket.on("new_facebook_message", handleNewMessage);
+    socket.on("new_instagram_message", handleNewMessage);
 
     // Cleanup
     return () => {
       socketEventHandlers.offNewInstagramMessage();
       socket.off("new_social_message", handleNewSocialMessage);
       socket.off("messages_synced", handleMessagesSynced);
-      socket.off("refresh_chat", handleChatRefresh);
+
+      // Remove platform-specific refresh event listeners
+      if (platform === "facebook") {
+        socket.off("refresh_facebook_chat", handleChatRefresh);
+      } else if (platform === "instagram") {
+        socket.off("refresh_instagram_chat", handleChatRefresh);
+      }
+
+      socket.off("new_facebook_message", handleNewMessage);
+      socket.off("new_instagram_message", handleNewMessage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, platform]);
