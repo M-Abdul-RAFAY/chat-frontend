@@ -1103,21 +1103,61 @@ export default function MessageInbox({
             ? `http://localhost:4000/api/v1/meta/instagram/send-message`
             : `http://localhost:4000/api/v1/meta/instagram/send-comment`;
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            conversationId,
-            message: messageToSend,
-          }),
-        });
+        // Handle file uploads for Instagram (similar to Facebook)
+        if (filesToSend.length > 0) {
+          console.log(
+            "Sending Instagram files:",
+            filesToSend.map((f) => ({
+              name: f.name,
+              type: f.type,
+              size: f.size,
+            }))
+          );
+          console.log("Sending to Instagram conversationId:", conversationId);
+          console.log("Instagram message text:", messageToSend);
 
-        const responseData = await response.json();
+          const formData = new FormData();
+          formData.append("conversationId", conversationId);
+          formData.append("message", messageToSend);
+          filesToSend.forEach((file) => {
+            formData.append(`files`, file);
+          });
 
-        if (!response.ok) {
-          throw new Error(responseData.error || "Failed to send message");
+          console.log("Instagram FormData entries:");
+          for (const [key, value] of formData.entries()) {
+            console.log(key, value);
+          }
+
+          const response = await fetch(endpoint, {
+            method: "POST",
+            body: formData,
+          });
+
+          const responseData = await response.json();
+          console.log("Instagram backend response:", responseData);
+
+          if (!response.ok) {
+            throw new Error(
+              responseData.error || "Failed to send Instagram message with attachments"
+            );
+          }
+        } else {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              conversationId,
+              message: messageToSend,
+            }),
+          });
+
+          const responseData = await response.json();
+
+          if (!response.ok) {
+            throw new Error(responseData.error || "Failed to send Instagram message");
+          }
         }
       }
     } catch (error) {
