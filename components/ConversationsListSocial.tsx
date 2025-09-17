@@ -179,18 +179,6 @@ export default function ConversationsListSocial({
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Auto-refresh every 10 seconds to catch webhook data
-  useEffect(() => {
-    if (platform === "whatsapp") return; // Skip for WhatsApp
-
-    const interval = setInterval(() => {
-      console.log(`🔄 Auto-refreshing ${platform} conversations`);
-      setRefreshTrigger(Date.now());
-    }, 10000); // Refresh every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [platform]);
-
   // Fixed content type to "messages" since switching is disabled
   const contentType = "messages";
 

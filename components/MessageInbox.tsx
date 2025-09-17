@@ -155,22 +155,6 @@ export default function MessageInbox({
     }
   }, [conversationId, platform, contentType]);
 
-  // Auto-refresh messages every 10 seconds to catch webhook data
-  useEffect(() => {
-    if (!conversationId || platform === "whatsapp") return;
-
-    const interval = setInterval(() => {
-      console.log(
-        `🔄 Auto-refreshing ${platform} messages for conversation ${conversationId}`
-      );
-      if (conversationId && platform !== "whatsapp") {
-        fetchMessages();
-      }
-    }, 10000); // Refresh every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [conversationId, platform]);
-
   // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
