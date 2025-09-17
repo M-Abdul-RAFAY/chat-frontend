@@ -158,9 +158,11 @@ export default function MessageInbox({
   // Auto-refresh messages every 10 seconds to catch webhook data
   useEffect(() => {
     if (!conversationId || platform === "whatsapp") return;
-    
+
     const interval = setInterval(() => {
-      console.log(`🔄 Auto-refreshing ${platform} messages for conversation ${conversationId}`);
+      console.log(
+        `🔄 Auto-refreshing ${platform} messages for conversation ${conversationId}`
+      );
       if (conversationId && platform !== "whatsapp") {
         fetchMessages();
       }

@@ -182,7 +182,7 @@ export default function ConversationsListSocial({
   // Auto-refresh every 10 seconds to catch webhook data
   useEffect(() => {
     if (platform === "whatsapp") return; // Skip for WhatsApp
-    
+
     const interval = setInterval(() => {
       console.log(`🔄 Auto-refreshing ${platform} conversations`);
       setRefreshTrigger(Date.now());
