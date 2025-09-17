@@ -628,15 +628,18 @@ export default function ConversationsListSocial({
 
         // Get the most recent message for display
         const mostRecentMessage = conv.messages?.data?.[0]; // Assuming array is ordered with newest first
-        const displayLastMessage = 
+        const displayLastMessage =
           conv.lastMessage || // Use socket-updated lastMessage field first
-          mostRecentMessage?.message || 
+          mostRecentMessage?.message ||
           (contentType === "messages" ? "No messages" : "No comments");
 
-        const displayTimestamp = 
+        const displayTimestamp =
           conv.lastMessageTime || // Use socket-updated timestamp first
-          (mostRecentMessage?.created_time 
-            ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          (mostRecentMessage?.created_time
+            ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "");
 
         return {
@@ -672,15 +675,18 @@ export default function ConversationsListSocial({
 
           // Get the most recent message for display
           const mostRecentMessage = conv.messages?.data?.[0];
-          const displayLastMessage = 
+          const displayLastMessage =
             conv.lastMessage || // Use socket-updated lastMessage field first
-            mostRecentMessage?.message || 
+            mostRecentMessage?.message ||
             "No messages";
 
-          const displayTimestamp = 
+          const displayTimestamp =
             conv.lastMessageTime || // Use socket-updated timestamp first
-            (mostRecentMessage?.created_time 
-              ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            (mostRecentMessage?.created_time
+              ? new Date(mostRecentMessage.created_time).toLocaleTimeString(
+                  [],
+                  { hour: "2-digit", minute: "2-digit" }
+                )
               : "");
 
           return {
