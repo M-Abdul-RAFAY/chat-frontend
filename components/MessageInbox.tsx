@@ -304,117 +304,115 @@ export default function MessageInbox({
     // Set up event listeners with improved sync handling
     socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
 
-    // Import social media specific event handlers
-    import("@/lib/socket").then(
-      ({
-        onRefreshFacebookChat,
-        onRefreshInstagramChat,
-        onNewSocialMessage,
-        onNewFacebookMessageEvent,
-        onNewInstagramMessageEvent,
-        offRefreshFacebookChat,
-        offRefreshInstagramChat,
-        offNewSocialMessage,
-        offNewFacebookMessageEvent,
-        offNewInstagramMessageEvent,
-      }) => {
-        // Enhanced social message handler with real-time message insertion
-        const handleEnhancedNewSocialMessage = (data: {
-          conversationId: string;
-          messageId: string;
-          platform: string;
-          sender: string;
-          text: string;
-          timestamp: string;
-        }) => {
-          console.log("📱 Enhanced social message in MessageInbox:", data);
-          console.log("📋 Current conversation ID:", conversationId);
-          console.log("📋 Message conversation ID:", data.conversationId);
-          console.log("📋 Message sender ID:", data.sender);
-
-          // If message is for current conversation, add it immediately
-          if (
-            conversationId &&
-            (data.conversationId === conversationId ||
-              data.sender === conversationId)
-          ) {
-            console.log(
-              "✅ Message is for current conversation, adding immediately"
-            );
-            const newMessage = {
-              id: data.messageId,
-              text: data.text || "[Attachment]",
-              sender: "other", // From customer
-              timestamp: new Date(data.timestamp).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              avatar: `https://via.placeholder.com/40x40/1877F2/ffffff?text=${data.platform
-                .charAt(0)
-                .toUpperCase()}`,
-              created_time: data.timestamp,
-              from: {
-                id: data.sender,
-                name: `${data.platform} User`,
-              },
-            };
-
-            // Add message to state immediately for real-time display
-            setMessages((prev) => [...prev, newMessage]);
-
-            // Scroll to bottom to show new message
-            setTimeout(() => {
-              scrollToBottom();
-            }, 100);
-          }
-
-          // Always also refresh to ensure full sync
-          console.log("🔄 Also refreshing MessageInbox to ensure full sync");
-          if (conversationId && platform !== "whatsapp") {
-            fetchMessages();
-          }
-        };
-
-        // Set up dedicated social media event listeners
-        onNewSocialMessage(handleEnhancedNewSocialMessage);
-
-        // Enhanced message event handler that always triggers refresh
-        const handleEnhancedNewMessage = (data: any) => {
-          console.log(`🔔 Enhanced ${platform} message event received:`, data);
-          console.log("📋 Current conversation ID:", conversationId);
-          console.log("📋 Message data:", {
-            conversationId: data.conversationId,
-            sender: data.sender,
-            platform: data.platform,
-          });
-
-          // Always refresh when new messages come in to ensure sync
-          console.log(
-            `🔄 Refreshing MessageInbox due to new ${platform} message event`
-          );
-          if (conversationId && platform !== "whatsapp") {
-            fetchMessages();
-          }
-        };
-
-        // Platform-specific event listeners
-        if (platform === "facebook") {
-          onNewFacebookMessageEvent(handleEnhancedNewMessage);
-        } else if (platform === "instagram") {
-          onNewInstagramMessageEvent(handleEnhancedNewMessage);
-        }
-
-        // Store cleanup function for enhanced handlers
-        (socket as any)._enhancedCleanup = () => {
-          offNewSocialMessage(handleEnhancedNewSocialMessage);
-          if (platform === "facebook") {
-            offNewFacebookMessageEvent(handleEnhancedNewMessage);
-          } else if (platform === "instagram") {
-            offNewInstagramMessageEvent(handleEnhancedNewMessage);
-          }
-        };
-      }
+    console.log(
+      "🔧 MessageInbox: Setting up Socket.IO listeners for platform:",
+      platform
     );
+    console.log("📋 MessageInbox: Current conversation ID:", conversationId);
+
+    // Simple and reliable social message handler
+    const handleWebhookMessage = (data: any) => {
+      console.log("� MessageInbox: Webhook message received:", data);
+      console.log("📋 MessageInbox: Current conversation ID:", conversationId);
+      console.log(
+        "📋 MessageInbox: Message conversation ID:",
+        data.conversationId
+      );
+      console.log("📋 MessageInbox: Message sender ID:", data.sender);
+
+      // Check if message is for current conversation
+      const isForCurrentConversation =
+        conversationId &&
+        (data.conversationId === conversationId ||
+          data.sender === conversationId);
+
+      console.log(
+        "🎯 MessageInbox: Is for current conversation?",
+        isForCurrentConversation
+      );
+
+      if (isForCurrentConversation) {
+        console.log(
+          "✅ MessageInbox: Adding message immediately to current conversation"
+        );
+
+        const newMessage = {
+          id: data.messageId || data.message?.id || Date.now().toString(),
+          text: data.text || data.message?.text || "[Message]",
+          sender: "other", // From customer
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar: `https://via.placeholder.com/40x40/1877F2/ffffff?text=${(
+            data.platform || "F"
+          )
+            .charAt(0)
+            .toUpperCase()}`,
+          created_time: data.timestamp || new Date().toISOString(),
+          from: {
+            id: data.sender || data.conversationId,
+            name: `${data.platform || "Facebook"} User`,
+          },
+        };
+
+        console.log(
+          "📝 MessageInbox: Adding new message to state:",
+          newMessage
+        );
+        setMessages((prev) => {
+          console.log("📝 MessageInbox: Previous messages count:", prev.length);
+          const updated = [...prev, newMessage];
+          console.log(
+            "📝 MessageInbox: Updated messages count:",
+            updated.length
+          );
+          return updated;
+        });
+
+        // Scroll to bottom to show new message
+        setTimeout(() => {
+          console.log("📜 MessageInbox: Scrolling to bottom");
+          scrollToBottom();
+        }, 100);
+      }
+
+      // Always also refresh to ensure full sync
+      console.log("🔄 MessageInbox: Also triggering full refresh");
+      if (conversationId && platform !== "whatsapp") {
+        fetchMessages();
+      }
+    };
+
+    // Set up direct socket event listeners
+    console.log("🔧 MessageInbox: Setting up direct socket event listeners");
+    socket.on("new_social_message", handleWebhookMessage);
+
+    if (platform === "facebook") {
+      console.log("� MessageInbox: Adding Facebook-specific listeners");
+      socket.on("new_facebook_message", handleWebhookMessage);
+      socket.on("refresh_facebook_chat", (data: any) => {
+        console.log("🔄 MessageInbox: Facebook refresh event received:", data);
+        if (conversationId) {
+          console.log(
+            "🔄 MessageInbox: Refreshing messages due to Facebook refresh event"
+          );
+          fetchMessages();
+        }
+      });
+    } else if (platform === "instagram") {
+      console.log("🔧 MessageInbox: Adding Instagram-specific listeners");
+      socket.on("new_instagram_message", handleWebhookMessage);
+      socket.on("refresh_instagram_chat", (data: any) => {
+        console.log("🔄 MessageInbox: Instagram refresh event received:", data);
+        if (conversationId) {
+          console.log(
+            "🔄 MessageInbox: Refreshing messages due to Instagram refresh event"
+          );
+          fetchMessages();
+        }
+      });
+    }
 
     // Add listeners for legacy events
     socket.on("new_social_message", handleNewSocialMessage);
@@ -463,17 +461,22 @@ export default function MessageInbox({
 
     // Cleanup
     return () => {
+      console.log("🧹 MessageInbox: Cleaning up socket listeners");
       socketEventHandlers.offNewInstagramMessage();
-      socket.off("new_social_message", handleNewSocialMessage);
-      socket.off("messages_synced", handleMessagesSynced);
 
-      // Remove platform-specific refresh event listeners
+      // Clean up direct socket listeners
+      socket.off("new_social_message", handleWebhookMessage);
+
       if (platform === "facebook") {
-        socket.off("refresh_facebook_chat", handleChatRefresh);
+        socket.off("new_facebook_message", handleWebhookMessage);
+        socket.off("refresh_facebook_chat");
       } else if (platform === "instagram") {
-        socket.off("refresh_instagram_chat", handleChatRefresh);
+        socket.off("new_instagram_message", handleWebhookMessage);
+        socket.off("refresh_instagram_chat");
       }
 
+      // Clean up other event handlers
+      socket.off("messages_synced", handleMessagesSynced);
       socket.off("new_facebook_message", handleNewMessage);
       socket.off("new_instagram_message", handleNewMessage);
     };
