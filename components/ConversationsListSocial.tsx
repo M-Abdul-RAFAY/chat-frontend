@@ -257,6 +257,10 @@ export default function ConversationsListSocial({
         timestamp: string;
       }) => {
         console.log("📱 New social message in conversation list:", data);
+        console.log(
+          "🔄 Triggering conversation list refresh due to new social message"
+        );
+        setRefreshTrigger(Date.now());
 
         if (data.platform === "instagram") {
           // Update conversation list with new message
@@ -268,6 +272,37 @@ export default function ConversationsListSocial({
                   lastMessage: data.text || "[Attachment]",
                   lastMessageTime: data.timestamp,
                   unread: true,
+                };
+              }
+              return conversation;
+            });
+          });
+        } else if (data.platform === "facebook") {
+          // Update conversation list with new Facebook message
+          setFacebookMessages((prevMessages) => {
+            return prevMessages.map((conversation) => {
+              if (conversation.id === data.conversationId) {
+                // Update the conversation with new message info
+                const updatedMessages = conversation.messages?.data
+                  ? [...conversation.messages.data]
+                  : [];
+                // Add new message to the beginning (most recent first)
+                updatedMessages.unshift({
+                  id: data.messageId,
+                  message: data.text || "[Attachment]",
+                  from: {
+                    name: "Customer",
+                    id: data.sender,
+                  },
+                  created_time: data.timestamp,
+                });
+
+                return {
+                  ...conversation,
+                  messages: {
+                    ...conversation.messages,
+                    data: updatedMessages,
+                  },
                 };
               }
               return conversation;
