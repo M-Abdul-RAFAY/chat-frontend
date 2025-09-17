@@ -446,69 +446,8 @@ export default function MessageInbox({
           }
         }
       } else if (platform === "instagram") {
-        // Fetch Instagram DMs - try database first (fast), then fallback to API
-
-        // Try to get messages from database first (much faster)
-        try {
-          const dbResponse = await fetch(
-            `http://localhost:4000/api/v1/meta/social/messages/${conversationId}`
-          );
-          const dbData = await dbResponse.json();
-
-          if (dbData.success && dbData.messages.length > 0) {
-            console.log("⚡ Using fast database data for Instagram messages");
-
-            // Convert database format to expected format
-            const formattedMessages = dbData.messages.map((msg: any) => ({
-              id: msg.messageId,
-              message: msg.text || "[Attachment]",
-              created_time: msg.timestamp,
-              from: {
-                id: msg.senderId,
-                username: msg.senderName,
-                profilePicture: msg.senderProfilePicture,
-              },
-              to: {
-                data: [
-                  {
-                    id: msg.recipientId,
-                  },
-                ],
-              },
-              attachments: msg.attachments,
-            }));
-
-            setMessages(formattedMessages);
-
-            // Set conversation participant info from database
-            if (dbData.messages.length > 0) {
-              const firstMessage = dbData.messages[0];
-              const avatarUrl =
-                firstMessage.senderProfilePicture ||
-                `https://via.placeholder.com/50x50/E1306C/ffffff?text=${(
-                  firstMessage.senderName || "IG"
-                )
-                  .charAt(0)
-                  .toUpperCase()}`;
-
-              setConversationParticipant({
-                name: firstMessage.senderName || "Instagram User",
-                avatar: avatarUrl,
-                status: "Active on Instagram",
-              });
-            }
-
-            return; // Exit early if database data was successful
-          }
-        } catch (dbError) {
-          console.log(
-            "📱 Database message fetch failed, falling back to API:",
-            dbError
-          );
-        }
-
-        // Fallback to API if database doesn't have the data
-        console.log("📱 Falling back to API for Instagram messages");
+        // Fetch Instagram DMs directly from API
+        console.log("📱 Fetching Instagram messages from API");
         const apiResponse = await fetch(
           "http://localhost:4000/api/v1/meta/instagram/messages"
         );

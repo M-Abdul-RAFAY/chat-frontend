@@ -376,58 +376,20 @@ export default function ConversationsListSocial({
           }
         } else if (platform === "instagram") {
           if (contentType === "messages") {
-            // Try to fetch Instagram messages/DMs from database first (fast)
-            try {
-              const dbResponse = await fetch(
-                "http://localhost:4000/api/v1/meta/social/conversations?platform=instagram"
-              );
-              const dbData = await dbResponse.json();
+            // Fetch Instagram DMs directly from API
+            console.log("📱 Fetching Instagram conversations from API");
+            const response = await fetch(
+              "http://localhost:4000/api/v1/meta/instagram/messages"
+            );
+            const data = await response.json();
 
-              if (dbData.success && dbData.conversations.length > 0) {
-                // Use database data (fast)
-                console.log(
-                  "📱 Using fast database data for Instagram conversations"
-                );
-                setInstagramMessages(dbData.conversations);
-              } else {
-                // Fallback to API data (slower)
-                console.log(
-                  "📱 Falling back to API data for Instagram conversations"
-                );
-                const response = await fetch(
-                  "http://localhost:4000/api/v1/meta/instagram/messages"
-                );
-                const data = await response.json();
-
-                if (data.error) {
-                  setError(data.error);
-                } else {
-                  setInstagramMessages(data.data || []);
-                  // If limited access, show helpful message
-                  if (data.limited_access) {
-                    setError(data.message);
-                  }
-                }
-              }
-            } catch (dbError) {
-              console.log(
-                "📱 Database fetch failed, falling back to API:",
-                dbError
-              );
-              // Fallback to API if database fails
-              const response = await fetch(
-                "http://localhost:4000/api/v1/meta/instagram/messages"
-              );
-              const data = await response.json();
-
-              if (data.error) {
-                setError(data.error);
-              } else {
-                setInstagramMessages(data.data || []);
-                // If limited access, show helpful message
-                if (data.limited_access) {
-                  setError(data.message);
-                }
+            if (data.error) {
+              setError(data.error);
+            } else {
+              setInstagramMessages(data.data || []);
+              // If limited access, show helpful message
+              if (data.limited_access) {
+                setError(data.message);
               }
             }
           } else {
