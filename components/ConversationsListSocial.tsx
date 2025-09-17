@@ -15,6 +15,9 @@ interface ConversationsListProps {
 interface FacebookConversation {
   id: string;
   message?: string; // For posts, this contains the post content
+  lastMessage?: string; // Last message text for quick display
+  lastMessageTime?: string; // Last message timestamp
+  unread?: boolean; // Unread status from socket updates
   participants?: {
     data: Array<{
       id: string;
@@ -623,6 +626,19 @@ export default function ConversationsListSocial({
           }
         }
 
+        // Get the most recent message for display
+        const mostRecentMessage = conv.messages?.data?.[0]; // Assuming array is ordered with newest first
+        const displayLastMessage = 
+          conv.lastMessage || // Use socket-updated lastMessage field first
+          mostRecentMessage?.message || 
+          (contentType === "messages" ? "No messages" : "No comments");
+
+        const displayTimestamp = 
+          conv.lastMessageTime || // Use socket-updated timestamp first
+          (mostRecentMessage?.created_time 
+            ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "");
+
         return {
           id: conv.id,
           name:
@@ -634,16 +650,9 @@ export default function ConversationsListSocial({
                 }`
               : "Post without caption",
           avatar: participantAvatar,
-          lastMessage:
-            contentType === "messages"
-              ? conv.messages?.data?.[0]?.message || "No messages"
-              : conv.messages?.data?.[0]?.message || "No comments",
-          timestamp: conv.messages?.data?.[0]?.created_time
-            ? new Date(
-                conv.messages?.data?.[0]?.created_time
-              ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "",
-          unread: 0,
+          lastMessage: displayLastMessage,
+          timestamp: displayTimestamp,
+          unread: conv.unread ? 1 : 0,
           online: false,
         };
       });
@@ -661,17 +670,26 @@ export default function ConversationsListSocial({
             customer?.profilePicture ||
             "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
 
+          // Get the most recent message for display
+          const mostRecentMessage = conv.messages?.data?.[0];
+          const displayLastMessage = 
+            conv.lastMessage || // Use socket-updated lastMessage field first
+            mostRecentMessage?.message || 
+            "No messages";
+
+          const displayTimestamp = 
+            conv.lastMessageTime || // Use socket-updated timestamp first
+            (mostRecentMessage?.created_time 
+              ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              : "");
+
           return {
             id: conv.id,
             name: customerName,
             avatar: customerAvatar,
-            lastMessage: conv.messages?.data?.[0]?.message || "No messages",
-            timestamp: conv.messages?.data?.[0]?.created_time
-              ? new Date(
-                  conv.messages?.data?.[0]?.created_time
-                ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              : "",
-            unread: 0,
+            lastMessage: displayLastMessage,
+            timestamp: displayTimestamp,
+            unread: conv.unread ? 1 : 0,
             online: false,
           };
         });
