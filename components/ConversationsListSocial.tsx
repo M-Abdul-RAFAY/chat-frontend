@@ -8,16 +8,15 @@ interface ConversationsListProps {
   selectedConversation: string | null;
   onConversationSelect: (id: string) => void;
   onMobileViewChange: (view: "platforms" | "conversations" | "inbox") => void;
-  // onContentTypeChange?: (contentType: "messages" | "posts") => void; // Commented out since switching is disabled
   isMobile?: boolean;
 }
 
 interface FacebookConversation {
   id: string;
-  message?: string; // For posts, this contains the post content
-  lastMessage?: string; // Last message text for quick display
-  lastMessageTime?: string; // Last message timestamp
-  unread?: boolean; // Unread status from socket updates
+  message?: string;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  unread?: boolean;
   participants?: {
     data: Array<{
       id: string;
@@ -60,7 +59,6 @@ interface InstagramPost {
   }>;
 }
 
-// Mock conversations data
 const mockConversations = {
   whatsapp: [
     {
@@ -93,16 +91,6 @@ const mockConversations = {
       timestamp: "11:20 AM",
       unread: 0,
       online: true,
-    },
-    {
-      id: "4",
-      name: "Alex Chen",
-      avatar:
-        "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      lastMessage: "Thanks for the help with the code review!",
-      timestamp: "Yesterday",
-      unread: 1,
-      online: false,
     },
   ],
   facebook: [
@@ -149,16 +137,6 @@ const mockConversations = {
       unread: 1,
       online: false,
     },
-    {
-      id: "9",
-      name: "jessica_designs",
-      avatar:
-        "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      lastMessage: "Can you share the color palette?",
-      timestamp: "1:10 PM",
-      unread: 1,
-      online: true,
-    },
   ],
 };
 
@@ -167,7 +145,6 @@ export default function ConversationsListSocial({
   selectedConversation,
   onConversationSelect,
   onMobileViewChange,
-  // onContentTypeChange, // Commented out since switching is disabled
   isMobile,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -182,318 +159,267 @@ export default function ConversationsListSocial({
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Fixed content type to "messages" since switching is disabled
   const contentType = "messages";
 
-  // Socket integration for real-time Instagram conversation updates
+  // MAIN SOCKET HANDLERS FOR BOTH PLATFORMS
   useEffect(() => {
-    if (platform === "instagram") {
-      // Import socket functions when needed to avoid compilation errors
-      const handleNewInstagramConversation = (
-        newConversation: FacebookConversation
-      ) => {
-        console.log("🆕 New Instagram conversation received:", newConversation);
+    console.log("🔌 Setting up socket handlers for BOTH platforms");
 
-        // Add new conversation to the list if it's not already there
-        setInstagramMessages((prevMessages) => {
-          const exists = prevMessages.find(
-            (msg) => msg.id === newConversation.id
+    // Instagram message handler
+    const handleInstagramMessage = (data: {
+      conversationId: string;
+      message: any;
+    }) => {
+      console.log("📷 Instagram message update received:", {
+        conversationId: data.conversationId,
+        messageText: data.message?.text,
+        messageTimestamp: data.message?.timestamp,
+      });
+
+      setInstagramMessages((prev) => {
+        console.log("📷 Current Instagram conversations:", prev.length);
+        const index = prev.findIndex((conv) => conv.id === data.conversationId);
+
+        if (index >= 0) {
+          console.log("📷 Found conversation at index:", index);
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            lastMessage: data.message.text || "[Attachment]",
+            lastMessageTime: data.message.timestamp,
+            unread: true,
+          };
+          const updatedConv = updated.splice(index, 1)[0];
+          console.log(
+            "✅ Instagram conversation updated with lastMessage:",
+            updatedConv.lastMessage
           );
-          if (!exists) {
-            console.log("📝 Adding new conversation to list");
-            return [newConversation, ...prevMessages];
-          }
-          return prevMessages;
-        });
-      };
-
-      // Handle real-time Instagram messages
-      const handleNewInstagramMessage = (data: {
-        conversationId: string;
-        message: any;
-        platform: string;
-      }) => {
-        console.log(
-          "📷 New Instagram message received in conversation list:",
-          data
-        );
-
-        // Update the conversation list to mark unread and update last message
-        setInstagramMessages((prevMessages) => {
-          return prevMessages.map((conversation) => {
-            if (conversation.id === data.conversationId) {
-              // Update the conversation with the new message info
-              return {
-                ...conversation,
-                lastMessage: data.message.text || "[Attachment]",
-                lastMessageTime: data.message.timestamp,
-                unread: true,
-              };
-            }
-            return conversation;
-          });
-        });
-      };
-
-      // Handle conversations sync completion
-      const handleConversationsSynced = (data: {
-        platform: string;
-        count: number;
-        timestamp: string;
-      }) => {
-        console.log("🔄 Conversations synced:", data);
-
-        if (data.platform === "instagram") {
-          console.log("📱 Instagram conversations updated, refreshing list");
-          // Optionally trigger a refresh of the conversation list
-          // You could refetch data here or show a notification
-        }
-      };
-
-      // Handle new social media messages (universal event) with enhanced real-time updates
-      const handleNewSocialMessage = (data: {
-        conversationId: string;
-        messageId: string;
-        platform: string;
-        sender: string;
-        text: string;
-        timestamp: string;
-      }) => {
-        console.log("📱 New social message in conversation list:", data);
-
-        // Don't trigger full refresh - just update existing conversations
-        if (data.platform === "instagram") {
-          // Update existing Instagram conversation with new message
-          setInstagramMessages((prevMessages) => {
-            const existingIndex = prevMessages.findIndex(
-              (conv) => conv.id === data.conversationId
-            );
-
-            if (existingIndex >= 0) {
-              console.log(
-                "🔄 Updating existing Instagram conversation lastMessage:",
-                data.text
-              );
-              // Update existing conversation
-              const updated = [...prevMessages];
-              updated[existingIndex] = {
-                ...updated[existingIndex],
-                lastMessage: data.text || "[Attachment]",
-                lastMessageTime: data.timestamp,
-                unread: true,
-              };
-
-              // Move to top of list for most recent activity
-              const updatedConv = updated.splice(existingIndex, 1)[0];
-              console.log(
-                "✅ Instagram lastMessage updated to:",
-                updatedConv.lastMessage
-              );
-              return [updatedConv, ...updated];
-            } else {
-              console.log(
-                "❌ Instagram conversation not found for update:",
-                data.conversationId
-              );
-              return prevMessages;
-            }
-          });
-        } else if (data.platform === "facebook") {
-          // Update existing Facebook conversation with new message
-          setFacebookMessages((prevMessages) => {
-            const existingIndex = prevMessages.findIndex(
-              (conv) => conv.id === data.conversationId
-            );
-
-            if (existingIndex >= 0) {
-              console.log(
-                "🔄 Updating existing Facebook conversation lastMessage:",
-                data.text
-              );
-              // Update existing conversation
-              const updated = [...prevMessages];
-              const conversation = updated[existingIndex];
-
-              updated[existingIndex] = {
-                ...conversation,
-                lastMessage: data.text || "[Attachment]",
-                lastMessageTime: data.timestamp,
-                unread: true,
-              };
-
-              // Move to top of list for most recent activity
-              const updatedConv = updated.splice(existingIndex, 1)[0];
-              console.log(
-                "✅ Facebook lastMessage updated to:",
-                updatedConv.lastMessage
-              );
-              return [updatedConv, ...updated];
-            } else {
-              console.log(
-                "❌ Facebook conversation not found for update:",
-                data.conversationId
-              );
-              return prevMessages;
-            }
-          });
-        }
-      };
-
-      // Set up socket event listeners
-      import("@/lib/socket").then(
-        ({
-          socketEventHandlers,
-          connectSocket,
-          getSocket,
-          onRefreshInstagramChat,
-          onNewSocialMessage,
-          onNewInstagramMessageEvent,
-          offRefreshInstagramChat,
-          offNewSocialMessage,
-        }) => {
-          connectSocket();
-          socketEventHandlers.onNewInstagramConversation(
-            handleNewInstagramConversation
+          return [updatedConv, ...updated];
+        } else {
+          console.log(
+            "❌ Instagram conversation not found in list:",
+            data.conversationId
           );
-          socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
-
-          // Add listeners for new sync events
-          const socket = getSocket();
-          if (socket) {
-            socket.on("conversations_synced", handleConversationsSynced);
-
-            // Use dedicated social media event handlers
-            onNewSocialMessage((data: any) => handleNewSocialMessage(data));
-
-            // Listen for platform-specific refresh events from webhooks
-            const handleChatRefresh = (data: {
-              platform: string;
-              timestamp: string;
-              reason: string;
-            }) => {
-              console.log(
-                "🔄 Chat refresh event received in conversations list:",
-                data
-              );
-              // Trigger a re-fetch by updating the refresh trigger
-              console.log("🔄 Triggering conversation list refresh");
-              setRefreshTrigger(Date.now());
-            };
-
-            // Listen for platform-specific refresh events
-            onRefreshInstagramChat(handleChatRefresh);
-            onNewInstagramMessageEvent((data: any) => {
-              console.log(
-                "🔔 New Instagram message event in conversation list:",
-                data
-              );
-              console.log(
-                "🔄 Refreshing conversation list due to new Instagram message"
-              );
-              setRefreshTrigger(Date.now());
-            });
-
-            // Store cleanup functions
-            (socket as any)._conversationListCleanup = () => {
-              socket.off("conversations_synced", handleConversationsSynced);
-              offNewSocialMessage((data: any) => handleNewSocialMessage(data));
-
-              offRefreshInstagramChat(handleChatRefresh);
-            };
-          }
+          console.log(
+            "❌ Available conversations:",
+            prev.map((c) => c.id)
+          );
         }
-      );
+        return prev;
+      });
+    };
 
-      // Cleanup
-      return () => {
-        import("@/lib/socket").then(({ socketEventHandlers, getSocket }) => {
-          socketEventHandlers.offNewInstagramConversation();
-          socketEventHandlers.offNewInstagramMessage();
+    // Universal social message handler
+    const handleSocialMessage = (data: {
+      conversationId: string;
+      platform: string;
+      text: string;
+      timestamp: string;
+    }) => {
+      console.log("🌐 Social message update received:", {
+        platform: data.platform,
+        conversationId: data.conversationId,
+        text: data.text,
+        timestamp: data.timestamp,
+      });
 
-          // Remove new event listeners
-          const socket = getSocket();
-          if (socket && (socket as any)._conversationListCleanup) {
-            (socket as any)._conversationListCleanup();
+      if (data.platform === "instagram") {
+        setInstagramMessages((prev) => {
+          console.log(
+            "🌐 Updating Instagram via universal handler, conversations:",
+            prev.length
+          );
+          const index = prev.findIndex(
+            (conv) => conv.id === data.conversationId
+          );
+          if (index >= 0) {
+            console.log("🌐 Found Instagram conversation at index:", index);
+            const updated = [...prev];
+            updated[index] = {
+              ...updated[index],
+              lastMessage: data.text || "[Attachment]",
+              lastMessageTime: data.timestamp,
+              unread: true,
+            };
+            const updatedConv = updated.splice(index, 1)[0];
+            console.log(
+              "✅ Instagram updated via universal handler, lastMessage:",
+              updatedConv.lastMessage
+            );
+            return [updatedConv, ...updated];
+          } else {
+            console.log(
+              "❌ Instagram conversation not found via universal handler:",
+              data.conversationId
+            );
           }
+          return prev;
         });
-      };
-    }
-  }, [platform]);
+      } else if (data.platform === "facebook") {
+        setFacebookMessages((prev) => {
+          console.log(
+            "🌐 Updating Facebook via universal handler, conversations:",
+            prev.length
+          );
+          const index = prev.findIndex(
+            (conv) => conv.id === data.conversationId
+          );
+          if (index >= 0) {
+            console.log("🌐 Found Facebook conversation at index:", index);
+            const updated = [...prev];
+            updated[index] = {
+              ...updated[index],
+              lastMessage: data.text || "[Attachment]",
+              lastMessageTime: data.timestamp,
+              unread: true,
+            };
+            const updatedConv = updated.splice(index, 1)[0];
+            console.log(
+              "✅ Facebook updated via universal handler, lastMessage:",
+              updatedConv.lastMessage
+            );
+            return [updatedConv, ...updated];
+          } else {
+            console.log(
+              "❌ Facebook conversation not found via universal handler:",
+              data.conversationId
+            );
+          }
+          return prev;
+        });
+      }
+    };
 
-  // Fetch data when platform or contentType changes
+    // Setup socket connections
+    import("@/lib/socket").then(
+      ({
+        socketEventHandlers,
+        connectSocket,
+        getSocket,
+        onNewSocialMessage,
+        onRefreshInstagramChat,
+        onRefreshFacebookChat,
+        offNewSocialMessage,
+        offRefreshInstagramChat,
+        offRefreshFacebookChat,
+      }) => {
+        console.log("🔌 ConversationsListSocial: Starting socket setup");
+        connectSocket();
+
+        const socket = getSocket();
+        if (socket) {
+          console.log(
+            "🔌 ConversationsListSocial: Socket connected successfully"
+          );
+          console.log("🔌 ConversationsListSocial: Socket ID:", socket.id);
+
+          // Add raw event listeners to see ALL events being received
+          socket.onAny((eventName: string, ...args: any[]) => {
+            console.log(
+              `🎯 ConversationsListSocial: Raw socket event received: ${eventName}`,
+              args
+            );
+          });
+
+          // Always register Instagram handlers
+          console.log(
+            "🔌 ConversationsListSocial: Registering Instagram message handler"
+          );
+          socketEventHandlers.onNewInstagramMessage(handleInstagramMessage);
+
+          // Universal message handler for both platforms
+          console.log(
+            "🔌 ConversationsListSocial: Registering universal social message handler"
+          );
+          onNewSocialMessage((data: any) => {
+            console.log(
+              "🌐 ConversationsListSocial: new_social_message event received!",
+              data
+            );
+            handleSocialMessage(data);
+          });
+
+          // Refresh handlers
+          const handleRefresh = () => {
+            console.log("🔄 ConversationsListSocial: Triggering refresh");
+            setRefreshTrigger(Date.now());
+          };
+
+          console.log(
+            "🔌 ConversationsListSocial: Registering refresh handlers"
+          );
+          onRefreshInstagramChat((data: any) => {
+            console.log(
+              "📷 ConversationsListSocial: refresh_instagram_chat event received!",
+              data
+            );
+            handleRefresh();
+          });
+
+          onRefreshFacebookChat((data: any) => {
+            console.log(
+              "📘 ConversationsListSocial: refresh_facebook_chat event received!",
+              data
+            );
+            handleRefresh();
+          });
+
+          // Store cleanup
+          (socket as any)._cleanup = () => {
+            offNewSocialMessage((data: any) => handleSocialMessage(data));
+            offRefreshInstagramChat(handleRefresh);
+            offRefreshFacebookChat(handleRefresh);
+          };
+        } else {
+          console.error(
+            "❌ ConversationsListSocial: Failed to get socket connection"
+          );
+        }
+      }
+    );
+
+    return () => {
+      console.log("🧹 Cleaning up socket handlers");
+      import("@/lib/socket").then(({ socketEventHandlers, getSocket }) => {
+        socketEventHandlers.offNewInstagramMessage();
+        const socket = getSocket();
+        if (socket && (socket as any)._cleanup) {
+          (socket as any)._cleanup();
+        }
+      });
+    };
+  }, []); // No dependencies - always active
+
+  // Fetch data when platform changes
   useEffect(() => {
     const fetchData = async () => {
-      if (platform === "whatsapp") {
-        return; // WhatsApp not implemented yet
-      }
+      if (platform === "whatsapp") return;
 
       setLoading(true);
       setError(null);
 
       try {
         if (platform === "facebook") {
-          if (contentType === "messages") {
-            const response = await fetch(
-              "http://localhost:4000/api/v1/meta/facebook/messages"
-            );
-            const data = await response.json();
-
-            if (data.error) {
-              setError(data.error);
-            } else {
-              setFacebookMessages(data.data || []);
-            }
+          const response = await fetch(
+            "http://localhost:4000/api/v1/meta/facebook/messages"
+          );
+          const data = await response.json();
+          if (data.error) {
+            setError(data.error);
           } else {
-            // Fetch Facebook posts/comments
-            const response = await fetch(
-              "http://localhost:4000/api/v1/meta/facebook/comments"
-            );
-            const data = await response.json();
-
-            if (data.error) {
-              setError(data.error);
-            } else {
-              // Convert posts to conversation format for display
-              const postConversations =
-                data.data?.map((post: any) => ({
-                  id: post.id,
-                  message: post.message, // Keep the original post message
-                  messages: {
-                    data: post.comments?.data || [],
-                  },
-                })) || [];
-              setFacebookMessages(postConversations);
-            }
+            setFacebookMessages(data.data || []);
           }
         } else if (platform === "instagram") {
-          if (contentType === "messages") {
-            // Fetch Instagram DMs directly from API
-            console.log("📱 Fetching Instagram conversations from API");
-            const response = await fetch(
-              "http://localhost:4000/api/v1/meta/instagram/messages"
-            );
-            const data = await response.json();
-
-            if (data.error) {
-              setError(data.error);
-            } else {
-              setInstagramMessages(data.data || []);
-              // If limited access, show helpful message
-              if (data.limited_access) {
-                setError(data.message);
-              }
-            }
+          const response = await fetch(
+            "http://localhost:4000/api/v1/meta/instagram/messages"
+          );
+          const data = await response.json();
+          if (data.error) {
+            setError(data.error);
           } else {
-            // Fetch Instagram posts/comments
-            const response = await fetch(
-              "http://localhost:4000/api/v1/meta/instagram/comments"
-            );
-            const data = await response.json();
-
-            if (data.error) {
-              setError(data.error);
-            } else {
-              setInstagramPosts(data.data || []);
+            setInstagramMessages(data.data || []);
+            if (data.limited_access) {
+              setError(data.message);
             }
           }
         }
@@ -506,46 +432,36 @@ export default function ConversationsListSocial({
     };
 
     fetchData();
-  }, [platform, contentType, refreshTrigger]);
+  }, [platform, refreshTrigger]);
 
-  // Convert real data to match the existing UI structure
+  // Convert real data to UI format
   const getConversations = () => {
     if (platform === "whatsapp") {
-      return mockConversations.whatsapp; // Keep mock data for WhatsApp
+      return mockConversations.whatsapp;
     } else if (platform === "facebook") {
       return facebookMessages.map((conv) => {
-        // Extract the participant name and profile picture (customer) from the conversation
         let participantName = "Unknown Contact";
         let participantAvatar =
           "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
 
         if (conv.messages?.data && conv.messages.data.length > 0) {
-          // Get the page ID from the status (we'll use a known page ID for now)
-          const pageId = "732727859927862"; // Hive Metrics page ID
-
-          // Find a message from someone who is NOT the page (i.e., the customer)
+          const pageId = "732727859927862";
           const customerMessage = conv.messages.data.find(
             (msg) => msg.from?.id !== pageId
           );
-
           if (customerMessage && customerMessage.from?.name) {
             participantName = customerMessage.from.name;
-            // Use the profile picture if available
             if (customerMessage.from.profilePicture) {
               participantAvatar = customerMessage.from.profilePicture;
             }
           }
         }
 
-        // Get the most recent message for display
-        const mostRecentMessage = conv.messages?.data?.[0]; // Assuming array is ordered with newest first
+        const mostRecentMessage = conv.messages?.data?.[0];
         const displayLastMessage =
-          conv.lastMessage || // Use socket-updated lastMessage field first
-          mostRecentMessage?.message ||
-          (contentType === "messages" ? "No messages" : "No comments");
-
+          conv.lastMessage || mostRecentMessage?.message || "No messages";
         const displayTimestamp =
-          conv.lastMessageTime || // Use socket-updated timestamp first
+          conv.lastMessageTime ||
           (mostRecentMessage?.created_time
             ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -553,16 +469,17 @@ export default function ConversationsListSocial({
               })
             : "");
 
+        // Debug logging for Facebook conversations
+        console.log(`📘 Facebook conv ${conv.id}:`, {
+          socketLastMessage: conv.lastMessage,
+          apiLastMessage: mostRecentMessage?.message,
+          displayLastMessage,
+          hasMessages: conv.messages?.data?.length || 0,
+        });
+
         return {
           id: conv.id,
-          name:
-            contentType === "messages"
-              ? participantName
-              : conv.message
-              ? `${conv.message.substring(0, 30)}${
-                  conv.message.length > 30 ? "..." : ""
-                }`
-              : "Post without caption",
+          name: participantName,
           avatar: participantAvatar,
           lastMessage: displayLastMessage,
           timestamp: displayTimestamp,
@@ -571,67 +488,46 @@ export default function ConversationsListSocial({
         };
       });
     } else if (platform === "instagram") {
-      if (contentType === "messages") {
-        // Show Instagram DMs with proper participant data
-        return instagramMessages.map((conv) => {
-          // Find the customer (non-business) participant
-          const participants = conv.participants?.data || [];
-          const customer = participants.find(
-            (p) => p.username !== "hivemetrics12" // Your business username
-          );
-          const customerName = customer?.username || "Instagram User";
-          const customerAvatar =
-            customer?.profilePicture ||
-            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
+      return instagramMessages.map((conv) => {
+        const participants = conv.participants?.data || [];
+        const customer = participants.find(
+          (p) => p.username !== "hivemetrics12"
+        );
+        const customerName = customer?.username || "Instagram User";
+        const customerAvatar =
+          customer?.profilePicture ||
+          "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop";
 
-          // Get the most recent message for display
-          const mostRecentMessage = conv.messages?.data?.[0];
-          const displayLastMessage =
-            conv.lastMessage || // Use socket-updated lastMessage field first
-            mostRecentMessage?.message ||
-            "No messages";
-
-          const displayTimestamp =
-            conv.lastMessageTime || // Use socket-updated timestamp first
-            (mostRecentMessage?.created_time
-              ? new Date(mostRecentMessage.created_time).toLocaleTimeString(
-                  [],
-                  { hour: "2-digit", minute: "2-digit" }
-                )
-              : "");
-
-          return {
-            id: conv.id,
-            name: customerName,
-            avatar: customerAvatar,
-            lastMessage: displayLastMessage,
-            timestamp: displayTimestamp,
-            unread: conv.unread ? 1 : 0,
-            online: false,
-          };
-        });
-      } else {
-        // Show Instagram posts and comments
-        return instagramPosts.map((post) => ({
-          id: post.id,
-          name: post.caption
-            ? `${post.caption.substring(0, 30)}${
-                post.caption.length > 30 ? "..." : ""
-              }`
-            : "Post without caption",
-          avatar:
-            "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-          lastMessage: post.comments?.[0]?.text || "No comments",
-          timestamp: post.comments?.[0]?.timestamp
-            ? new Date(post.comments?.[0]?.timestamp).toLocaleTimeString([], {
+        const mostRecentMessage = conv.messages?.data?.[0];
+        const displayLastMessage =
+          conv.lastMessage || mostRecentMessage?.message || "No messages";
+        const displayTimestamp =
+          conv.lastMessageTime ||
+          (mostRecentMessage?.created_time
+            ? new Date(mostRecentMessage.created_time).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
-            : "",
-          unread: post.comments_count,
+            : "");
+
+        // Debug logging for Instagram conversations
+        console.log(`📷 Instagram conv ${conv.id}:`, {
+          socketLastMessage: conv.lastMessage,
+          apiLastMessage: mostRecentMessage?.message,
+          displayLastMessage,
+          hasMessages: conv.messages?.data?.length || 0,
+        });
+
+        return {
+          id: conv.id,
+          name: customerName,
+          avatar: customerAvatar,
+          lastMessage: displayLastMessage,
+          timestamp: displayTimestamp,
+          unread: conv.unread ? 1 : 0,
           online: false,
-        }));
-      }
+        };
+      });
     }
     return [];
   };
@@ -675,7 +571,6 @@ export default function ConversationsListSocial({
           </button>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -689,42 +584,9 @@ export default function ConversationsListSocial({
             className="w-full pl-10 pr-4 py-2 bg-white/20 text-white placeholder-white/70 rounded-full focus:outline-none focus:bg-white/30 transition-colors"
           />
         </div>
-
-        {/* Content Type Filter Buttons - Only for Facebook and Instagram */}
-        {/* COMMENTED OUT: DMs and Posts switching buttons */}
-        {/* {platform !== "whatsapp" && (
-          <div className="mt-3 flex space-x-2">
-            <button
-              onClick={() => {
-                setContentType("messages");
-                onContentTypeChange?.("messages");
-              }}
-              className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
-                contentType === "messages"
-                  ? "bg-white text-blue-600"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              }`}
-            >
-              💬 {platform === "facebook" ? "Messages" : "DMs"}
-            </button>
-            <button
-              onClick={() => {
-                setContentType("posts");
-                onContentTypeChange?.("posts");
-              }}
-              className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors ${
-                contentType === "posts"
-                  ? "bg-white text-blue-600"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              }`}
-            >
-              📱 {platform === "facebook" ? "Posts" : "Posts"}
-            </button>
-          </div>
-        )} */}
       </div>
 
-      {/* Conversations */}
+      {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="p-4 text-center text-gray-500">
@@ -743,10 +605,7 @@ export default function ConversationsListSocial({
         ) : filteredConversations.length === 0 && platform !== "whatsapp" ? (
           <div className="p-4 text-center text-gray-500">
             <div className="mb-2">{platform === "facebook" ? "📘" : "📷"}</div>
-            <div>
-              No {platform}{" "}
-              {platform === "facebook" ? "conversations" : "posts"} found
-            </div>
+            <div>No {platform} conversations found</div>
           </div>
         ) : (
           filteredConversations.map((conversation) => (
@@ -765,7 +624,6 @@ export default function ConversationsListSocial({
                   : "border-transparent"
               }`}
             >
-              {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <img
                   src={conversation.avatar}
@@ -777,7 +635,6 @@ export default function ConversationsListSocial({
                 )}
               </div>
 
-              {/* Content */}
               <div className="flex-1 text-left overflow-hidden">
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="font-medium text-gray-900 truncate">
