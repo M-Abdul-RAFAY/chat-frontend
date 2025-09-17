@@ -1138,7 +1138,8 @@ export default function MessageInbox({
 
           if (!response.ok) {
             throw new Error(
-              responseData.error || "Failed to send Instagram message with attachments"
+              responseData.error ||
+                "Failed to send Instagram message with attachments"
             );
           }
         } else {
@@ -1156,7 +1157,9 @@ export default function MessageInbox({
           const responseData = await response.json();
 
           if (!response.ok) {
-            throw new Error(responseData.error || "Failed to send Instagram message");
+            throw new Error(
+              responseData.error || "Failed to send Instagram message"
+            );
           }
         }
       }
