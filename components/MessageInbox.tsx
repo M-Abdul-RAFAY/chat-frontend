@@ -301,10 +301,122 @@ export default function MessageInbox({
       }
     };
 
-    // Set up event listeners
+    // Set up event listeners with improved sync handling
     socketEventHandlers.onNewInstagramMessage(handleNewInstagramMessage);
 
-    // Add listeners for new events
+    // Import social media specific event handlers
+    import("@/lib/socket").then(
+      ({
+        onRefreshFacebookChat,
+        onRefreshInstagramChat,
+        onNewSocialMessage,
+        onNewFacebookMessageEvent,
+        onNewInstagramMessageEvent,
+        offRefreshFacebookChat,
+        offRefreshInstagramChat,
+        offNewSocialMessage,
+        offNewFacebookMessageEvent,
+        offNewInstagramMessageEvent,
+      }) => {
+        // Enhanced social message handler with real-time message insertion
+        const handleEnhancedNewSocialMessage = (data: {
+          conversationId: string;
+          messageId: string;
+          platform: string;
+          sender: string;
+          text: string;
+          timestamp: string;
+        }) => {
+          console.log("📱 Enhanced social message in MessageInbox:", data);
+          console.log("📋 Current conversation ID:", conversationId);
+          console.log("📋 Message conversation ID:", data.conversationId);
+          console.log("📋 Message sender ID:", data.sender);
+
+          // If message is for current conversation, add it immediately
+          if (
+            conversationId &&
+            (data.conversationId === conversationId ||
+              data.sender === conversationId)
+          ) {
+            console.log(
+              "✅ Message is for current conversation, adding immediately"
+            );
+            const newMessage = {
+              id: data.messageId,
+              text: data.text || "[Attachment]",
+              sender: "other", // From customer
+              timestamp: new Date(data.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              avatar: `https://via.placeholder.com/40x40/1877F2/ffffff?text=${data.platform
+                .charAt(0)
+                .toUpperCase()}`,
+              created_time: data.timestamp,
+              from: {
+                id: data.sender,
+                name: `${data.platform} User`,
+              },
+            };
+
+            // Add message to state immediately for real-time display
+            setMessages((prev) => [...prev, newMessage]);
+
+            // Scroll to bottom to show new message
+            setTimeout(() => {
+              scrollToBottom();
+            }, 100);
+          }
+
+          // Always also refresh to ensure full sync
+          console.log("🔄 Also refreshing MessageInbox to ensure full sync");
+          if (conversationId && platform !== "whatsapp") {
+            fetchMessages();
+          }
+        };
+
+        // Set up dedicated social media event listeners
+        onNewSocialMessage(handleEnhancedNewSocialMessage);
+
+        // Enhanced message event handler that always triggers refresh
+        const handleEnhancedNewMessage = (data: any) => {
+          console.log(`🔔 Enhanced ${platform} message event received:`, data);
+          console.log("📋 Current conversation ID:", conversationId);
+          console.log("📋 Message data:", {
+            conversationId: data.conversationId,
+            sender: data.sender,
+            platform: data.platform,
+          });
+
+          // Always refresh when new messages come in to ensure sync
+          console.log(
+            `🔄 Refreshing MessageInbox due to new ${platform} message event`
+          );
+          if (conversationId && platform !== "whatsapp") {
+            fetchMessages();
+          }
+        };
+
+        // Platform-specific event listeners
+        if (platform === "facebook") {
+          onNewFacebookMessageEvent(handleEnhancedNewMessage);
+        } else if (platform === "instagram") {
+          onNewInstagramMessageEvent(handleEnhancedNewMessage);
+        }
+
+        // Store cleanup function for enhanced handlers
+        (socket as any)._enhancedCleanup = () => {
+          offNewSocialMessage(handleEnhancedNewSocialMessage);
+          if (platform === "facebook") {
+            offNewFacebookMessageEvent(handleEnhancedNewMessage);
+          } else if (platform === "instagram") {
+            offNewInstagramMessageEvent(handleEnhancedNewMessage);
+          }
+        };
+      }
+    );
+
+    // Add listeners for legacy events
     socket.on("new_social_message", handleNewSocialMessage);
     socket.on("messages_synced", handleMessagesSynced);
 

@@ -281,3 +281,97 @@ export const genericSocketEmit = (event: string, data: unknown) => {
     console.warn("❌ Cannot emit event - socket not connected");
   }
 };
+
+// Social Media Event Handlers
+export const onRefreshFacebookChat = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Setting up refresh_facebook_chat event listener");
+    socket.on("refresh_facebook_chat", (data) => {
+      console.log("🎯 Facebook chat refresh event received:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offRefreshFacebookChat = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Removing refresh_facebook_chat event listener");
+    socket.off("refresh_facebook_chat", callback);
+  }
+};
+
+export const onRefreshInstagramChat = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Setting up refresh_instagram_chat event listener");
+    socket.on("refresh_instagram_chat", (data) => {
+      console.log("🎯 Instagram chat refresh event received:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offRefreshInstagramChat = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Removing refresh_instagram_chat event listener");
+    socket.off("refresh_instagram_chat", callback);
+  }
+};
+
+export const onNewSocialMessage = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Setting up new_social_message event listener");
+    socket.on("new_social_message", (data) => {
+      console.log("🎯 New social message event received:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offNewSocialMessage = (callback: (data: unknown) => void) => {
+  if (socket) {
+    console.log("🔧 Removing new_social_message event listener");
+    socket.off("new_social_message", callback);
+  }
+};
+
+export const onNewFacebookMessageEvent = (
+  callback: (data: unknown) => void
+) => {
+  if (socket) {
+    console.log("🔧 Setting up new_facebook_message event listener");
+    socket.on("new_facebook_message", (data) => {
+      console.log("🎯 New Facebook message event received:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offNewFacebookMessageEvent = (
+  callback: (data: unknown) => void
+) => {
+  if (socket) {
+    console.log("🔧 Removing new_facebook_message event listener");
+    socket.off("new_facebook_message", callback);
+  }
+};
+
+export const onNewInstagramMessageEvent = (
+  callback: (data: unknown) => void
+) => {
+  if (socket) {
+    console.log("🔧 Setting up new_instagram_message event listener");
+    socket.on("new_instagram_message", (data) => {
+      console.log("🎯 New Instagram message event received:", data);
+      callback(data);
+    });
+  }
+};
+
+export const offNewInstagramMessageEvent = (
+  callback: (data: unknown) => void
+) => {
+  if (socket) {
+    console.log("🔧 Removing new_instagram_message event listener");
+    socket.off("new_instagram_message", callback);
+  }
+};

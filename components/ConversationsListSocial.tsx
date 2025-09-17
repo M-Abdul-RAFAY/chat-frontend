@@ -247,7 +247,7 @@ export default function ConversationsListSocial({
         }
       };
 
-      // Handle new social media messages (universal event)
+      // Handle new social media messages (universal event) with enhanced real-time updates
       const handleNewSocialMessage = (data: {
         conversationId: string;
         messageId: string;
@@ -263,57 +263,162 @@ export default function ConversationsListSocial({
         setRefreshTrigger(Date.now());
 
         if (data.platform === "instagram") {
-          // Update conversation list with new message
+          // Update or create Instagram conversation with new message
           setInstagramMessages((prevMessages) => {
-            return prevMessages.map((conversation) => {
-              if (conversation.id === data.conversationId) {
-                return {
-                  ...conversation,
-                  lastMessage: data.text || "[Attachment]",
-                  lastMessageTime: data.timestamp,
-                  unread: true,
-                };
-              }
-              return conversation;
-            });
+            const existingIndex = prevMessages.findIndex(
+              (conv) => conv.id === data.conversationId
+            );
+
+            if (existingIndex >= 0) {
+              // Update existing conversation
+              const updated = [...prevMessages];
+              updated[existingIndex] = {
+                ...updated[existingIndex],
+                lastMessage: data.text || "[Attachment]",
+                lastMessageTime: data.timestamp,
+                unread: true,
+              };
+
+              // Move to top of list for most recent activity
+              const updatedConv = updated.splice(existingIndex, 1)[0];
+              return [updatedConv, ...updated];
+            } else {
+              // Create new conversation for new sender
+              const newConversation = {
+                id: data.conversationId,
+                participants: {
+                  data: [
+                    {
+                      id: data.sender,
+                      name: `Instagram User`,
+                      username: `user_${data.sender}`,
+                    },
+                  ],
+                },
+                messages: {
+                  data: [
+                    {
+                      id: data.messageId,
+                      message: data.text || "[Attachment]",
+                      from: {
+                        name: `Instagram User`,
+                        id: data.sender,
+                      },
+                      created_time: data.timestamp,
+                    },
+                  ],
+                },
+                lastMessage: data.text || "[Attachment]",
+                lastMessageTime: data.timestamp,
+                unread: true,
+              };
+
+              console.log(
+                "➕ Creating new Instagram conversation:",
+                newConversation
+              );
+              return [newConversation, ...prevMessages];
+            }
           });
         } else if (data.platform === "facebook") {
-          // Update conversation list with new Facebook message
+          // Update or create Facebook conversation with new message
           setFacebookMessages((prevMessages) => {
-            return prevMessages.map((conversation) => {
-              if (conversation.id === data.conversationId) {
-                // Update the conversation with new message info
-                const updatedMessages = conversation.messages?.data
-                  ? [...conversation.messages.data]
-                  : [];
-                // Add new message to the beginning (most recent first)
-                updatedMessages.unshift({
-                  id: data.messageId,
-                  message: data.text || "[Attachment]",
-                  from: {
-                    name: "Customer",
-                    id: data.sender,
-                  },
-                  created_time: data.timestamp,
-                });
+            const existingIndex = prevMessages.findIndex(
+              (conv) => conv.id === data.conversationId
+            );
 
-                return {
-                  ...conversation,
-                  messages: {
-                    ...conversation.messages,
-                    data: updatedMessages,
-                  },
-                };
-              }
-              return conversation;
-            });
+            if (existingIndex >= 0) {
+              // Update existing conversation
+              const updated = [...prevMessages];
+              const conversation = updated[existingIndex];
+
+              // Update the conversation with new message info
+              const updatedMessages = conversation.messages?.data
+                ? [...conversation.messages.data]
+                : [];
+
+              // Add new message to the beginning (most recent first)
+              updatedMessages.unshift({
+                id: data.messageId,
+                message: data.text || "[Attachment]",
+                from: {
+                  name: "Customer",
+                  id: data.sender,
+                },
+                created_time: data.timestamp,
+              });
+
+              updated[existingIndex] = {
+                ...conversation,
+                messages: {
+                  ...conversation.messages,
+                  data: updatedMessages,
+                },
+                lastMessage: data.text || "[Attachment]",
+                lastMessageTime: data.timestamp,
+                unread: true,
+              };
+
+              // Move to top of list for most recent activity
+              const updatedConv = updated.splice(existingIndex, 1)[0];
+              return [updatedConv, ...updated];
+            } else {
+              // Create new conversation for new sender
+              const newConversation = {
+                id: data.conversationId,
+                participants: {
+                  data: [
+                    {
+                      id: data.sender,
+                      name: "Facebook User",
+                    },
+                  ],
+                },
+                messages: {
+                  data: [
+                    {
+                      id: data.messageId,
+                      message: data.text || "[Attachment]",
+                      from: {
+                        name: "Facebook User",
+                        id: data.sender,
+                      },
+                      created_time: data.timestamp,
+                    },
+                  ],
+                },
+                lastMessage: data.text || "[Attachment]",
+                lastMessageTime: data.timestamp,
+                unread: true,
+              };
+
+              console.log(
+                "➕ Creating new Facebook conversation:",
+                newConversation
+              );
+              return [newConversation, ...prevMessages];
+            }
           });
         }
       };
 
       // Set up socket event listeners
       import("@/lib/socket").then(
-        ({ socketEventHandlers, connectSocket, getSocket }) => {
+        ({
+          socketEventHandlers,
+          connectSocket,
+          getSocket,
+          onRefreshFacebookChat,
+          onRefreshInstagramChat,
+          onNewSocialMessage,
+          onNewFacebookMessageEvent,
+          onNewInstagramMessageEvent,
+          offRefreshFacebookChat,
+          offRefreshInstagramChat,
+          offNewSocialMessage,
+          offNewFacebookMessageEvent,
+          offNewInstagramMessageEvent,
+        }) => {
           connectSocket();
           socketEventHandlers.onNewInstagramConversation(
             handleNewInstagramConversation
@@ -324,7 +429,9 @@ export default function ConversationsListSocial({
           const socket = getSocket();
           if (socket) {
             socket.on("conversations_synced", handleConversationsSynced);
-            socket.on("new_social_message", handleNewSocialMessage);
+
+            // Use dedicated social media event handlers
+            onNewSocialMessage(handleNewSocialMessage);
 
             // Listen for platform-specific refresh events from webhooks
             const handleChatRefresh = (data: {
@@ -343,34 +450,41 @@ export default function ConversationsListSocial({
 
             // Listen for platform-specific refresh events
             if (platform === "facebook") {
-              socket.on("refresh_facebook_chat", handleChatRefresh);
+              onRefreshFacebookChat(handleChatRefresh);
+              onNewFacebookMessageEvent((data: any) => {
+                console.log(
+                  "🔔 New Facebook message event in conversation list:",
+                  data
+                );
+                console.log(
+                  "🔄 Refreshing conversation list due to new Facebook message"
+                );
+                setRefreshTrigger(Date.now());
+              });
             } else if (platform === "instagram") {
-              socket.on("refresh_instagram_chat", handleChatRefresh);
+              onRefreshInstagramChat(handleChatRefresh);
+              onNewInstagramMessageEvent((data: any) => {
+                console.log(
+                  "🔔 New Instagram message event in conversation list:",
+                  data
+                );
+                console.log(
+                  "🔄 Refreshing conversation list due to new Instagram message"
+                );
+                setRefreshTrigger(Date.now());
+              });
             }
-
-            // Also listen for new message events to refresh conversation list
-            const handleNewMessage = (data: any) => {
-              console.log("🔔 New message event in conversation list:", data);
-              console.log("🔄 Refreshing conversation list due to new message");
-              setRefreshTrigger(Date.now());
-            };
-
-            socket.on("new_facebook_message", handleNewMessage);
-            socket.on("new_instagram_message", handleNewMessage);
 
             // Store cleanup functions
             (socket as any)._conversationListCleanup = () => {
               socket.off("conversations_synced", handleConversationsSynced);
-              socket.off("new_social_message", handleNewSocialMessage);
+              offNewSocialMessage(handleNewSocialMessage);
 
               if (platform === "facebook") {
-                socket.off("refresh_facebook_chat", handleChatRefresh);
+                offRefreshFacebookChat(handleChatRefresh);
               } else if (platform === "instagram") {
-                socket.off("refresh_instagram_chat", handleChatRefresh);
+                offRefreshInstagramChat(handleChatRefresh);
               }
-
-              socket.off("new_facebook_message", handleNewMessage);
-              socket.off("new_instagram_message", handleNewMessage);
             };
           }
         }
