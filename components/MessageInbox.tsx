@@ -205,12 +205,107 @@ export default function MessageInbox({
       }
     };
 
-    // Set up the event listener
+    console.log("🔧 MessageInbox: Setting up Facebook Socket.IO listeners");
+    console.log("📋 MessageInbox: Current conversation ID:", conversationId);
+
+    // Simple and reliable Facebook webhook message handler
+    const handleFacebookWebhookMessage = (data: any) => {
+      console.log("🚀 MessageInbox: Facebook webhook message received:", data);
+      console.log("📋 MessageInbox: Current conversation ID:", conversationId);
+      console.log(
+        "📋 MessageInbox: Message conversation ID:",
+        data.conversationId
+      );
+      console.log("📋 MessageInbox: Message sender ID:", data.sender);
+
+      // Check if message is for current conversation
+      const isForCurrentConversation =
+        conversationId &&
+        (data.conversationId === conversationId ||
+          data.sender === conversationId);
+
+      console.log(
+        "🎯 MessageInbox: Is for current conversation?",
+        isForCurrentConversation
+      );
+
+      if (isForCurrentConversation) {
+        console.log(
+          "✅ MessageInbox: Adding Facebook message immediately to current conversation"
+        );
+
+        const newMessage = {
+          id: data.messageId || data.message?.id || Date.now().toString(),
+          text: data.text || data.message?.text || "[Message]",
+          sender: "other", // From customer
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar: `https://via.placeholder.com/40x40/1877F2/ffffff?text=F`,
+          created_time: data.timestamp || new Date().toISOString(),
+          from: {
+            id: data.sender || data.conversationId,
+            name: "Facebook User",
+          },
+        };
+
+        console.log(
+          "📝 MessageInbox: Adding new Facebook message to state:",
+          newMessage
+        );
+        setMessages((prev) => {
+          console.log("📝 MessageInbox: Previous messages count:", prev.length);
+          const updated = [...prev, newMessage];
+          console.log(
+            "📝 MessageInbox: Updated messages count:",
+            updated.length
+          );
+          return updated;
+        });
+
+        // Scroll to bottom to show new message
+        setTimeout(() => {
+          console.log("📜 MessageInbox: Scrolling to bottom");
+          scrollToBottom();
+        }, 100);
+      }
+
+      // Always also refresh to ensure full sync
+      console.log("🔄 MessageInbox: Also triggering full refresh for Facebook");
+      if (conversationId) {
+        fetchMessages();
+      }
+    };
+
+    // Set up both old and new Facebook event listeners
     socketEventHandlers.onNewFacebookMessage(handleNewFacebookMessage);
+
+    // Set up direct socket event listeners for webhook events
+    console.log("🔧 MessageInbox: Setting up Facebook webhook event listeners");
+    socket.on("new_social_message", handleFacebookWebhookMessage);
+    socket.on("new_facebook_message", handleFacebookWebhookMessage);
+
+    // Listen for Facebook refresh events
+    socket.on("refresh_facebook_chat", (data: any) => {
+      console.log("🔄 MessageInbox: Facebook refresh event received:", data);
+      if (conversationId) {
+        console.log(
+          "🔄 MessageInbox: Refreshing messages due to Facebook refresh event"
+        );
+        fetchMessages();
+      }
+    });
 
     // Cleanup
     return () => {
+      console.log("🧹 MessageInbox: Cleaning up Facebook socket listeners");
       socketEventHandlers.offNewFacebookMessage();
+
+      // Clean up direct socket listeners
+      socket.off("new_social_message", handleFacebookWebhookMessage);
+      socket.off("new_facebook_message", handleFacebookWebhookMessage);
+      socket.off("refresh_facebook_chat");
     };
   }, [conversationId, platform]);
 
@@ -461,24 +556,17 @@ export default function MessageInbox({
 
     // Cleanup
     return () => {
-      console.log("🧹 MessageInbox: Cleaning up socket listeners");
+      console.log("🧹 MessageInbox: Cleaning up Instagram socket listeners");
       socketEventHandlers.offNewInstagramMessage();
 
-      // Clean up direct socket listeners
+      // Clean up Instagram webhook listeners (still using the general handleWebhookMessage)
       socket.off("new_social_message", handleWebhookMessage);
+      socket.off("new_instagram_message", handleWebhookMessage);
+      socket.off("refresh_instagram_chat");
 
-      if (platform === "facebook") {
-        socket.off("new_facebook_message", handleWebhookMessage);
-        socket.off("refresh_facebook_chat");
-      } else if (platform === "instagram") {
-        socket.off("new_instagram_message", handleWebhookMessage);
-        socket.off("refresh_instagram_chat");
-      }
-
-      // Clean up other event handlers
+      // Clean up legacy event handlers
+      socket.off("new_social_message", handleNewSocialMessage);
       socket.off("messages_synced", handleMessagesSynced);
-      socket.off("new_facebook_message", handleNewMessage);
-      socket.off("new_instagram_message", handleNewMessage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, platform]);
