@@ -22,6 +22,7 @@ interface MessageInboxProps {
   contentType?: "messages" | "posts";
   onBack: () => void;
   isMobile?: boolean;
+  userId?: string;
 }
 
 interface FacebookMessage {
@@ -132,6 +133,7 @@ export default function MessageInbox({
   contentType = "messages",
   onBack,
   isMobile,
+  userId,
 }: MessageInboxProps) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
@@ -578,13 +580,18 @@ export default function MessageInbox({
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
 
+    if (!userId) {
+      console.log("No userId provided, skipping messages fetch");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       // First get the connection status to know the page ID
       const statusResponse = await fetch(
-        "http://localhost:4000/api/v1/meta/status"
+        `http://localhost:4000/api/v1/meta/status?userId=${userId}`
       );
       const statusData = await statusResponse.json();
       const pageId = statusData.page_id;
@@ -593,8 +600,8 @@ export default function MessageInbox({
         // Choose endpoint based on contentType
         const endpoint =
           contentType === "messages"
-            ? "http://localhost:4000/api/v1/meta/facebook/messages"
-            : "http://localhost:4000/api/v1/meta/facebook/comments";
+            ? `http://localhost:4000/api/v1/meta/facebook/messages?userId=${userId}`
+            : `http://localhost:4000/api/v1/meta/facebook/comments?userId=${userId}`;
 
         const response = await fetch(endpoint);
         const data = await response.json();
@@ -687,7 +694,7 @@ export default function MessageInbox({
         // Fetch Instagram DMs directly from API
         console.log("📱 Fetching Instagram messages from API");
         const apiResponse = await fetch(
-          "http://localhost:4000/api/v1/meta/instagram/messages"
+          `http://localhost:4000/api/v1/meta/instagram/messages?userId=${userId}`
         );
         const apiData = await apiResponse.json();
 
@@ -781,7 +788,7 @@ export default function MessageInbox({
     } finally {
       setLoading(false);
     }
-  }, [conversationId, platform, contentType]);
+  }, [conversationId, platform, contentType, userId]);
 
   if (!conversationId) {
     return (

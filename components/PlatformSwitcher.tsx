@@ -8,6 +8,7 @@ interface PlatformSwitcherProps {
   selectedPlatform: "facebook" | "instagram" | "whatsapp";
   onPlatformChange: (platform: "facebook" | "instagram" | "whatsapp") => void;
   isMobile?: boolean;
+  userId?: string;
 }
 
 interface PageDetails {
@@ -48,17 +49,21 @@ export default function PlatformSwitcher({
   selectedPlatform,
   onPlatformChange,
   isMobile,
+  userId,
 }: PlatformSwitcherProps) {
   const [pageDetails, setPageDetails] = useState<PageDetails | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // Fetch page details when component mounts
   useEffect(() => {
     const fetchPageDetails = async () => {
+      if (!userId) {
+        console.log("No userId provided, skipping page details fetch");
+        return;
+      }
+
       try {
-        setLoading(true);
         const response = await fetch(
-          "http://localhost:4000/api/v1/meta/page-details"
+          `http://localhost:4000/api/v1/meta/page-details?userId=${userId}`
         );
         const data = await response.json();
 
@@ -67,13 +72,11 @@ export default function PlatformSwitcher({
         }
       } catch (error) {
         console.error("Failed to fetch page details:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchPageDetails();
-  }, []);
+  }, [userId]);
   if (isMobile) {
     return (
       <div className="p-4 bg-white">
