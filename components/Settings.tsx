@@ -124,6 +124,15 @@ export default function Settings() {
 
   // Business brand guidelines
   const [brandGuidelines, setBrandGuidelines] = useState({
+    businessInfo: {
+      businessName: "",
+      phoneNumber: "",
+      email: "",
+      websiteUrl: "",
+      businessType: "",
+      industry: "",
+      targetAudience: "",
+    },
     brandVoice: {
       tone: "professional",
       style: "",
@@ -520,6 +529,15 @@ export default function Settings() {
       if (response.ok) {
         // Reset to default values
         setBrandGuidelines({
+          businessInfo: {
+            businessName: "",
+            phoneNumber: "",
+            email: "",
+            websiteUrl: "",
+            businessType: "",
+            industry: "",
+            targetAudience: "",
+          },
           brandVoice: { tone: "professional", style: "", personality: "" },
           communicationStyle: {
             formalityLevel: "",
@@ -1110,6 +1128,172 @@ export default function Settings() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-6">
+                {/* Business Information Section */}
+                <div className="space-y-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Building className="w-5 h-5 text-blue-600" />
+                    Business Information
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Business Name
+                      </label>
+                      <input
+                        type="text"
+                        value={brandGuidelines.businessInfo.businessName}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              businessName: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Your business name"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Business Type
+                      </label>
+                      <select
+                        value={brandGuidelines.businessInfo.businessType}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              businessType: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select business type</option>
+                        <option value="B2B">B2B (Business to Business)</option>
+                        <option value="B2C">B2C (Business to Consumer)</option>
+                        <option value="B2B2C">
+                          B2B2C (Business to Business to Consumer)
+                        </option>
+                        <option value="C2C">C2C (Consumer to Consumer)</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        <Phone className="w-4 h-4 inline mr-1" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        value={brandGuidelines.businessInfo.phoneNumber}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              phoneNumber: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={brandGuidelines.businessInfo.email}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              email: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="contact@yourcompany.com"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        <Globe className="w-4 h-4 inline mr-1" />
+                        Website URL
+                      </label>
+                      <input
+                        type="url"
+                        value={brandGuidelines.businessInfo.websiteUrl}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              websiteUrl: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="https://www.yourcompany.com"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Industry
+                      </label>
+                      <input
+                        type="text"
+                        value={brandGuidelines.businessInfo.industry}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              industry: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Technology, Healthcare, Retail, etc."
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Target Audience
+                      </label>
+                      <textarea
+                        value={brandGuidelines.businessInfo.targetAudience}
+                        onChange={(e) =>
+                          setBrandGuidelines({
+                            ...brandGuidelines,
+                            businessInfo: {
+                              ...brandGuidelines.businessInfo,
+                              targetAudience: e.target.value,
+                            },
+                          })
+                        }
+                        rows={2}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Describe your target customers and their characteristics..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-700">
                     Company Description
