@@ -960,8 +960,9 @@ export default function Settings() {
                   Social Media AI Settings
                 </h2>
                 <p className="text-gray-600">
-                  Configure AI-generated responses for your social media
-                  platforms
+                  Enable AI-powered auto-replies for customer messages on your
+                  social media platforms. Responses are generated instantly when
+                  customers send messages.
                 </p>
               </div>
             </div>
@@ -976,7 +977,7 @@ export default function Settings() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Facebook AI</h3>
                     <p className="text-sm text-gray-600">
-                      Auto-generate responses for Facebook messages
+                      AI instantly replies to customer messages on Facebook
                     </p>
                   </div>
                 </div>
@@ -999,7 +1000,7 @@ export default function Settings() {
                       Instagram AI
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Auto-generate responses for Instagram messages
+                      AI instantly replies to customer DMs on Instagram
                     </p>
                   </div>
                 </div>

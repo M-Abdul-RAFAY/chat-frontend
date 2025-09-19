@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@clerk/nextjs";
 import MessagingApp from "@/components/messagingApp";
 import FadeContent from "@/components/FadeContent";
 
@@ -12,6 +13,7 @@ interface ConnectionStatus {
 }
 
 const SocialMediaPage = () => {
+  const { user } = useUser();
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -19,6 +21,26 @@ const SocialMediaPage = () => {
   const [messageType, setMessageType] = useState<"success" | "error">(
     "success"
   );
+
+  const checkStatus = useCallback(async () => {
+    if (!user?.id) {
+      console.log("User not available for status check");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/meta/status?userId=${user.id}`
+      );
+      const data = await response.json();
+      setStatus(data);
+    } catch (err) {
+      console.error("Failed to check status:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
 
   // Check connection status on load and handle URL parameters
   useEffect(() => {
@@ -41,23 +63,21 @@ const SocialMediaPage = () => {
       // Clean up URL
       window.history.replaceState({}, "", "/dashboard/social-media");
     }
-
-    checkStatus();
   }, []);
 
-  const checkStatus = async () => {
-    try {
-      const response = await fetch("http://localhost:4000/api/v1/meta/status");
-      const data = await response.json();
-      setStatus(data);
-    } catch (err) {
-      console.error("Failed to check status:", err);
-    } finally {
-      setLoading(false);
+  // Separate useEffect to call checkStatus when user is available
+  useEffect(() => {
+    if (user?.id) {
+      checkStatus();
     }
-  };
+  }, [user?.id, checkStatus]);
 
   const handleConnect = () => {
+    if (!user?.id) {
+      console.error("User not authenticated");
+      return;
+    }
+
     setConnecting(true);
     const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID || "1442659767055424";
     const redirectUri =
@@ -74,10 +94,14 @@ const SocialMediaPage = () => {
       "instagram_manage_insights",
     ].join(",");
 
+    // Include userId in the state parameter so it's available in the callback
+    const state = encodeURIComponent(JSON.stringify({ userId: user.id }));
+
     window.location.href =
       `https://www.facebook.com/v23.0/dialog/oauth?client_id=${fbAppId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&scope=${scope}`;
+      `&scope=${scope}` +
+      `&state=${state}`;
   };
 
   if (loading) {
@@ -259,7 +283,7 @@ const SocialMediaPage = () => {
         </div>
       )}
 
-      <MessagingApp />
+      <MessagingApp userId={user?.id} />
     </div>
   );
 };

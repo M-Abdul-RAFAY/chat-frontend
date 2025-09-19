@@ -6,7 +6,11 @@ import ConversationsListSocial from "@/components/ConversationsListSocial";
 import MessageInbox from "@/components/MessageInbox";
 import { initializeSocket, getSocket } from "@/lib/socket";
 
-export default function MessagingApp() {
+interface MessagingAppProps {
+  userId?: string;
+}
+
+export default function MessagingApp({ userId }: MessagingAppProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<
     "facebook" | "instagram" | "whatsapp"
   >("whatsapp");
@@ -67,6 +71,7 @@ export default function MessagingApp() {
         <PlatformSwitcher
           selectedPlatform={selectedPlatform}
           onPlatformChange={setSelectedPlatform}
+          userId={userId}
         />
       </div>
 
@@ -77,6 +82,7 @@ export default function MessagingApp() {
           selectedConversation={selectedConversation}
           onConversationSelect={setSelectedConversation}
           onMobileViewChange={setMobileView}
+          userId={userId}
           // onContentTypeChange={setContentType} // Commented out since switching is disabled
         />
       </div>
@@ -88,6 +94,7 @@ export default function MessagingApp() {
           conversationId={selectedConversation}
           contentType={contentType}
           onBack={() => setSelectedConversation(null)}
+          userId={userId}
         />
       </div>
 
@@ -141,6 +148,7 @@ export default function MessagingApp() {
                 setMobileView("conversations");
               }}
               isMobile={true}
+              userId={userId}
             />
           )}
           {mobileView === "conversations" && (
@@ -152,6 +160,7 @@ export default function MessagingApp() {
                 setMobileView("inbox");
               }}
               onMobileViewChange={setMobileView}
+              userId={userId}
               // onContentTypeChange={setContentType} // Commented out since switching is disabled
               isMobile={true}
             />
@@ -163,6 +172,7 @@ export default function MessagingApp() {
               contentType={contentType}
               onBack={() => setMobileView("conversations")}
               isMobile={true}
+              userId={userId}
             />
           )}
         </div>

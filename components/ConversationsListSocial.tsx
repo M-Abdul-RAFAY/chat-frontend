@@ -9,6 +9,7 @@ interface ConversationsListProps {
   onConversationSelect: (id: string) => void;
   onMobileViewChange: (view: "platforms" | "conversations" | "inbox") => void;
   isMobile?: boolean;
+  userId?: string;
 }
 
 interface FacebookConversation {
@@ -146,6 +147,7 @@ export default function ConversationsListSocial({
   onConversationSelect,
   onMobileViewChange,
   isMobile,
+  userId,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [facebookMessages, setFacebookMessages] = useState<
@@ -395,13 +397,18 @@ export default function ConversationsListSocial({
     const fetchData = async () => {
       if (platform === "whatsapp") return;
 
+      if (!userId) {
+        console.log("No userId provided, skipping data fetch");
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
       try {
         if (platform === "facebook") {
           const response = await fetch(
-            "http://localhost:4000/api/v1/meta/facebook/messages"
+            `http://localhost:4000/api/v1/meta/facebook/messages?userId=${userId}`
           );
           const data = await response.json();
           if (data.error) {
@@ -411,7 +418,7 @@ export default function ConversationsListSocial({
           }
         } else if (platform === "instagram") {
           const response = await fetch(
-            "http://localhost:4000/api/v1/meta/instagram/messages"
+            `http://localhost:4000/api/v1/meta/instagram/messages?userId=${userId}`
           );
           const data = await response.json();
           if (data.error) {
@@ -432,7 +439,7 @@ export default function ConversationsListSocial({
     };
 
     fetchData();
-  }, [platform, refreshTrigger]);
+  }, [platform, refreshTrigger, userId]);
 
   // Convert real data to UI format
   const getConversations = () => {

@@ -133,7 +133,6 @@ export default function MessageInbox({
   contentType = "messages",
   onBack,
   isMobile,
-  userId,
 }: MessageInboxProps) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
@@ -586,7 +585,7 @@ export default function MessageInbox({
     try {
       // First get the connection status to know the page ID
       const statusResponse = await fetch(
-        `http://localhost:4000/api/v1/meta/status?userId=${userId}`
+        "http://localhost:4000/api/v1/meta/status"
       );
       const statusData = await statusResponse.json();
       const pageId = statusData.page_id;
@@ -595,8 +594,8 @@ export default function MessageInbox({
         // Choose endpoint based on contentType
         const endpoint =
           contentType === "messages"
-            ? `http://localhost:4000/api/v1/meta/facebook/messages?userId=${userId}`
-            : `http://localhost:4000/api/v1/meta/facebook/comments?userId=${userId}`;
+            ? "http://localhost:4000/api/v1/meta/facebook/messages"
+            : "http://localhost:4000/api/v1/meta/facebook/comments";
 
         const response = await fetch(endpoint);
         const data = await response.json();
@@ -689,7 +688,7 @@ export default function MessageInbox({
         // Fetch Instagram DMs directly from API
         console.log("📱 Fetching Instagram messages from API");
         const apiResponse = await fetch(
-          `http://localhost:4000/api/v1/meta/instagram/messages?userId=${userId}`
+          "http://localhost:4000/api/v1/meta/instagram/messages"
         );
         const apiData = await apiResponse.json();
 
@@ -783,7 +782,7 @@ export default function MessageInbox({
     } finally {
       setLoading(false);
     }
-  }, [conversationId, platform, contentType, userId]);
+  }, [conversationId, platform, contentType]);
 
   if (!conversationId) {
     return (
@@ -1040,8 +1039,8 @@ export default function MessageInbox({
       if (platform === "facebook") {
         const endpoint =
           contentType === "messages"
-            ? `http://localhost:4000/api/v1/meta/facebook/send-message?userId=${userId}`
-            : `http://localhost:4000/api/v1/meta/facebook/send-comment?userId=${userId}`;
+            ? `http://localhost:4000/api/v1/meta/facebook/send-message`
+            : `http://localhost:4000/api/v1/meta/facebook/send-comment`;
 
         // If there are files, we need to handle file upload differently
         if (filesToSend.length > 0) {
@@ -1102,8 +1101,8 @@ export default function MessageInbox({
       } else if (platform === "instagram") {
         const endpoint =
           contentType === "messages"
-            ? `http://localhost:4000/api/v1/meta/instagram/send-message?userId=${userId}`
-            : `http://localhost:4000/api/v1/meta/instagram/send-comment?userId=${userId}`;
+            ? `http://localhost:4000/api/v1/meta/instagram/send-message`
+            : `http://localhost:4000/api/v1/meta/instagram/send-comment`;
 
         // Handle file uploads for Instagram (similar to Facebook)
         if (filesToSend.length > 0) {
