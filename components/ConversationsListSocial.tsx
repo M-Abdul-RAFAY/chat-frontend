@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, MoreVertical } from "lucide-react";
+import { Search, MoreVertical, MessageCircle, Users } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ConversationsListSkeleton } from "./skeletons/ConversationSkeleton";
 
 interface ConversationsListProps {
   platform: "facebook" | "instagram" | "whatsapp";
@@ -546,138 +547,197 @@ export default function ConversationsListSocial({
       conv.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getPlatformColor = (platform: string) => {
+  const getPlatformColors = (platform: string) => {
     switch (platform) {
       case "whatsapp":
-        return "bg-[#31a122]";
+        return {
+          header: "bg-gradient-to-br from-green-600 to-green-700",
+          border: "border-green-500",
+          badge: "bg-green-600",
+          selected:
+            "bg-gradient-to-br from-green-50 to-green-100 border-l-green-500",
+        };
       case "facebook":
-        return "bg-blue-600";
+        return {
+          header: "bg-gradient-to-br from-blue-600 to-blue-700",
+          border: "border-blue-500",
+          badge: "bg-blue-600",
+          selected:
+            "bg-gradient-to-br from-blue-50 to-blue-100 border-l-blue-500",
+        };
       case "instagram":
-        return "bg-gradient-to-br from-purple-600 via-pink-600 to-orange-400";
+        return {
+          header:
+            "bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500",
+          border: "border-pink-500",
+          badge: "bg-gradient-to-r from-purple-500 to-pink-500",
+          selected:
+            "bg-gradient-to-br from-pink-50 to-purple-100 border-l-pink-500",
+        };
       default:
-        return "bg-gray-500";
+        return {
+          header: "bg-gray-500",
+          border: "border-gray-500",
+          badge: "bg-gray-500",
+          selected: "bg-gray-50 border-l-gray-500",
+        };
     }
   };
+
+  const colors = getPlatformColors(platform);
+
+  const totalUnread = filteredConversations.reduce(
+    (sum, conv) => sum + conv.unread,
+    0
+  );
 
   return (
     <div
       className={`${
         isMobile ? "w-full" : "w-80"
-      } bg-white border-r border-gray-200 flex flex-col h-full`}
+      } bg-white border-r border-gray-200/50 flex flex-col h-full shadow-sm`}
     >
       {/* Header */}
       <div
-        className={`p-4 border-b border-gray-200 ${getPlatformColor(platform)}`}
+        className={`p-4 border-b border-gray-200/50 ${colors.header} shadow-lg`}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white font-semibold text-lg capitalize">
-            {platform}
-          </h2>
-          <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+          <div className="flex items-center space-x-3">
+            <div
+              className={`w-10 h-10 rounded-xl ${
+                platform === "whatsapp"
+                  ? "bg-white/20"
+                  : platform === "facebook"
+                  ? "bg-white/20"
+                  : "bg-gradient-to-br from-white/20 to-white/10"
+              } flex items-center justify-center backdrop-blur-sm shadow-md`}
+            >
+              {platform === "whatsapp" ? (
+                <MessageCircle size={20} className="text-white" />
+              ) : platform === "facebook" ? (
+                <MessageCircle size={20} className="text-white" />
+              ) : (
+                <MessageCircle size={20} className="text-white" />
+              )}
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-lg capitalize tracking-wide">
+                {platform}
+              </h2>
+              {totalUnread > 0 && (
+                <p className="text-white/80 text-sm font-medium">
+                  {totalUnread} unread message{totalUnread > 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          </div>
+          <button className="text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200 hover:scale-105">
             <MoreVertical size={20} />
           </button>
         </div>
 
         <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={16}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60"
+            size={18}
           />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white/20 text-white placeholder-white/70 rounded-full focus:outline-none focus:bg-white/30 transition-colors"
+            className="w-full pl-10 pr-4 py-3 bg-white/15 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/10 focus:outline-none focus:bg-white/25 focus:border-white/30 transition-all duration-200 font-medium"
           />
         </div>
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50/50 to-white">
         {loading ? (
-          <div className="p-4 text-center text-gray-500">
-            <div className="animate-pulse">Loading {platform} data...</div>
-          </div>
+          <ConversationsListSkeleton />
         ) : error ? (
-          <div className="p-4 text-center text-red-500">
-            <div className="mb-2">⚠️ {error}</div>
+          <div className="p-6 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <div className="text-red-600 font-medium mb-2">{error}</div>
             <button
               onClick={() => window.location.reload()}
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors"
             >
               Refresh page
             </button>
           </div>
         ) : filteredConversations.length === 0 && platform !== "whatsapp" ? (
-          <div className="p-4 text-center text-gray-500">
-            <div className="mb-2">{platform === "facebook" ? "📘" : "📷"}</div>
-            <div>No {platform} conversations found</div>
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle size={32} className="text-gray-400" />
+            </div>
+            <div className="text-gray-500 font-medium">
+              No {platform} conversations found
+            </div>
+            <p className="text-gray-400 text-sm mt-1">
+              Your conversations will appear here
+            </p>
           </div>
         ) : (
-          filteredConversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              onClick={() => onConversationSelect(conversation.id)}
-              className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors border-l-4 ${
-                selectedConversation === conversation.id
-                  ? `bg-gray-50 border-l-4 ${
-                      platform === "whatsapp"
-                        ? "border-[#31a122]"
-                        : platform === "facebook"
-                        ? "border-blue-600"
-                        : "border-pink-500"
-                    }`
-                  : "border-transparent"
-              }`}
-            >
-              <div className="relative flex-shrink-0">
-                <img
-                  src={conversation.avatar}
-                  alt={conversation.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                {conversation.online && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#31a122] rounded-full border-2 border-white"></div>
-                )}
-              </div>
-
-              <div className="flex-1 text-left overflow-hidden">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-medium text-gray-900 truncate">
-                    {conversation.name}
-                    {conversation.isGroup && (
-                      <span className="ml-1 text-xs text-gray-500">
-                        (Group)
-                      </span>
-                    )}
-                  </h3>
-                  <span className="text-xs text-gray-500 flex-shrink-0">
-                    {conversation.timestamp}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600 truncate">
-                    {conversation.lastMessage}
-                  </p>
-                  {conversation.unread > 0 && (
-                    <span
-                      className={`ml-2 px-2 py-1 text-xs text-white rounded-full flex-shrink-0 ${
-                        platform === "whatsapp"
-                          ? "bg-[#31a122]"
-                          : platform === "facebook"
-                          ? "bg-blue-600"
-                          : "bg-pink-500"
-                      }`}
-                    >
-                      {conversation.unread}
-                    </span>
+          <div className="divide-y divide-gray-100/50">
+            {filteredConversations.map((conversation, index) => (
+              <button
+                key={conversation.id}
+                onClick={() => onConversationSelect(conversation.id)}
+                className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50/80 transition-all duration-200 border-l-4 group hover:shadow-sm ${
+                  selectedConversation === conversation.id
+                    ? `${colors.selected} shadow-sm border-l-4 ${colors.border}`
+                    : "border-transparent hover:border-l-gray-200"
+                }`}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                }}
+              >
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={conversation.avatar}
+                    alt={conversation.name}
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm group-hover:ring-gray-200 transition-all duration-200"
+                  />
+                  {conversation.online && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
                   )}
                 </div>
-              </div>
-            </button>
-          ))
+
+                <div className="flex-1 text-left overflow-hidden">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-gray-900 truncate group-hover:text-gray-800 transition-colors">
+                      {conversation.name}
+                      {conversation.isGroup && (
+                        <Users
+                          size={14}
+                          className="inline ml-1 text-gray-400"
+                        />
+                      )}
+                    </h3>
+                    <span className="text-xs text-gray-500 flex-shrink-0 font-medium">
+                      {conversation.timestamp}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600 truncate font-medium">
+                      {conversation.lastMessage}
+                    </p>
+                    {conversation.unread > 0 && (
+                      <span
+                        className={`ml-2 px-2 py-1 text-xs text-white rounded-full flex-shrink-0 font-bold shadow-sm ${colors.badge} animate-pulse`}
+                      >
+                        {conversation.unread}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </div>

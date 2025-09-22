@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PlatformSwitcher from "@/components/PlatformSwitcher";
-import ConversationsListSocial from "@/components/ConversationsListSocial";
-import MessageInbox from "@/components/MessageInbox";
+import PlatformSwitcher from "./PlatformSwitcher";
+import ConversationsListSocial from "./ConversationsListSocial";
+import MessageInbox from "./MessageInbox";
 import { initializeSocket, getSocket } from "@/lib/socket";
 
 interface MessagingAppProps {
@@ -65,7 +65,7 @@ export default function MessagingApp({ userId }: MessagingAppProps) {
   }, []);
 
   return (
-    <div className="h-full flex bg-gray-50 overflow-hidden">
+    <div className="h-full flex bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
       {/* Platform Switcher - Desktop */}
       <div className="hidden md:flex">
         <PlatformSwitcher
@@ -101,24 +101,24 @@ export default function MessagingApp({ userId }: MessagingAppProps) {
       {/* Mobile Layout */}
       <div className="flex flex-col w-full h-full md:hidden">
         {/* Mobile Header */}
-        <div className="flex bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
+        <div className="flex bg-white/95 backdrop-blur-sm border-b border-gray-200/50 p-4 sticky top-0 z-10 shadow-sm">
           <div className="flex space-x-2">
             <button
               onClick={() => setMobileView("platforms")}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 mobileView === "platforms"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
               }`}
             >
               Platforms
             </button>
             <button
               onClick={() => setMobileView("conversations")}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 mobileView === "conversations"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
               }`}
             >
               Chats
@@ -126,10 +126,10 @@ export default function MessagingApp({ userId }: MessagingAppProps) {
             {selectedConversation && (
               <button
                 onClick={() => setMobileView("inbox")}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   mobileView === "inbox"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 }`}
               >
                 Messages

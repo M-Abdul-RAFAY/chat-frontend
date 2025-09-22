@@ -12,9 +12,12 @@ import {
   X,
   Image as ImageIcon,
   File,
+  Clock,
+  CheckCheck,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { socketEventHandlers, getSocket, initializeSocket } from "@/lib/socket";
+import { MessagesListSkeleton } from "./skeletons/MessageSkeleton";
 
 interface MessageInboxProps {
   platform: "facebook" | "instagram" | "whatsapp";
@@ -146,6 +149,8 @@ export default function MessageInbox({
   } | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -787,16 +792,17 @@ export default function MessageInbox({
 
   if (!conversationId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">💬</span>
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 min-h-full">
+        <div className="text-center p-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <span className="text-4xl">💬</span>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-xl font-bold text-gray-900 mb-3">
             Select a conversation
           </h3>
-          <p className="text-gray-600">
-            Choose a conversation from the list to start messaging
+          <p className="text-gray-600 max-w-sm">
+            Choose a conversation from the list to start messaging and engaging
+            with your customers
           </p>
         </div>
       </div>
@@ -833,18 +839,40 @@ export default function MessageInbox({
               : "Online",
         };
 
-  const getPlatformColor = (platform: string) => {
+  const getPlatformColors = (platform: string) => {
     switch (platform) {
       case "whatsapp":
-        return "bg-[#31a122]";
+        return {
+          header: "bg-gradient-to-br from-green-600 to-green-700",
+          message: "bg-gradient-to-br from-green-600 to-green-700",
+          button:
+            "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800",
+        };
       case "facebook":
-        return "bg-blue-600";
+        return {
+          header: "bg-gradient-to-br from-blue-600 to-blue-700",
+          message: "bg-gradient-to-br from-blue-600 to-blue-700",
+          button:
+            "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800",
+        };
       case "instagram":
-        return "bg-gradient-to-r from-purple-600 via-pink-600 to-orange-400";
+        return {
+          header:
+            "bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500",
+          message: "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500",
+          button:
+            "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 hover:from-purple-700 hover:via-pink-700 hover:to-red-600",
+        };
       default:
-        return "bg-gray-500";
+        return {
+          header: "bg-gray-500",
+          message: "bg-gray-500",
+          button: "bg-gray-500 hover:bg-gray-600",
+        };
     }
   };
+
+  const colors = getPlatformColors(platform);
 
   // Emoji picker functionality
   const emojis = [
@@ -1011,6 +1039,8 @@ export default function MessageInbox({
     if ((!newMessage.trim() && attachedFiles.length === 0) || !conversationId)
       return;
 
+    setSendingMessage(true);
+
     try {
       // Add the message to local state immediately for better UX
       const tempMessage = {
@@ -1028,6 +1058,7 @@ export default function MessageInbox({
           size: file.size,
           url: URL.createObjectURL(file), // Create preview URL
         })),
+        status: "sending",
       };
 
       setMessages((prev) => [...prev, tempMessage]);
@@ -1165,54 +1196,90 @@ export default function MessageInbox({
           }
         }
       }
+
+      // Update message status to sent
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempMessage.id ? { ...msg, status: "sent" } : msg
+        )
+      );
     } catch (error) {
       console.error("Error sending message:", error);
       // Remove the temporary message if sending failed
-      setMessages((prev) => prev.filter((msg) => msg.id !== Date.now()));
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
       // Show specific error message to user
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Failed to send message. Please try again.";
       alert(errorMessage);
+    } finally {
+      setSendingMessage(false);
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white">
+    <div className="flex-1 flex flex-col h-full bg-white shadow-sm">
       {/* Header */}
       <div
-        className={`p-4 border-b border-gray-200 ${getPlatformColor(platform)}`}
+        className={`p-4 border-b border-gray-200/50 ${colors.header} shadow-lg`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {isMobile && (
               <button
                 onClick={onBack}
-                className="text-white hover:bg-white/20 p-1 rounded-full transition-colors"
+                className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200"
               >
                 <ArrowLeft size={20} />
               </button>
             )}
-            <img
-              src={conversation?.avatar}
-              alt={conversation?.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <div className="relative">
+              <img
+                src={conversation?.avatar}
+                alt={conversation?.name}
+                className="w-12 h-12 rounded-full object-cover ring-2 ring-white/30 shadow-md"
+              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+            </div>
             <div>
-              <h3 className="font-medium text-white">{conversation?.name}</h3>
-              <p className="text-sm text-white/80">{conversation?.status}</p>
+              <h3 className="font-bold text-white text-lg">
+                {conversation?.name}
+              </h3>
+              <p className="text-sm text-white/80 font-medium flex items-center">
+                {isTyping ? (
+                  <>
+                    <span className="inline-flex space-x-1 mr-2">
+                      <div
+                        className="w-1 h-1 bg-white/60 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      ></div>
+                      <div
+                        className="w-1 h-1 bg-white/60 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      ></div>
+                      <div
+                        className="w-1 h-1 bg-white/60 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      ></div>
+                    </span>
+                    typing...
+                  </>
+                ) : (
+                  conversation?.status
+                )}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+            <button className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200 hover:scale-105">
               <Phone size={18} />
             </button>
-            <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+            <button className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200 hover:scale-105">
               <Video size={18} />
             </button>
-            <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+            <button className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200 hover:scale-105">
               <MoreVertical size={18} />
             </button>
           </div>
@@ -1220,125 +1287,142 @@ export default function MessageInbox({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        {displayMessages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${
-              message.sender === "me" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
-                message.sender === "me"
-                  ? "flex-row-reverse space-x-reverse"
-                  : ""
-              }`}
-            >
-              {message.sender === "other" && (
-                <img
-                  src={message.avatar}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                />
-              )}
-
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/30 to-white">
+        {loading ? (
+          <MessagesListSkeleton />
+        ) : (
+          <>
+            {displayMessages.map((message, index) => (
               <div
-                className={`px-4 py-2 rounded-2xl ${
-                  message.sender === "me"
-                    ? `text-white ${
-                        platform === "whatsapp"
-                          ? "bg-[#31a122]"
-                          : platform === "facebook"
-                          ? "bg-blue-600"
-                          : "bg-pink-500"
-                      }`
-                    : "bg-white border border-gray-200 text-gray-900"
+                key={message.id}
+                className={`flex animate-fade-in ${
+                  message.sender === "me" ? "justify-end" : "justify-start"
                 }`}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                }}
               >
-                {/* Display file attachments if any */}
-                {message.attachments && message.attachments.length > 0 && (
-                  <div className="mb-2 space-y-2">
-                    {message.attachments.map(
-                      (attachment: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-2 p-2 bg-black/10 rounded-lg"
-                        >
-                          {attachment.type.startsWith("image/") ? (
-                            <div className="flex items-center space-x-2">
-                              <ImageIcon
-                                size={16}
-                                className={
-                                  message.sender === "me"
-                                    ? "text-white/70"
-                                    : "text-blue-500"
-                                }
-                              />
-                              <img
-                                src={attachment.url}
-                                alt={attachment.name}
-                                className="max-w-48 max-h-32 rounded object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex items-center space-x-2">
-                              <File
-                                size={16}
-                                className={
-                                  message.sender === "me"
-                                    ? "text-white/70"
-                                    : "text-gray-500"
-                                }
-                              />
-                              <span className="text-sm truncate max-w-32">
-                                {attachment.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
-
-                {/* Display text message if any */}
-                {message.text && <p className="text-sm">{message.text}</p>}
-
                 <div
-                  className={`flex items-center justify-end mt-1 space-x-1 ${
-                    message.sender === "me" ? "text-white/70" : "text-gray-500"
+                  className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
+                    message.sender === "me"
+                      ? "flex-row-reverse space-x-reverse"
+                      : ""
                   }`}
                 >
-                  <span className="text-xs">{message.timestamp}</span>
-                  {message.sender === "me" && message.status === "read" && (
-                    <div className="flex space-x-0.5">
-                      <div className="w-3 h-3 rounded-full bg-white/30 flex items-center justify-center">
-                        <div className="w-1 h-1 bg-white rounded-full"></div>
-                      </div>
-                      <div className="w-3 h-3 rounded-full bg-white/30 flex items-center justify-center">
-                        <div className="w-1 h-1 bg-white rounded-full"></div>
-                      </div>
-                    </div>
+                  {message.sender === "other" && (
+                    <img
+                      src={message.avatar}
+                      alt=""
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-white shadow-sm"
+                    />
                   )}
+
+                  <div
+                    className={`px-4 py-3 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md ${
+                      message.sender === "me"
+                        ? `text-white ${colors.message} shadow-lg`
+                        : "bg-white border border-gray-200/50 text-gray-900 hover:border-gray-300"
+                    }`}
+                  >
+                    {/* Display file attachments if any */}
+                    {message.attachments && message.attachments.length > 0 && (
+                      <div className="mb-3 space-y-2">
+                        {message.attachments.map(
+                          (attachment: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center space-x-2 p-2 bg-black/10 rounded-lg backdrop-blur-sm"
+                            >
+                              {attachment.type.startsWith("image/") ? (
+                                <div className="flex items-center space-x-2">
+                                  <ImageIcon
+                                    size={16}
+                                    className={
+                                      message.sender === "me"
+                                        ? "text-white/70"
+                                        : "text-blue-500"
+                                    }
+                                  />
+                                  <img
+                                    src={attachment.url}
+                                    alt={attachment.name}
+                                    className="max-w-48 max-h-32 rounded-lg object-cover shadow-sm"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center space-x-2">
+                                  <File
+                                    size={16}
+                                    className={
+                                      message.sender === "me"
+                                        ? "text-white/70"
+                                        : "text-gray-500"
+                                    }
+                                  />
+                                  <span className="text-sm truncate max-w-32 font-medium">
+                                    {attachment.name}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {/* Display text message if any */}
+                    {message.text && (
+                      <p className="text-sm font-medium leading-relaxed">
+                        {message.text}
+                      </p>
+                    )}
+
+                    <div
+                      className={`flex items-center justify-end mt-2 space-x-1 ${
+                        message.sender === "me"
+                          ? "text-white/70"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span className="text-xs font-medium">
+                        {message.timestamp}
+                      </span>
+                      {message.sender === "me" && (
+                        <>
+                          {message.status === "sending" && (
+                            <Clock
+                              size={12}
+                              className="text-white/60 animate-pulse"
+                            />
+                          )}
+                          {message.status === "sent" && (
+                            <CheckCheck size={12} className="text-white/60" />
+                          )}
+                          {message.status === "read" && (
+                            <CheckCheck size={12} className="text-white" />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-        {/* Invisible div to scroll to */}
-        <div ref={messagesEndRef} />
+            ))}
+            {/* Invisible div to scroll to */}
+            <div ref={messagesEndRef} />
+          </>
+        )}
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-gray-200 bg-white">
+      <div className="p-4 border-t border-gray-200/50 bg-white shadow-sm">
         {/* File Attachments Preview */}
         {attachedFiles.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {attachedFiles.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center bg-gray-100 rounded-lg p-2 space-x-2"
+                className="flex items-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-3 space-x-2 shadow-sm hover:shadow-md transition-shadow duration-200"
               >
                 <div className="flex items-center space-x-2">
                   {file.type.startsWith("image/") ? (
@@ -1346,13 +1430,13 @@ export default function MessageInbox({
                   ) : (
                     <File size={16} className="text-gray-500" />
                   )}
-                  <span className="text-sm text-gray-700 truncate max-w-32">
+                  <span className="text-sm text-gray-700 truncate max-w-32 font-medium">
                     {file.name}
                   </span>
                 </div>
                 <button
                   onClick={() => removeAttachedFile(index)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  className="text-gray-400 hover:text-red-500 transition-colors duration-200 hover:scale-110"
                 >
                   <X size={14} />
                 </button>
@@ -1373,7 +1457,7 @@ export default function MessageInbox({
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-all duration-200 hover:scale-110"
           >
             <Paperclip size={20} />
           </button>
@@ -1385,12 +1469,12 @@ export default function MessageInbox({
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Type a message..."
-              className="w-full px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all pr-12"
+              className="w-full px-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-200 pr-12 font-medium placeholder-gray-500"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-all duration-200 hover:scale-110"
               >
                 <Smile size={18} />
               </button>
@@ -1399,14 +1483,14 @@ export default function MessageInbox({
               {showEmojiPicker && (
                 <div
                   ref={emojiPickerRef}
-                  className="absolute bottom-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64 h-48 overflow-y-auto z-50"
+                  className="absolute bottom-12 right-0 bg-white border border-gray-200/50 rounded-2xl shadow-xl p-4 w-72 h-52 overflow-y-auto z-50 backdrop-blur-sm"
                 >
                   <div className="grid grid-cols-8 gap-1">
                     {emojis.map((emoji, index) => (
                       <button
                         key={index}
                         onClick={() => handleEmojiSelect(emoji)}
-                        className="text-lg hover:bg-gray-100 rounded p-1 transition-colors"
+                        className="text-xl hover:bg-gray-100 rounded-lg p-2 transition-all duration-200 hover:scale-110"
                       >
                         {emoji}
                       </button>
@@ -1420,19 +1504,38 @@ export default function MessageInbox({
           {newMessage.trim() || attachedFiles.length > 0 ? (
             <button
               onClick={handleSendMessage}
-              className={`p-3 rounded-full text-white transition-colors ${
-                platform === "whatsapp"
-                  ? "bg-[#31a122] hover:bg-[#2a8f1e]"
-                  : platform === "facebook"
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-pink-500 hover:bg-pink-600"
-              }`}
+              disabled={sendingMessage}
+              className={`p-3 rounded-2xl text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:scale-100 ${colors.button}`}
             >
-              <Send size={18} />
+              {sendingMessage ? (
+                <div className="animate-spin">
+                  <Send size={18} />
+                </div>
+              ) : (
+                <Send size={18} />
+              )}
             </button>
           ) : null}
         </div>
       </div>
+
+      {/* CSS for animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
