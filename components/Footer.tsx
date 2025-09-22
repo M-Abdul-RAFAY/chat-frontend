@@ -28,7 +28,7 @@ export default function Footer() {
                 href="#"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <span className="sr-only">Twitter</span>
+                <span className="sr-only">Whatsapp</span>
                 <svg
                   className="w-6 h-6"
                   fill="currentColor"

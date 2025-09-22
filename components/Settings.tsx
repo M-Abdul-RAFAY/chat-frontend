@@ -65,7 +65,7 @@ interface UserSettings {
   socialMediaAI: {
     facebook: boolean;
     instagram: boolean;
-    twitter: boolean;
+    whatsapp: boolean;
   };
 }
 
@@ -108,7 +108,7 @@ export default function Settings() {
     socialMediaAI: {
       facebook: false,
       instagram: false,
-      twitter: false,
+      whatsapp: false,
     },
   });
 
@@ -178,7 +178,7 @@ export default function Settings() {
           socialMediaAI: {
             facebook: settings.socialMediaAI?.facebook ?? false,
             instagram: settings.socialMediaAI?.instagram ?? false,
-            twitter: settings.socialMediaAI?.twitter ?? false,
+            whatsapp: settings.socialMediaAI?.whatsapp ?? false,
           },
         });
       }
@@ -1030,23 +1030,23 @@ export default function Settings() {
                 />
               </div>
 
-              {/* Twitter AI Toggle */}
+              {/* Whatsapp AI Toggle */}
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-cyan-100 rounded-lg">
                     <Lightbulb className="w-5 h-5 text-cyan-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Twitter AI</h3>
+                    <h3 className="font-semibold text-gray-900">Whatsapp AI</h3>
                     <p className="text-sm text-gray-600">
-                      Auto-generate responses for Twitter messages
+                      Auto-generate responses for Whatsapp messages
                     </p>
                   </div>
                 </div>
                 <Switch
-                  checked={userSettings.socialMediaAI.twitter}
+                  checked={userSettings.socialMediaAI.whatsapp}
                   onCheckedChange={(checked: boolean) =>
-                    saveSocialMediaAISetting("twitter", checked)
+                    saveSocialMediaAISetting("whatsapp", checked)
                   }
                 />
               </div>
@@ -1091,14 +1091,14 @@ export default function Settings() {
                 <div className="flex items-center gap-2 text-sm">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      userSettings.socialMediaAI.twitter
+                      userSettings.socialMediaAI.whatsapp
                         ? "bg-green-500"
                         : "bg-gray-300"
                     }`}
                   />
                   <span className="text-gray-700">
-                    Twitter:{" "}
-                    {userSettings.socialMediaAI.twitter
+                    Whatsapp:{" "}
+                    {userSettings.socialMediaAI.whatsapp
                       ? "Enabled"
                       : "Disabled"}
                   </span>

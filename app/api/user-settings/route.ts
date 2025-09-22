@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         socialMediaAI: {
           facebook: false,
           instagram: false,
-          twitter: false,
+          whatsapp: false,
         },
       });
     }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       socialMediaAI: {
         facebook: false,
         instagram: false,
-        twitter: false,
+        whatsapp: false,
       },
     });
   }
