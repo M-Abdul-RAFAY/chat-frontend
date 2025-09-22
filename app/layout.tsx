@@ -52,7 +52,14 @@ export const metadata: Metadata = {
       "Comprehensive SaaS platform for startups and growing businesses",
     images: ["/assets/hichat-logo.png"],
   },
-  // Icons will be automatically served from app/favicon.ico
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.ico", sizes: "50x50", type: "image/x-icon" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
