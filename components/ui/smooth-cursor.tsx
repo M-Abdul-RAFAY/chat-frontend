@@ -84,9 +84,9 @@ export function SmoothCursor({
   cursor = <DefaultCursorSVG />,
   springConfig = {
     damping: 45,
-    stiffness: 400,
+    stiffness: 800,
     mass: 1,
-    restDelta: 0.001,
+    restDelta: 0,
   },
 }: SmoothCursorProps) {
   const [isMoving, setIsMoving] = useState(false);
@@ -130,7 +130,7 @@ export function SmoothCursor({
       updateVelocity(currentPos);
 
       const speed = Math.sqrt(
-        Math.pow(velocity.current.x, 2) + Math.pow(velocity.current.y, 2),
+        Math.pow(velocity.current.x, 2) + Math.pow(velocity.current.y, 2)
       );
 
       cursorX.set(currentPos.x);
