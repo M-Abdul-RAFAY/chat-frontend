@@ -147,6 +147,11 @@ export default function MessageInbox({
     avatar: string;
     status: string;
   } | null>(null);
+  const [conversationData, setConversationData] = useState<{
+    phone?: string;
+    customerName?: string;
+    id?: string;
+  } | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -157,7 +162,7 @@ export default function MessageInbox({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (conversationId && platform !== "whatsapp") {
+    if (conversationId) {
       fetchMessages();
     }
   }, [conversationId, platform, contentType]);
@@ -781,6 +786,77 @@ export default function MessageInbox({
             setMessages(formattedMessages);
           }
         }
+      } else if (platform === "whatsapp") {
+        // Fetch WhatsApp messages from the backend
+        console.log("📱 Fetching WhatsApp messages from API");
+        const apiResponse = await fetch(
+          `http://localhost:4000/api/chat/messages?conversationId=${conversationId}`
+        );
+        const apiData = await apiResponse.json();
+
+        if (apiData.success && apiData.messages) {
+          // Set conversation participant based on the first customer message
+          const conversation = await fetch(
+            `http://localhost:4000/api/v1/conversations/${conversationId}`
+          );
+          const conversationData = await conversation.json();
+
+          if (conversationData.success && conversationData.conversation) {
+            const conv = conversationData.conversation;
+
+            // Store conversation data including phone
+            setConversationData({
+              phone: conv.phone,
+              customerName: conv.customerName,
+              id: conv._id || conv.id,
+            });
+
+            // Also set the participant for UI display
+            setConversationParticipant({
+              name: conv.customerName || conv.phone || "WhatsApp User",
+              avatar: `https://via.placeholder.com/40x40/25D366/ffffff?text=${(
+                conv.customerName || "WA"
+              )
+                .charAt(0)
+                .toUpperCase()}`,
+              status: "WhatsApp",
+            });
+          }
+
+          // Format messages for display
+          const formattedMessages = apiData.messages.map(
+            (msg: any, index: number) => ({
+              id: index,
+              text: msg.content || msg.message || "",
+              sender:
+                msg.isFromBusiness ||
+                msg.sender === "business" ||
+                msg.sender === "AI"
+                  ? "me"
+                  : "other",
+              timestamp: new Date(
+                msg.timestamp || msg.createdAt
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              avatar:
+                msg.isFromBusiness ||
+                msg.sender === "business" ||
+                msg.sender === "AI"
+                  ? `https://via.placeholder.com/40x40/25D366/ffffff?text=B`
+                  : `https://via.placeholder.com/40x40/25D366/ffffff?text=C`,
+              senderName:
+                msg.isFromBusiness ||
+                msg.sender === "business" ||
+                msg.sender === "AI"
+                  ? "Business"
+                  : "Customer",
+            })
+          );
+
+          setMessages(formattedMessages);
+        }
       }
     } catch (err) {
       setError("Failed to fetch messages");
@@ -809,35 +885,16 @@ export default function MessageInbox({
     );
   }
 
-  // Use real data or fallback to mock data for WhatsApp
-  const displayMessages =
-    platform === "whatsapp" ? mockMessages[conversationId] || [] : messages;
-  const conversation =
-    platform === "whatsapp"
-      ? conversationDetails[conversationId]
-      : (platform === "facebook" || platform === "instagram") &&
-        conversationParticipant
-      ? conversationParticipant
-      : {
-          name:
-            platform === "facebook"
-              ? `Facebook Conversation`
-              : platform === "instagram"
-              ? `Instagram User`
-              : `Conversation`,
-          avatar:
-            platform === "facebook"
-              ? "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop"
-              : platform === "instagram"
-              ? "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop"
-              : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-          status:
-            platform === "facebook"
-              ? "Active on Facebook"
-              : platform === "instagram"
-              ? "Active on Instagram"
-              : "Online",
-        };
+  // Use real data for all platforms including WhatsApp
+  const displayMessages = messages;
+  const conversation = conversationParticipant || {
+    name: platform === "whatsapp" ? "WhatsApp User" : "User",
+    avatar:
+      platform === "whatsapp"
+        ? `https://via.placeholder.com/40x40/25D366/ffffff?text=W`
+        : `https://via.placeholder.com/40x40/4267B2/ffffff?text=U`,
+    status: platform === "whatsapp" ? "WhatsApp" : "Active",
+  };
 
   const getPlatformColors = (platform: string) => {
     switch (platform) {
@@ -1194,6 +1251,30 @@ export default function MessageInbox({
               responseData.error || "Failed to send Instagram message"
             );
           }
+        }
+      } else if (platform === "whatsapp") {
+        // Handle WhatsApp message sending
+        const response = await fetch(
+          `http://localhost:4000/api/chat/whatsapp/send`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              phone: conversationData?.phone || "unknown", // Use conversationData instead of conversation
+              message: messageToSend,
+              conversationId,
+            }),
+          }
+        );
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            responseData.error || "Failed to send WhatsApp message"
+          );
         }
       }
 

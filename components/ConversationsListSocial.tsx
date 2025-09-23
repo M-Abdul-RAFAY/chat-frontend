@@ -158,6 +158,7 @@ export default function ConversationsListSocial({
   const [instagramMessages, setInstagramMessages] = useState<
     FacebookConversation[]
   >([]);
+  const [whatsappConversations, setWhatsappConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -396,8 +397,6 @@ export default function ConversationsListSocial({
   // Fetch data when platform changes
   useEffect(() => {
     const fetchData = async () => {
-      if (platform === "whatsapp") return;
-
       if (!userId) {
         console.log("No userId provided, skipping data fetch");
         return;
@@ -407,7 +406,27 @@ export default function ConversationsListSocial({
       setError(null);
 
       try {
-        if (platform === "facebook") {
+        if (platform === "whatsapp") {
+          console.log("📱 Fetching WhatsApp conversations from API");
+          const response = await fetch(
+            `http://localhost:4000/api/v1/meta/whatsapp/conversations?userId=${userId}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const data = await response.json();
+          if (data.error) {
+            setError(data.error);
+          } else {
+            setWhatsappConversations(data.conversations || []);
+            console.log(
+              "WhatsApp conversations loaded:",
+              data.conversations?.length || 0
+            );
+          }
+        } else if (platform === "facebook") {
           const response = await fetch(
             `http://localhost:4000/api/v1/meta/facebook/messages?userId=${userId}`
           );
@@ -445,7 +464,15 @@ export default function ConversationsListSocial({
   // Convert real data to UI format
   const getConversations = () => {
     if (platform === "whatsapp") {
-      return mockConversations.whatsapp;
+      return whatsappConversations.map((conv) => ({
+        id: conv.id,
+        name: conv.name,
+        avatar: conv.avatar,
+        lastMessage: conv.lastMessage,
+        timestamp: conv.lastMessageTime,
+        unread: conv.unread ? 1 : 0,
+        online: false, // WhatsApp doesn't have online status
+      }));
     } else if (platform === "facebook") {
       return facebookMessages.map((conv) => {
         let participantName = "Unknown Contact";
