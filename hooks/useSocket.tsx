@@ -146,6 +146,7 @@ export const useSocket = ({
           content: message.content?.substring(0, 50) + "...",
           sender: message.sender,
           timestamp: new Date().toISOString(),
+          fullMessage: message
         });
         console.log("📞 Calling onNewMessage callback with message:", message);
         onNewMessage(message);

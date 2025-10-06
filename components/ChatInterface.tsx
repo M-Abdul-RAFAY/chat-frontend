@@ -132,12 +132,15 @@ export default function ChatInterface({
         type: message.type,
         conversationId: message.conversationId,
         currentConversationId: conversationId,
+        conversationIdMatch: message.conversationId === conversationId,
+        conversationIdTypes: `${typeof message.conversationId} === ${typeof conversationId}`,
         hasPaymentData: !!message.paymentData,
         paymentData: message.paymentData,
       });
 
       // Only add message if it's for the current conversation
-      if (message.conversationId === conversationId) {
+      // Convert both IDs to strings for comparison
+      if (message.conversationId?.toString() === conversationId?.toString()) {
         setMessages((prev) => {
           // Check if message already exists by both id and _id to avoid duplicates
           const existingMessage = prev.find(
