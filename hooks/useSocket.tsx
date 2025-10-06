@@ -69,7 +69,7 @@ export const useSocket = ({
   const { getToken } = useAuth();
   const socketRef = useRef<ReturnType<typeof initializeSocket> | null>(null);
   const isConnectedRef = useRef(false);
-  const initializedRef = useRef(false); // Track if socket was already initialized
+  const hasInitializedRef = useRef(false); // Track if socket initialization has started
 
   // Initialize socket connection
   useEffect(() => {
@@ -78,17 +78,20 @@ export const useSocket = ({
       isLoaded,
       "user:",
       user ? "YES" : "NO",
-      "already initialized:",
-      initializedRef.current
+      "hasInitialized:",
+      hasInitializedRef.current
     );
 
     if (!isLoaded || !user) return;
     
     // Prevent re-initialization if already initialized
-    if (initializedRef.current && socketRef.current) {
+    if (hasInitializedRef.current) {
       console.log("⚠️ Socket already initialized, skipping re-initialization");
       return;
     }
+    
+    // Mark as initializing immediately to prevent race conditions
+    hasInitializedRef.current = true;
 
     const initSocket = async () => {
       try {
@@ -103,14 +106,15 @@ export const useSocket = ({
           console.log("Socket initialized, connecting...");
           connectSocket();
           isConnectedRef.current = true;
-          initializedRef.current = true; // Mark as initialized
 
           console.log("Socket initialized and connected with token");
         } else {
           console.log("No token available, cannot initialize socket");
+          hasInitializedRef.current = false; // Reset if no token
         }
       } catch (error) {
         console.error("Failed to initialize socket:", error);
+        hasInitializedRef.current = false; // Reset on error
       }
     };
 
@@ -118,14 +122,10 @@ export const useSocket = ({
 
     return () => {
       console.log("useSocket cleanup - disconnecting socket");
-      if (isConnectedRef.current) {
-        disconnectSocket();
-        isConnectedRef.current = false;
-        initializedRef.current = false; // Reset initialization flag
-        socketRef.current = null;
-      }
+      // Don't disconnect on cleanup in development - causes reconnection loops
+      // The socket will be cleaned up when the component truly unmounts
     };
-  }, [isLoaded, user]); // Remove getToken from dependencies to prevent re-initialization
+  }, [isLoaded, user]); // Removed getToken to prevent unnecessary re-initialization
 
   // Set up event listeners
   useEffect(() => {
