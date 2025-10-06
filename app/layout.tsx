@@ -4,7 +4,6 @@ import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PrimeReactProvider } from "primereact/api";
-import { SmoothCursor } from "@/components/ui/smooth-cursor";
 // import SplashCursor from "@/components/SplashCursor";
 
 const geistSans = Geist({
@@ -81,7 +80,6 @@ export default function RootLayout({
       >
         {/* <SplashCursor /> */}
         <PrimeReactProvider>
-          <SmoothCursor />
           {children}
           {/* Conditionally render ToastContainer based on environment variable */}
           {shouldShowToasters && (

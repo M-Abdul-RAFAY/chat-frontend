@@ -3,7 +3,6 @@
 import { Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import GlitchText from "./GlitchText";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -121,18 +120,7 @@ export default function TopNavigation({
                       : "text-gray-300 hover:text-white"
                   )}
                 >
-                  {activeItem === item.id ? (
-                    <GlitchText
-                      className="inline-block"
-                      speed={0.5}
-                      enableShadows={true}
-                      enableOnHover={false}
-                    >
-                      {item.label}
-                    </GlitchText>
-                  ) : (
-                    item.label
-                  )}
+                  {item.label}
                 </Link>
               ))}
 
@@ -213,18 +201,7 @@ export default function TopNavigation({
                     : "text-gray-300 hover:bg-gray-700 hover:text-white"
                 )}
               >
-                {activeItem === item.id ? (
-                  <GlitchText
-                    className="inline-block"
-                    speed={0.5}
-                    enableShadows={true}
-                    enableOnHover={false}
-                  >
-                    {item.label}
-                  </GlitchText>
-                ) : (
-                  item.label
-                )}
+                {item.label}
               </Link>
             ))}
         </div>
