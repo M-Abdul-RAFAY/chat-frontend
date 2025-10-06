@@ -85,15 +85,12 @@ export default function ConversationList({
       });
     },
     onNewMessage: (message: SocketMessage) => {
-      console.log(
-        "💬 Socket: New message received for conversation list:",
-        {
-          conversationId: message.conversationId,
-          selectedConversation,
-          content: message.content?.substring(0, 30),
-          sender: message.sender
-        }
-      );
+      console.log("💬 Socket: New message received for conversation list:", {
+        conversationId: message.conversationId,
+        selectedConversation,
+        content: message.content?.substring(0, 30),
+        sender: message.sender,
+      });
       // Always update conversation list item when a message is received
       // This ensures the last message preview and timestamp are up-to-date
       if (message.conversationId) {
@@ -108,7 +105,9 @@ export default function ConversationList({
             // Update conversation data
             conversation.lastMessage = message.content;
             // Only mark as unread if it's NOT the currently selected conversation
-            conversation.unread = message.conversationId.toString() !== selectedConversation.toString();
+            conversation.unread =
+              message.conversationId.toString() !==
+              selectedConversation.toString();
             conversation.time = new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",

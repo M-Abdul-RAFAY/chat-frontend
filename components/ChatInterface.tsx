@@ -956,7 +956,7 @@ export default function ChatInterface({
             </button>
             <button className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm">
               <Video size={20} />
-            </button>            
+            </button>
           </div>
         </div>
       </div>

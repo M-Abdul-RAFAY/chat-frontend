@@ -83,13 +83,13 @@ export const useSocket = ({
     );
 
     if (!isLoaded || !user) return;
-    
+
     // Prevent re-initialization if already initialized
     if (hasInitializedRef.current) {
       console.log("⚠️ Socket already initialized, skipping re-initialization");
       return;
     }
-    
+
     // Mark as initializing immediately to prevent race conditions
     hasInitializedRef.current = true;
 
@@ -157,7 +157,7 @@ export const useSocket = ({
           content: message.content?.substring(0, 50) + "...",
           sender: message.sender,
           timestamp: new Date().toISOString(),
-          fullMessage: message
+          fullMessage: message,
         });
         console.log("📞 Calling onNewMessage callback with message:", message);
         onNewMessage(message);
