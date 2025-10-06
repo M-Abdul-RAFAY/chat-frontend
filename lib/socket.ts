@@ -63,15 +63,18 @@ export const connectSocket = () => {
 // Socket event handlers
 export const socketEventHandlers = {
   onConnect: (callback: () => void) => {
+    socket?.off("connect"); // Remove old listeners
     socket?.on("connect", callback);
   },
 
   onDisconnect: (callback: () => void) => {
+    socket?.off("disconnect"); // Remove old listeners
     socket?.on("disconnect", callback);
   },
 
   onNewMessage: (callback: (message: any) => void) => {
     console.log("🔧 Setting up newMessage event listener");
+    socket?.off("newMessage"); // Remove old listeners
     socket?.on("newMessage", (message) => {
       console.log("🎯 Raw socket event: newMessage", message);
       callback(message);
@@ -79,6 +82,7 @@ export const socketEventHandlers = {
   },
 
   onNewConversation: (callback: (conversation: any) => void) => {
+    socket?.off("newConversation"); // Remove old listeners
     socket?.on("newConversation", callback);
   },
 
@@ -89,18 +93,21 @@ export const socketEventHandlers = {
       unread?: boolean;
     }) => void
   ) => {
+    socket?.off("conversationUpdated"); // Remove old listeners
     socket?.on("conversationUpdated", callback);
   },
 
   onTypingStart: (
     callback: (data: { userId: string; conversationId: string }) => void
   ) => {
+    socket?.off("typing:start"); // Remove old listeners
     socket?.on("typing:start", callback);
   },
 
   onTypingStop: (
     callback: (data: { userId: string; conversationId: string }) => void
   ) => {
+    socket?.off("typing:stop"); // Remove old listeners
     socket?.on("typing:stop", callback);
   },
 
@@ -115,6 +122,7 @@ export const socketEventHandlers = {
     }) => void
   ) => {
     console.log("🔧 Setting up paymentStatusUpdate event listener");
+    socket?.off("paymentStatusUpdate"); // Remove old listeners
     socket?.on("paymentStatusUpdate", (data) => {
       console.log("💳 Raw socket event: paymentStatusUpdate", data);
       callback(data);

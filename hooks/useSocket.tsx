@@ -69,6 +69,7 @@ export const useSocket = ({
   const { getToken } = useAuth();
   const socketRef = useRef<ReturnType<typeof initializeSocket> | null>(null);
   const isConnectedRef = useRef(false);
+  const initializedRef = useRef(false); // Track if socket was already initialized
 
   // Initialize socket connection
   useEffect(() => {
@@ -76,10 +77,18 @@ export const useSocket = ({
       "useSocket effect triggered - isLoaded:",
       isLoaded,
       "user:",
-      user ? "YES" : "NO"
+      user ? "YES" : "NO",
+      "already initialized:",
+      initializedRef.current
     );
 
     if (!isLoaded || !user) return;
+    
+    // Prevent re-initialization if already initialized
+    if (initializedRef.current && socketRef.current) {
+      console.log("⚠️ Socket already initialized, skipping re-initialization");
+      return;
+    }
 
     const initSocket = async () => {
       try {
@@ -94,6 +103,7 @@ export const useSocket = ({
           console.log("Socket initialized, connecting...");
           connectSocket();
           isConnectedRef.current = true;
+          initializedRef.current = true; // Mark as initialized
 
           console.log("Socket initialized and connected with token");
         } else {
@@ -107,14 +117,15 @@ export const useSocket = ({
     initSocket();
 
     return () => {
-      console.log("useSocket cleanup");
+      console.log("useSocket cleanup - disconnecting socket");
       if (isConnectedRef.current) {
         disconnectSocket();
         isConnectedRef.current = false;
+        initializedRef.current = false; // Reset initialization flag
         socketRef.current = null;
       }
     };
-  }, [isLoaded, user, getToken]);
+  }, [isLoaded, user]); // Remove getToken from dependencies to prevent re-initialization
 
   // Set up event listeners
   useEffect(() => {
