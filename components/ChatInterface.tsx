@@ -596,36 +596,46 @@ export default function ChatInterface({
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      
+
       // Parse error message to provide specific feedback
       let errorMessage = "Failed to send message. Please try again.";
       let errorDetails = "";
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
-        
+
         // Check for specific error types
-        if (errorMessage.includes("Authenticate") || errorMessage.includes("20003")) {
+        if (
+          errorMessage.includes("Authenticate") ||
+          errorMessage.includes("20003")
+        ) {
           errorMessage = "SMS Authentication Failed";
-          errorDetails = "Twilio credentials are invalid or account balance is low. Please check your Twilio account.";
-        } else if (errorMessage.includes("21211") || errorMessage.includes("21614")) {
+          errorDetails =
+            "Twilio credentials are invalid or account balance is low. Please check your Twilio account.";
+        } else if (
+          errorMessage.includes("21211") ||
+          errorMessage.includes("21614")
+        ) {
           errorMessage = "Invalid Phone Number";
-          errorDetails = "The recipient's phone number is invalid or improperly formatted.";
+          errorDetails =
+            "The recipient's phone number is invalid or improperly formatted.";
         } else if (errorMessage.includes("30007")) {
           errorMessage = "Message Blocked";
-          errorDetails = "The message was filtered or blocked. Check Twilio console for details.";
+          errorDetails =
+            "The message was filtered or blocked. Check Twilio console for details.";
         } else if (errorMessage.includes("500")) {
           errorMessage = "Server Error";
-          errorDetails = "The server encountered an error. Check backend logs for details.";
+          errorDetails =
+            "The server encountered an error. Check backend logs for details.";
         }
       }
-      
+
       // Show detailed error toast
       showToast.error(
         errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage,
         { autoClose: 8000 }
       );
-      
+
       // Also set error state for UI display
       setError(errorMessage);
     } finally {
