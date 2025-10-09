@@ -1160,6 +1160,186 @@ export const bulkMessageAPI = {
   },
 };
 
+// Voice Call Types
+export interface Call {
+  _id: string;
+  conversationId: string;
+  customerId?: string;
+  userId: string;
+  from: string;
+  to: string;
+  status:
+    | "initiated"
+    | "ringing"
+    | "in-progress"
+    | "completed"
+    | "busy"
+    | "no-answer"
+    | "failed"
+    | "canceled";
+  direction: "inbound" | "outbound";
+  duration: number;
+  startedAt: string;
+  endedAt?: string;
+  answeredAt?: string;
+  twilioSid: string;
+  recordingUrl?: string;
+  recordingSid?: string;
+  recordingDuration?: number;
+  notes?: string;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InitiateCallRequest {
+  conversationId?: string;
+  to: string;
+  from?: string;
+}
+
+export interface CallHistoryParams {
+  conversationId?: string;
+  customerId?: string;
+  limit?: number;
+}
+
+// Voice Calling API
+export const callAPI = {
+  // Initiate an outbound call
+  initiateCall: async (
+    data: InitiateCallRequest
+  ): Promise<{ success: boolean; call: Call; twilioSid: string }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/voice/call`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.message || `Failed to initiate call: ${response.statusText}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error initiating call:", error);
+      throw error;
+    }
+  },
+
+  // End an active call
+  endCall: async (
+    callId: string
+  ): Promise<{ success: boolean; call: Call }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/voice/call/${callId}/end`, {
+        method: "POST",
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.message || `Failed to end call: ${response.statusText}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error ending call:", error);
+      throw error;
+    }
+  },
+
+  // Get call history
+  getCallHistory: async (
+    params?: CallHistoryParams
+  ): Promise<{ success: boolean; calls: Call[] }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const queryParams = new URLSearchParams();
+
+      if (params?.conversationId)
+        queryParams.append("conversationId", params.conversationId);
+      if (params?.customerId)
+        queryParams.append("customerId", params.customerId);
+      if (params?.limit) queryParams.append("limit", params.limit.toString());
+
+      const response = await fetch(
+        `${API_BASE_URL}/voice/history?${queryParams.toString()}`,
+        {
+          method: "GET",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch call history: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching call history:", error);
+      throw error;
+    }
+  },
+
+  // Get specific call details
+  getCall: async (
+    callId: string
+  ): Promise<{ success: boolean; call: Call }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/voice/call/${callId}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch call: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching call:", error);
+      throw error;
+    }
+  },
+
+  // Add notes to a call
+  addCallNotes: async (
+    callId: string,
+    notes: string
+  ): Promise<{ success: boolean; call: Call }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(
+        `${API_BASE_URL}/voice/call/${callId}/notes`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ notes }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to add notes: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error adding notes:", error);
+      throw error;
+    }
+  },
+};
+
 /*
 BACKEND EXPRESS.JS IMPLEMENTATION GUIDE:
 

@@ -27,6 +27,7 @@ import { useUser } from "@clerk/nextjs";
 import { useSocket } from "@/hooks/useSocket";
 import { PaymentModal } from "./PaymentModal";
 import { showToast } from "@/lib/toast";
+import VoiceCallModal from "./VoiceCallModal";
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -109,6 +110,9 @@ export default function ChatInterface({
 
   // Payment states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Voice call states
+  const [showVoiceCallModal, setShowVoiceCallModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -993,7 +997,11 @@ export default function ChatInterface({
           </div>
 
           <div className="flex items-center space-x-1 flex-shrink-0">
-            <button className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm">
+            <button
+              onClick={() => setShowVoiceCallModal(true)}
+              className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm"
+              title="Start voice call"
+            >
               <Phone size={20} />
             </button>
             <button className="p-2.5 text-gray-500 hover:bg-white hover:text-blue-600 rounded-xl transition-all duration-200 shadow-sm">
@@ -1489,6 +1497,19 @@ export default function ChatInterface({
               console.error("Error refreshing conversation:", error);
             }
           }, 1000);
+        }}
+      />
+
+      {/* Voice Call Modal */}
+      <VoiceCallModal
+        isOpen={showVoiceCallModal}
+        onClose={() => setShowVoiceCallModal(false)}
+        conversationId={conversationId}
+        customerName={customerName}
+        customerPhone={conversation?.phone || ""}
+        onCallStatusChange={(status) => {
+          console.log("Call status changed:", status);
+          showToast.info(`Call ${status}`);
         }}
       />
     </div>

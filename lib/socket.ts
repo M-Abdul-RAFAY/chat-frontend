@@ -157,6 +157,120 @@ export const socketEventHandlers = {
     });
   },
 
+  // Voice call event listeners
+  onCallInitiated: (
+    callback: (data: {
+      callId: string;
+      status: string;
+      to: string;
+      from: string;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up call:initiated event listener");
+    socket?.off("call:initiated");
+    socket?.on("call:initiated", (data) => {
+      console.log("📞 Raw socket event: call:initiated", data);
+      callback(data);
+    });
+  },
+
+  onCallStatusUpdate: (
+    callback: (data: {
+      callId: string;
+      status: string;
+      duration?: number;
+      answeredAt?: string;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up call:statusUpdate event listener");
+    socket?.off("call:statusUpdate");
+    socket?.on("call:statusUpdate", (data) => {
+      console.log("📞 Raw socket event: call:statusUpdate", data);
+      callback(data);
+    });
+  },
+
+  onCallEnded: (
+    callback: (data: {
+      callId: string;
+      status: string;
+      duration: number;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up call:ended event listener");
+    socket?.off("call:ended");
+    socket?.on("call:ended", (data) => {
+      console.log("📞 Raw socket event: call:ended", data);
+      callback(data);
+    });
+  },
+
+  onIncomingCall: (
+    callback: (data: {
+      callId: string;
+      conversationId: string;
+      customerId: string;
+      from: string;
+      to: string;
+      customerName: string;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up call:incoming event listener");
+    socket?.off("call:incoming");
+    socket?.on("call:incoming", (data) => {
+      console.log("📞 Raw socket event: call:incoming", data);
+      callback(data);
+    });
+  },
+
+  onCallRecordingReady: (
+    callback: (data: {
+      callId: string;
+      recordingUrl: string;
+      duration: number;
+    }) => void
+  ) => {
+    console.log("🔧 Setting up call:recordingReady event listener");
+    socket?.off("call:recordingReady");
+    socket?.on("call:recordingReady", (data) => {
+      console.log("📞 Raw socket event: call:recordingReady", data);
+      callback(data);
+    });
+  },
+
+  onCallAccepted: (
+    callback: (data: { callId: string; userId: string }) => void
+  ) => {
+    console.log("🔧 Setting up call:accepted event listener");
+    socket?.off("call:accepted");
+    socket?.on("call:accepted", (data) => {
+      console.log("📞 Raw socket event: call:accepted", data);
+      callback(data);
+    });
+  },
+
+  onCallRejected: (
+    callback: (data: { callId: string; userId: string }) => void
+  ) => {
+    console.log("🔧 Setting up call:rejected event listener");
+    socket?.off("call:rejected");
+    socket?.on("call:rejected", (data) => {
+      console.log("📞 Raw socket event: call:rejected", data);
+      callback(data);
+    });
+  },
+
+  onCallMuteUpdate: (
+    callback: (data: { callId: string; userId: string; muted: boolean }) => void
+  ) => {
+    console.log("🔧 Setting up call:muteUpdate event listener");
+    socket?.off("call:muteUpdate");
+    socket?.on("call:muteUpdate", (data) => {
+      console.log("📞 Raw socket event: call:muteUpdate", data);
+      callback(data);
+    });
+  },
+
   // Remove event listeners
   offConnect: () => {
     socket?.off("connect");
@@ -196,6 +310,39 @@ export const socketEventHandlers = {
 
   offNewInstagramMessage: () => {
     socket?.off("new_instagram_message");
+  },
+
+  // Remove voice call event listeners
+  offCallInitiated: () => {
+    socket?.off("call:initiated");
+  },
+
+  offCallStatusUpdate: () => {
+    socket?.off("call:statusUpdate");
+  },
+
+  offCallEnded: () => {
+    socket?.off("call:ended");
+  },
+
+  offIncomingCall: () => {
+    socket?.off("call:incoming");
+  },
+
+  offCallRecordingReady: () => {
+    socket?.off("call:recordingReady");
+  },
+
+  offCallAccepted: () => {
+    socket?.off("call:accepted");
+  },
+
+  offCallRejected: () => {
+    socket?.off("call:rejected");
+  },
+
+  offCallMuteUpdate: () => {
+    socket?.off("call:muteUpdate");
   },
 
   // Instagram conversation events
