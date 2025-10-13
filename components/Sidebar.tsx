@@ -27,6 +27,7 @@ import {
   BarChart,
   FileText,
   CreditCard,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -38,6 +39,7 @@ interface SidebarProps {
   onToggle: () => void;
   pathname: string;
   onReviewClick?: () => void;
+  onCalendarClick?: () => void;
   onStatusFilter?: (status: string) => void; // Add callback for status filtering
   onConversationFilter?: (filter: string) => void; // Add callback for conversation filtering
 }
@@ -47,6 +49,7 @@ export default function Sidebar({
   onToggle,
   pathname,
   onReviewClick,
+  onCalendarClick,
   onStatusFilter,
   onConversationFilter,
 }: SidebarProps) {
@@ -92,6 +95,7 @@ export default function Sidebar({
   const activityItems = [
     { id: "reviews", icon: Star, label: "Reviews" },
     { id: "calls", icon: Phone, label: "Calls" },
+    { id: "calendar", icon: Calendar, label: "Calendar" },
   ];
 
   // Use icons instead of color for statusItems
@@ -296,6 +300,28 @@ export default function Sidebar({
                                 onToggle();
                               }
                             });
+                          }}
+                        >
+                          <item.icon size={16} className="flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      ) : item.id === "calendar" ? (
+                        <button
+                          key={item.id}
+                          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
+                          onClick={() => {
+                            if (onCalendarClick) {
+                              onCalendarClick();
+                            } else {
+                              window.location.href = "/dashboard/calendar";
+                            }
+                            // Auto-collapse sidebar on small screens when calendar is clicked
+                            if (
+                              typeof window !== "undefined" &&
+                              window.innerWidth < 768
+                            ) {
+                              onToggle();
+                            }
                           }}
                         >
                           <item.icon size={16} className="flex-shrink-0" />

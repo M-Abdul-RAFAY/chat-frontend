@@ -84,6 +84,7 @@ export default function CalendarIntegration({
   };
 
   const handleConnectCalendar = async () => {
+    setError(null);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/auth/google`,
@@ -93,7 +94,17 @@ export default function CalendarIntegration({
           },
         }
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
       const data = await response.json();
+      console.log("Auth response:", data);
+
       if (data.success && data.authUrl) {
         // Open Google OAuth in a new window
         window.open(data.authUrl, "_blank", "width=600,height=700");
@@ -105,10 +116,16 @@ export default function CalendarIntegration({
             clearInterval(pollInterval);
           }
         }, 2000);
+      } else {
+        throw new Error(data.message || "Failed to get authorization URL");
       }
     } catch (error) {
       console.error("Error connecting calendar:", error);
-      setError("Failed to connect Google Calendar");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to connect Google Calendar"
+      );
     }
   };
 
