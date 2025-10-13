@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   Calendar,
   Clock,
@@ -29,6 +30,7 @@ export default function CalendarIntegration({
   userId,
   customerId,
 }: CalendarIntegrationProps) {
+  const { getToken } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -45,11 +47,12 @@ export default function CalendarIntegration({
 
   const checkCalendarStatus = async () => {
     try {
+      const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/status`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -66,11 +69,12 @@ export default function CalendarIntegration({
     if (!customerId) return;
 
     try {
+      const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/customers/${customerId}/meetings`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -86,11 +90,12 @@ export default function CalendarIntegration({
   const handleConnectCalendar = async () => {
     setError(null);
     try {
+      const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/auth/google`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -131,12 +136,13 @@ export default function CalendarIntegration({
 
   const handleDisconnectCalendar = async () => {
     try {
+      const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/disconnect`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );

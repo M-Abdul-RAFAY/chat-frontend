@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import CalendarIntegration from "@/components/CalendarIntegration";
 import { Calendar, Clock, MapPin, User, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,46 +22,27 @@ interface Meeting {
 }
 
 export default function CalendarPage() {
+  const { userId, getToken } = useAuth();
   const router = useRouter();
-  const [userId, setUserId] = useState<string>("");
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get userId from localStorage or session
-    const getUserId = () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          // Decode JWT to get userId (simple decode, not verification)
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          return payload.sub || payload.userId || "";
-        }
-      } catch (err) {
-        console.error("Error getting userId:", err);
-      }
-      return "";
-    };
-
-    const id = getUserId();
-    setUserId(id);
-
-    if (id) {
+    if (userId) {
       fetchAllMeetings();
-    } else {
-      setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   const fetchAllMeetings = async () => {
     try {
       setLoading(true);
+      const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/events`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
