@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         const backendData = data[0];
         // Map backend data structure to frontend expected structure
         businessInfo = {
-          place_id: backendData._id, // Use MongoDB ID as place_id
+          place_id: backendData.place_id || backendData._id, // Use place_id if available, fallback to MongoDB ID
           name: backendData.name,
           formattedAddress: backendData.address,
           phoneNumber: backendData.phone,

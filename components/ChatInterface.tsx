@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Clock,
   CheckCheck,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatAPI, Conversation, Message } from "@/lib/api";
@@ -642,6 +643,76 @@ export default function ChatInterface({
 
       // Also set error state for UI display
       setError(errorMessage);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleAskForReview = async () => {
+    if (!conversationId) {
+      showToast.error("No conversation selected");
+      return;
+    }
+
+    try {
+      setSending(true);
+      
+      // Fetch the review URL from the backend
+      const response = await fetch("/api/business-info/review-url");
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to get review link");
+      }
+
+      const { reviewUrl, businessName } = await response.json();
+
+      // Create a friendly message with the review link
+      const reviewMessage = `Hi! We'd love to hear about your experience with ${businessName || "us"}. Could you take a moment to leave us a review?\n\n${reviewUrl}\n\nThank you! 🌟`;
+
+      // Send the message
+      const sentMessage = await chatAPI.sendMessage({
+        conversationId: conversationId.toString(),
+        content: reviewMessage,
+        sender: "agent",
+      });
+
+      // Add message to UI
+      const immediateMessage: Message = {
+        id: sentMessage._id || sentMessage.id || Math.random().toString(),
+        sender: "agent",
+        content: reviewMessage,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        timestamp: new Date().toISOString(),
+        avatar: "AG",
+      };
+
+      setMessages((prev) => {
+        const exists = prev.find(
+          (msg) =>
+            msg.id === immediateMessage.id ||
+            (msg.content === immediateMessage.content &&
+              Math.abs(
+                new Date().getTime() -
+                  new Date(msg.timestamp || 0).getTime()
+              ) < 5000)
+        );
+        return exists ? prev : [...prev, immediateMessage];
+      });
+
+      showToast.success("Review request sent!");
+    } catch (error) {
+      console.error("Error sending review request:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to send review request";
+      
+      if (errorMessage.includes("No Google My Business")) {
+        showToast.error("Please add your Google My Business information in Settings first");
+      } else {
+        showToast.error(errorMessage);
+      }
     } finally {
       setSending(false);
     }
@@ -1374,6 +1445,16 @@ export default function ChatInterface({
               title="Request Payment"
             >
               <DollarSign size={20} />
+            </button>
+
+            <button
+              type="button"
+              className="p-3 text-orange-600 hover:bg-white hover:text-orange-700 rounded-xl transition-all duration-200 shadow-sm"
+              onClick={handleAskForReview}
+              title="Ask for Review"
+              disabled={sending}
+            >
+              <Star size={20} />
             </button>
           </div>
 
