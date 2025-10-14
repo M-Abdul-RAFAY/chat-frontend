@@ -227,22 +227,29 @@ export default function BulkMessageModal({
       // Convert scheduledFor to ISO string with proper timezone
       let scheduledDateISO = undefined;
       if (type === "schedule" && scheduledFor) {
-        // datetime-local gives us "2025-10-15T12:33" without timezone
-        // Parse as local time by appending timezone info
-        // Split the datetime string and create a proper local Date
+        // datetime-local gives us "2025-10-15T01:02" without timezone
+        // We need to treat this as LOCAL time (PKT) and convert to UTC
+        
+        // Split and parse the datetime string manually
         const [datePart, timePart] = scheduledFor.split("T");
         const [year, month, day] = datePart.split("-").map(Number);
         const [hour, minute] = timePart.split(":").map(Number);
         
-        // Create date in local timezone
+        // Create date in LOCAL timezone using the Date constructor
+        // This creates a Date object representing the local time
         const localDate = new Date(year, month - 1, day, hour, minute);
+        
+        // toISOString() automatically converts from local time to UTC
         scheduledDateISO = localDate.toISOString();
         
         console.log("📅 Schedule conversion:", {
           input: scheduledFor,
           parsed: { year, month, day, hour, minute },
           localDate: localDate.toString(),
+          localDateUTC: localDate.toUTCString(),
           isoString: scheduledDateISO,
+          nowLocal: new Date().toString(),
+          nowUTC: new Date().toISOString(),
         });
       }
 
