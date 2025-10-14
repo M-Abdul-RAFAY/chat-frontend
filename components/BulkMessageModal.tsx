@@ -224,11 +224,25 @@ export default function BulkMessageModal({
 
     setIsLoading(true);
     try {
+      // Convert scheduledFor to ISO string with proper timezone
+      let scheduledDateISO = undefined;
+      if (type === "schedule" && scheduledFor) {
+        // datetime-local gives us "2025-10-15T12:33" without timezone
+        // We need to treat this as local time and convert to ISO
+        const localDate = new Date(scheduledFor);
+        scheduledDateISO = localDate.toISOString();
+        console.log("📅 Schedule conversion:", {
+          input: scheduledFor,
+          localDate: localDate.toString(),
+          isoString: scheduledDateISO,
+        });
+      }
+
       const bulkMessageData = {
         title,
         message,
         recipients: finalRecipients,
-        ...(type === "schedule" && { scheduledDate: scheduledFor }),
+        ...(type === "schedule" && { scheduledDate: scheduledDateISO }),
       };
 
       await bulkMessageAPI.createBulkMessage(bulkMessageData);
