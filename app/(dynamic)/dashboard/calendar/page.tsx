@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import CalendarIntegration from "@/components/CalendarIntegration";
-import { Calendar, Clock, MapPin, User, ChevronLeft } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  ChevronLeft,
+  ExternalLink,
+  Phone,
+  Video,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Meeting {
@@ -82,6 +91,18 @@ export default function CalendarPage() {
     });
   };
 
+  const getLocationIcon = (location: string | undefined) => {
+    if (!location) return <MapPin className="w-4 h-4" />;
+    const loc = location.toLowerCase();
+    if (loc.includes("call") || loc.includes("phone")) {
+      return <Phone className="w-4 h-4" />;
+    }
+    if (loc.includes("video") || loc.includes("zoom") || loc.includes("meet")) {
+      return <Video className="w-4 h-4" />;
+    }
+    return <MapPin className="w-4 h-4" />;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -152,8 +173,28 @@ export default function CalendarPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Calendar Integration */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <CalendarIntegration userId={userId || ""} />
+
+            {/* View on Google Calendar Button */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow p-6 border border-blue-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <span>Google Calendar</span>
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                View and manage all your meetings directly in Google Calendar
+              </p>
+              <a
+                href="https://calendar.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition shadow-sm hover:shadow-md"
+              >
+                <span>Open Google Calendar</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Right Column - Meetings List */}
@@ -199,54 +240,82 @@ export default function CalendarPage() {
                             {dateMeetings.map((meeting) => (
                               <div
                                 key={meeting._id}
-                                className="border rounded-lg p-4 hover:shadow-md transition"
+                                className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-blue-300 transition-all duration-200"
                               >
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start justify-between mb-4">
                                   <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                    <h4 className="text-lg font-bold text-gray-900 mb-2">
                                       {meeting.title}
                                     </h4>
-                                    {meeting.description && (
-                                      <p className="text-sm text-gray-600 mb-3">
-                                        {meeting.description}
+                                    <span
+                                      className={`inline-flex items-center px-3 py-1 text-xs rounded-full font-semibold border ${getStatusColor(
+                                        meeting.status
+                                      )}`}
+                                    >
+                                      {meeting.status.charAt(0).toUpperCase() +
+                                        meeting.status.slice(1)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {meeting.description && (
+                                  <p className="text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {meeting.description}
+                                  </p>
+                                )}
+
+                                <div className="space-y-3">
+                                  {/* Time */}
+                                  <div className="flex items-center space-x-3 text-gray-700">
+                                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+                                      <Clock className="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-xs text-gray-500 font-medium">
+                                        Time & Duration
                                       </p>
-                                    )}
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                      <div className="flex items-center space-x-1">
-                                        <Clock className="w-4 h-4" />
-                                        <span>
-                                          {meeting.meetingTime ||
-                                            formatTime(
-                                              meeting.meetingDate
-                                            )}{" "}
-                                          ({meeting.duration} min)
-                                        </span>
-                                      </div>
-                                      {meeting.location && (
-                                        <div className="flex items-center space-x-1">
-                                          <MapPin className="w-4 h-4" />
-                                          <span>{meeting.location}</span>
-                                        </div>
-                                      )}
-                                      {(meeting.customerName ||
-                                        meeting.customerPhone) && (
-                                        <div className="flex items-center space-x-1">
-                                          <User className="w-4 h-4" />
-                                          <span>
-                                            {meeting.customerName ||
-                                              meeting.customerPhone}
-                                          </span>
-                                        </div>
-                                      )}
+                                      <p className="text-sm font-semibold">
+                                        {formatTime(meeting.meetingDate)} •{" "}
+                                        {meeting.duration} minutes
+                                      </p>
                                     </div>
                                   </div>
-                                  <span
-                                    className={`px-3 py-1 text-xs rounded-full font-medium border ${getStatusColor(
-                                      meeting.status
-                                    )}`}
-                                  >
-                                    {meeting.status}
-                                  </span>
+
+                                  {/* Location */}
+                                  {meeting.location && (
+                                    <div className="flex items-center space-x-3 text-gray-700">
+                                      <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
+                                        {getLocationIcon(meeting.location)}
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-500 font-medium">
+                                          Location
+                                        </p>
+                                        <p className="text-sm font-semibold capitalize">
+                                          {meeting.location}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Customer */}
+                                  {(meeting.customerName ||
+                                    meeting.customerPhone) && (
+                                    <div className="flex items-center space-x-3 text-gray-700">
+                                      <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg">
+                                        <User className="w-4 h-4 text-purple-600" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-500 font-medium">
+                                          Participant
+                                        </p>
+                                        <p className="text-sm font-semibold">
+                                          {meeting.customerName ||
+                                            meeting.customerPhone}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -285,44 +354,46 @@ export default function CalendarPage() {
                             {dateMeetings.map((meeting) => (
                               <div
                                 key={meeting._id}
-                                className="border rounded-lg p-4 opacity-75 hover:opacity-100 transition"
+                                className="bg-gray-50 border border-gray-200 rounded-xl p-5 opacity-80 hover:opacity-100 hover:shadow-md transition-all duration-200"
                               >
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start justify-between mb-3">
                                   <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                    <h4 className="text-base font-semibold text-gray-800 mb-2">
                                       {meeting.title}
                                     </h4>
-                                    {meeting.description && (
-                                      <p className="text-sm text-gray-600 mb-3">
-                                        {meeting.description}
-                                      </p>
-                                    )}
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                      <div className="flex items-center space-x-1">
-                                        <Clock className="w-4 h-4" />
-                                        <span>
-                                          {meeting.meetingTime ||
-                                            formatTime(
-                                              meeting.meetingDate
-                                            )}{" "}
-                                          ({meeting.duration} min)
-                                        </span>
-                                      </div>
-                                      {meeting.location && (
-                                        <div className="flex items-center space-x-1">
-                                          <MapPin className="w-4 h-4" />
-                                          <span>{meeting.location}</span>
-                                        </div>
-                                      )}
-                                    </div>
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 text-xs rounded-full font-medium border ${getStatusColor(
+                                        meeting.status
+                                      )}`}
+                                    >
+                                      {meeting.status.charAt(0).toUpperCase() +
+                                        meeting.status.slice(1)}
+                                    </span>
                                   </div>
-                                  <span
-                                    className={`px-3 py-1 text-xs rounded-full font-medium border ${getStatusColor(
-                                      meeting.status
-                                    )}`}
-                                  >
-                                    {meeting.status}
-                                  </span>
+                                </div>
+
+                                {meeting.description && (
+                                  <p className="text-sm text-gray-600 mb-3 bg-white p-2.5 rounded-lg border border-gray-100">
+                                    {meeting.description}
+                                  </p>
+                                )}
+
+                                <div className="space-y-2">
+                                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                    <Clock className="w-4 h-4" />
+                                    <span>
+                                      {formatTime(meeting.meetingDate)} •{" "}
+                                      {meeting.duration} min
+                                    </span>
+                                  </div>
+                                  {meeting.location && (
+                                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                      {getLocationIcon(meeting.location)}
+                                      <span className="capitalize">
+                                        {meeting.location}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
