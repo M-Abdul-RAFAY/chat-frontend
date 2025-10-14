@@ -72,7 +72,14 @@ export default function BulkMessageTable({
                   className="hover:bg-gray-50"
                 >
                   <TableCell component="th" scope="row" className="font-medium">
-                    {message.title}
+                    <div className="flex items-center gap-2">
+                      <span>{message.title}</span>
+                      {message.isReminderMessage && (
+                        <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                          🔔 Auto-Reminder
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="max-w-xs truncate" title={message.message}>

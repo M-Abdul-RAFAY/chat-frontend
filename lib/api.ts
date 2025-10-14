@@ -1017,6 +1017,8 @@ export interface BulkMessage {
   totalCount: number;
   isAIGenerated: boolean;
   aiPrompt?: string;
+  isReminderMessage?: boolean;
+  relatedMeetingId?: string;
   createdAt: string;
   updatedAt: string;
 }
