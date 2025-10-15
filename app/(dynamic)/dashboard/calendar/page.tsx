@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@clerk/nextjs";
 import CalendarIntegration from "@/components/CalendarIntegration";
 import {
@@ -30,7 +30,7 @@ interface Meeting {
   customerPhone?: string;
 }
 
-export default function CalendarPage() {
+function CalendarPageContent() {
   const { userId, getToken } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -452,5 +452,19 @@ export default function CalendarPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      }
+    >
+      <CalendarPageContent />
+    </Suspense>
   );
 }
