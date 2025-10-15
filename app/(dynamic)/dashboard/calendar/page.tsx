@@ -36,16 +36,12 @@ export default function CalendarPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (userId) {
-      fetchAllMeetings();
-    }
-  }, [userId]);
+  const [isCalendarConnected, setIsCalendarConnected] = useState(true);
 
   const fetchAllMeetings = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = await getToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/calendar/events`,
@@ -62,15 +58,31 @@ export default function CalendarPage() {
 
       const data = await response.json();
       if (data.success) {
-        setMeetings(data.events || []);
+        // Check if calendar is not connected
+        if (data.isConnected === false) {
+          setMeetings([]);
+          setIsCalendarConnected(false);
+          setError(null); // Don't show error, calendar is just not connected
+        } else {
+          setMeetings(data.events || []);
+          setIsCalendarConnected(true);
+        }
       }
     } catch (err) {
       console.error("Error fetching meetings:", err);
       setError("Failed to load meetings");
+      setIsCalendarConnected(true); // Assume connected if fetch fails for other reasons
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (userId) {
+      fetchAllMeetings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -215,6 +227,16 @@ export default function CalendarPage() {
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : !isCalendarConnected ? (
+                  <div className="text-center py-12">
+                    <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 font-medium mb-2">
+                      Google Calendar Not Connected
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Connect your Google Calendar to view and manage meetings
+                    </p>
                   </div>
                 ) : error ? (
                   <div className="text-center py-12">
