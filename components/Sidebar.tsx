@@ -28,6 +28,7 @@ import {
   FileText,
   CreditCard,
   Calendar,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -93,6 +94,7 @@ export default function Sidebar({
   ];
 
   const activityItems = [
+    { id: "assistant", icon: Sparkles, label: "Personal Assistant" },
     { id: "reviews", icon: Star, label: "Reviews" },
     { id: "calls", icon: Phone, label: "Calls" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
@@ -281,7 +283,25 @@ export default function Sidebar({
                 {showActivity && (
                   <div className="space-y-1">
                     {activityItems.map((item) =>
-                      item.id === "reviews" ? (
+                      item.id === "assistant" ? (
+                        <button
+                          key={item.id}
+                          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
+                          onClick={() => {
+                            window.location.href = "/dashboard/assistant";
+                            // Auto-collapse sidebar on small screens
+                            if (
+                              typeof window !== "undefined" &&
+                              window.innerWidth < 768
+                            ) {
+                              onToggle();
+                            }
+                          }}
+                        >
+                          <item.icon size={16} className="flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      ) : item.id === "reviews" ? (
                         <button
                           key={item.id}
                           className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm text-gray-400 hover:bg-blue-700 hover:text-white"
