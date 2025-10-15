@@ -13,7 +13,7 @@ import {
   Phone,
   Video,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Meeting {
   _id: string;
@@ -33,10 +33,32 @@ interface Meeting {
 export default function CalendarPage() {
   const { userId, getToken } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCalendarConnected, setIsCalendarConnected] = useState(true);
+
+  // Handle OAuth callback - close popup if opened in popup
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const calendarStatus = searchParams.get("calendar");
+    if (calendarStatus === "connected" || calendarStatus === "error") {
+      // Check if this is a popup window
+      if (window.opener) {
+        // Notify parent window and close popup
+        window.opener.postMessage(
+          { type: "calendar_oauth", status: calendarStatus },
+          window.location.origin
+        );
+        window.close();
+      } else {
+        // If not a popup, just clean the URL
+        router.replace("/dashboard/calendar");
+      }
+    }
+  }, [searchParams, router]);
 
   const fetchAllMeetings = async () => {
     try {

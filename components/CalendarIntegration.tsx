@@ -42,6 +42,26 @@ export default function CalendarIntegration({
     if (customerId) {
       fetchCustomerMeetings();
     }
+
+    // Listen for OAuth popup messages
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === "calendar_oauth") {
+        if (event.data.status === "connected") {
+          // Refresh calendar status
+          checkCalendarStatus();
+          if (customerId) {
+            fetchCustomerMeetings();
+          }
+        } else if (event.data.status === "error") {
+          setError("Failed to connect Google Calendar");
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, customerId]);
 
