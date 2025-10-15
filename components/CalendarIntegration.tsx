@@ -135,6 +135,8 @@ export default function CalendarIntegration({
   };
 
   const handleDisconnectCalendar = async () => {
+    setError(null);
+    setLoading(true);
     try {
       const token = await getToken();
       const response = await fetch(
@@ -143,17 +145,36 @@ export default function CalendarIntegration({
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to disconnect");
+      }
+
       const data = await response.json();
+      console.log("Disconnect response:", data);
+
       if (data.success) {
         setIsConnected(false);
         setMeetings([]);
+        // Force refresh the status to confirm
+        await checkCalendarStatus();
+      } else {
+        throw new Error(data.message || "Failed to disconnect calendar");
       }
     } catch (error) {
       console.error("Error disconnecting calendar:", error);
-      setError("Failed to disconnect Google Calendar");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to disconnect Google Calendar"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
