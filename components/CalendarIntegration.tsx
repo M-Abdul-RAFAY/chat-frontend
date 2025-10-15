@@ -49,11 +49,8 @@ export default function CalendarIntegration({
 
       if (event.data.type === "calendar_oauth") {
         if (event.data.status === "connected") {
-          // Refresh calendar status
-          checkCalendarStatus();
-          if (customerId) {
-            fetchCustomerMeetings();
-          }
+          // Reload the page to refresh all data
+          window.location.reload();
         } else if (event.data.status === "error") {
           setError("Failed to connect Google Calendar");
         }

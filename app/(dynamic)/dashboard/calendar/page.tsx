@@ -54,8 +54,12 @@ function CalendarPageContent() {
         );
         window.close();
       } else {
-        // If not a popup, just clean the URL
-        router.replace("/dashboard/calendar");
+        // If not a popup, reload the page to refresh all data
+        if (calendarStatus === "connected") {
+          window.location.href = "/dashboard/calendar";
+        } else {
+          router.replace("/dashboard/calendar");
+        }
       }
     }
   }, [searchParams, router]);
