@@ -656,10 +656,10 @@ export default function ChatInterface({
 
     try {
       setSending(true);
-      
+
       // Fetch the review URL from the backend
       const response = await fetch("/api/business-info/review-url");
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to get review link");
@@ -668,7 +668,9 @@ export default function ChatInterface({
       const { reviewUrl, businessName } = await response.json();
 
       // Create a friendly message with the review link
-      const reviewMessage = `Hi! We'd love to hear about your experience with ${businessName || "us"}. Could you take a moment to leave us a review?\n\n${reviewUrl}\n\nThank you! 🌟`;
+      const reviewMessage = `Hi! We'd love to hear about your experience with ${
+        businessName || "us"
+      }. Could you take a moment to leave us a review?\n\n${reviewUrl}\n\nThank you! 🌟`;
 
       // Send the message
       const sentMessage = await chatAPI.sendMessage({
@@ -696,8 +698,7 @@ export default function ChatInterface({
             msg.id === immediateMessage.id ||
             (msg.content === immediateMessage.content &&
               Math.abs(
-                new Date().getTime() -
-                  new Date(msg.timestamp || 0).getTime()
+                new Date().getTime() - new Date(msg.timestamp || 0).getTime()
               ) < 5000)
         );
         return exists ? prev : [...prev, immediateMessage];
@@ -706,10 +707,15 @@ export default function ChatInterface({
       showToast.success("Review request sent!");
     } catch (error) {
       console.error("Error sending review request:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to send review request";
-      
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send review request";
+
       if (errorMessage.includes("No Google My Business")) {
-        showToast.error("Please add your Google My Business information in Settings first");
+        showToast.error(
+          "Please add your Google My Business information in Settings first"
+        );
       } else {
         showToast.error(errorMessage);
       }
@@ -980,14 +986,10 @@ export default function ChatInterface({
     return (
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-          <p className="text-gray-600 font-medium">Loading conversation...</p>
+          <p className="text-gray-600 font-medium">
+            Select a conversation from the List
+          </p>
           <p className="text-sm text-gray-400 mt-1">Please wait a moment</p>
-          <div className="relative mt-4">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-20 animate-pulse"></div>
-            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-3 flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 animate-spin text-white" />
-            </div>
-          </div>
         </div>
       </div>
     );
